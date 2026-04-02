@@ -4,15 +4,16 @@ import Cookies from 'js-cookie';
 import type { User, AuthState } from '../types';
 
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
-const TOKEN_COOKIE = 'eco_access_token';
+const TOKEN_COOKIE = 'kwanza_access_token';
 const TOKEN_EXPIRY_DAYS = 7;
 const TOKEN_SHORT_EXPIRY_DAYS = 1;
 
 export const setTokenCookie = (token: string, remember: boolean = false): void => {
   Cookies.set(TOKEN_COOKIE, token, {
     expires: remember ? TOKEN_EXPIRY_DAYS : TOKEN_SHORT_EXPIRY_DAYS,
-    secure: window.location.protocol === 'https:',
+    secure: true, // Force secure in production/staging
     sameSite: 'Strict',
+    path: '/',
   });
 };
 
