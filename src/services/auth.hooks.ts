@@ -32,11 +32,19 @@ export const useRegister = () => {
 
   return useMutation({
     mutationFn: (data: RegisterFormData) => authService.register(data),
-    onSuccess: (data) => {
-      login(data.user, data.access, false);
-      queryClient.setQueryData(['me'], data.user);
-      toast.success('Conta criada com sucesso!');
-      navigate('/dashboard');
+    onSuccess: (data: any) => {
+      if (data?.access && data?.user) {
+        login(data.user, data.access, false);
+        queryClient.setQueryData(['me'], data.user);
+        toast.success('Bem-vindo ao KwanzaConnect!');
+        navigate('/dashboard');
+      } else {
+        // Handle case where email verification is required
+        toast.success(data?.message || 'Conta criada! Verifique o seu e-mail para ativar.', {
+          duration: 6000,
+        });
+        navigate('/login');
+      }
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || error.response?.data?.error || 'Erro ao criar conta';

@@ -5,7 +5,6 @@ import { useAuthStore, useSettingsStore } from '@store/authStore';
 import { ProtectedRoute } from '@components/ProtectedRoute';
 import AppLayout from '@components/AppLayout';
 import LoginPage from '@app/LoginPage';
-import RegisterPage from '@app/RegisterPage';
 import DashboardPage from '@app/DashboardPage';
 import CambioMercadoPage from '@app/CambioMercadoPage';
 import ConversaoPage from '@app/ConversaoPage';
@@ -37,20 +36,21 @@ const App: React.FC = () => {
         toastOptions={{
           duration: 3000,
           style: {
-            background: theme === 'dark' ? '#1e2530' : '#fff',
-            color: theme === 'dark' ? '#e6edf3' : '#1a1f2e',
-            border: theme === 'dark' ? '1px solid #30363d' : '1px solid #e1e4e8',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontFamily: '"DM Sans", sans-serif',
+            background: theme === 'dark' ? '#192633' : '#fff',
+            color: theme === 'dark' ? '#fff' : '#1a1f2e',
+            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e1e4e8',
+            borderRadius: '16px',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            fontFamily: 'Manrope, sans-serif',
           },
-          success: { iconTheme: { primary: '#34C759', secondary: '#fff' } },
-          error: { iconTheme: { primary: '#FF3B30', secondary: '#fff' } },
+          success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+          error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
         }}
       />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastro" element={<RegisterPage />} />
+        <Route path="/cadastro" element={<Navigate to="/login" replace />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />

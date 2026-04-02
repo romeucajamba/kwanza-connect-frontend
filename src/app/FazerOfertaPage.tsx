@@ -1,238 +1,221 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useOffers, useCurrencies, useCreateOffer, useExpressInterest } from '@services/offers.hooks';
-import { useAuthStore } from '@store/authStore';
-import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChevronRight, 
+  CheckCircle2, 
+  Calculator,
+  RefreshCcw,
+  Zap,
+  LayoutDashboard,
+  ArrowLeft,
+  ShieldCheck,
+  DollarSign,
+  Banknote
+} from 'lucide-react';
+import { useCreateOffer } from '../services/offers.hooks';
+import { useNavigate } from 'react-router-dom';
 
 const FazerOfertaPage: React.FC = () => {
-  const user = useAuthStore((s) => s.user);
-  const { data: offers, isLoading: offersLoading } = useOffers();
-  const { data: currencies, isLoading: currenciesLoading } = useCurrencies();
-  const { mutate: createOffer, isPending: creatingOffer } = useCreateOffer();
-  const { mutate: expressInterest } = useExpressInterest();
+  const navigate = useNavigate();
+  const { mutate: createOffer, isPending } = useCreateOffer();
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    give_currency: 'USD',
+    give_amount: '',
+    receive_currency: 'AOA',
+    receive_amount: '',
+    payment_method: 'Multicaixa Express',
+  });
 
-  const [type, setType] = useState<'buy' | 'sell'>('buy');
-  const [giveCurrencyId, setGiveCurrencyId] = useState('');
-  const [wantCurrencyId, setWantCurrencyId] = useState('');
-  const [giveAmount, setGiveAmount] = useState('');
-  const [wantAmount, setWantAmount] = useState('');
-
-  const handleCreateOffer = (e: React.FormEvent) => {
+  const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!giveCurrencyId || !wantCurrencyId || !giveAmount || !wantAmount) {
-      toast.error('Preencha todos os campos');
-      return;
-    }
     createOffer({
-      give_currency: giveCurrencyId,
-      give_amount: parseFloat(giveAmount),
-      want_currency: wantCurrencyId,
-      want_amount: parseFloat(wantAmount),
-      offer_type: type,
+      give_currency: 1, // Mock IDs
+      receive_currency: 2,
+      give_amount: parseFloat(formData.give_amount),
+      receive_amount: parseFloat(formData.receive_amount),
     });
   };
 
-  const handleInterest = (offerId: string) => {
-    expressInterest({ offerId, message: 'Olá, gostaria de negociar esta oferta.' });
-  };
-
-  if (offersLoading || currenciesLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
-        />
-      </div>
-    );
-  }
+  const exchangeRate = parseFloat(formData.give_amount) > 0 
+    ? (parseFloat(formData.receive_amount || '0') / parseFloat(formData.give_amount)).toFixed(2)
+    : '0.00';
 
   return (
-    <div className="flex-1 flex flex-col gap-8 py-8 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display transition-colors">
-      <div className="flex flex-wrap justify-between gap-4 items-center">
-        <div className="flex min-w-72 flex-col gap-2">
-          <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-tighter uppercase">Mercado P2P</h1>
-          <p className="text-gray-500 dark:text-[#92adc9] text-base font-medium">Negocie moedas diretamente com outros usuários de forma segura.</p>
+    <div className="flex flex-col gap-6 w-full pb-10">
+      
+      {/* Header Compacto */}
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight tracking-tight uppercase">
+            Publicar <span className="text-primary italic">Oferta</span>
+          </h1>
+          <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest opacity-80 leading-relaxed">
+            Configure os seus limites e publique no mercado P2P.
+          </p>
         </div>
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center justify-center gap-2 bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 text-slate-900 dark:text-white font-bold uppercase text-[9px] tracking-widest px-6 h-10 rounded-lg hover:bg-slate-50 transition-all shadow-sm shadow-black/5"
+        >
+          <LayoutDashboard className="size-3.5" />
+          <span>Dashboard</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-        <div className="xl:col-span-2 flex flex-col gap-6">
-          {/* Marketplace List */}
-          <div className="rounded-3xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#192633] overflow-hidden shadow-xl">
-            <div className="flex border-b border-gray-50 dark:border-white/5 bg-gray-50 dark:bg-[#101922]/50">
-              <button 
-                onClick={() => setType('buy')}
-                className={`flex-1 py-5 text-xs font-black uppercase tracking-widest transition-all ${
-                  type === 'buy' ? 'text-primary border-b-4 border-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-white'
-                }`}
-              >
-                Comprar
-              </button>
-              <button 
-                onClick={() => setType('sell')}
-                className={`flex-1 py-5 text-xs font-black uppercase tracking-widest transition-all ${
-                  type === 'sell' ? 'text-primary border-b-4 border-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-white'
-                }`}
-              >
-                Vender
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="relative group">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-                <input 
-                  className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-[#101922] border-none rounded-2xl text-sm font-bold text-gray-900 dark:text-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                  placeholder="Buscar por moeda ou usuário"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {offers?.length === 0 && (
-              <div className="p-12 text-center bg-white dark:bg-[#192633] rounded-3xl border-2 border-dashed border-gray-100 dark:border-white/5">
-                <p className="text-gray-500 font-bold">Nenhuma oferta encontrada para este critério.</p>
-              </div>
-            )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-8">
+          <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full opacity-50 pointer-events-none" />
             
-            {offers?.map((offer, idx) => (
-              <motion.div 
-                key={offer.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-3xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#192633] shadow-lg hover:shadow-2xl transition-all group"
-              >
-                <div className="flex flex-col gap-6 flex-1 w-full">
-                  <div className="flex items-center gap-4">
-                    <div className="size-14 rounded-full border-4 border-gray-50 dark:border-[#101922] shadow-sm bg-background-light dark:bg-background-dark flex items-center justify-center overflow-hidden">
-                      <img 
-                        src={offer.owner.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${offer.owner.id}`} 
-                        alt={offer.owner.full_name} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight line-clamp-1">
-                        {offer.owner.full_name}
-                      </h3>
-                      <div className="flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-emerald-500 !text-sm">verified</span>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{offer.owner.is_verified ? 'Verificado' : 'Não Verificado'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-60">Dá</p>
-                      <p className="text-sm font-black text-gray-900 dark:text-white">
-                        {offer.give_amount.toLocaleString('pt-AO')} <span className="text-primary">{offer.give_currency.code}</span>
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-60">Pede</p>
-                      <p className="text-sm font-black text-emerald-500">
-                        {offer.want_amount.toLocaleString('pt-AO')} {offer.want_currency.code}
-                      </p>
-                    </div>
-                    <div className="hidden md:block">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 opacity-60">Localização</p>
-                      <p className="text-sm font-black text-gray-900 dark:text-white">{offer.city || 'Digital'}</p>
-                    </div>
-                  </div>
-                </div>
-                {offer.owner.id !== user?.id && (
-                  <button 
-                    onClick={() => handleInterest(offer.id)}
-                    className="w-full sm:w-auto px-8 h-12 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-all shadow-xl shadow-primary/20 active:scale-95"
+            <form onSubmit={handleCreate} className="p-5 md:p-6 space-y-4 relative z-10">
+              {/* Simple Step Indicator */}
+              <div className="flex items-center gap-3 mb-4">
+                 <div className={`size-7 rounded-lg flex items-center justify-center font-bold text-[10px] transition-all ${step >= 1 ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-300'}`}>01</div>
+                 <div className={`flex-1 h-0.5 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-slate-100 dark:bg-white/5'}`} />
+                 <div className={`size-7 rounded-lg flex items-center justify-center font-bold text-[10px] transition-all ${step >= 2 ? 'bg-primary text-white shadow-md' : 'bg-slate-50 text-slate-300'}`}>02</div>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {step === 1 ? (
+                  <motion.div 
+                    key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="space-y-4"
                   >
-                    Negociar Agora
-                  </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Para Entregar</label>
+                          <div className="flex items-center gap-2.5 p-3 bg-slate-50 dark:bg-[#111922] rounded-lg border border-transparent focus-within:border-primary/20 transition-all shadow-inner">
+                             <input 
+                               type="number" step="0.01" className="flex-1 bg-transparent border-none p-0 text-lg font-bold text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-200" 
+                               placeholder="1.000,00" value={formData.give_amount} onChange={(e) => setFormData({...formData, give_amount: e.target.value})}
+                             />
+                             <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 cursor-pointer pr-8 uppercase tracking-widest" value={formData.give_currency} onChange={(e) => setFormData({...formData, give_currency: e.target.value})}>
+                                <option>USD</option>
+                                <option>EUR</option>
+                                <option>BTC</option>
+                             </select>
+                          </div>
+                       </div>
+                       <div className="space-y-2">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Para Receber</label>
+                          <div className="flex items-center gap-2.5 p-3 bg-slate-50 dark:bg-[#111922] rounded-lg border border-transparent focus-within:border-primary/20 transition-all shadow-inner">
+                             <input 
+                               type="number" step="0.01" className="flex-1 bg-transparent border-none p-0 text-lg font-bold text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-200" 
+                               placeholder="850.000,00" value={formData.receive_amount} onChange={(e) => setFormData({...formData, receive_amount: e.target.value})}
+                             />
+                             <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 cursor-pointer pr-8 uppercase tracking-widest" value={formData.receive_currency} onChange={(e) => setFormData({...formData, receive_currency: e.target.value})}>
+                                <option>AOA</option>
+                                <option>ZAR</option>
+                             </select>
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-4 group">
+                       <div className="size-9 rounded-lg bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                          <Calculator className="size-4" />
+                       </div>
+                       <div className="flex-1">
+                          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1 opacity-70">Taxa Câmbio Calculada</p>
+                          <p className="text-base font-bold text-primary uppercase tracking-tight">1 {formData.give_currency} = {exchangeRate} {formData.receive_currency}</p>
+                       </div>
+                    </div>
+
+                    <button type="button" onClick={() => setStep(2)} className="w-full h-11 bg-primary text-white rounded-lg font-bold uppercase text-[10px] tracking-widest shadow-md shadow-primary/20 flex items-center justify-center gap-2 hover:bg-primary/95 transition-all group">
+                       Pagamentos & Segurança
+                       <ChevronRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Método de Transferência</label>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {['Multicaixa Express', 'IBAN Angola', 'Wise / Revolut', 'Binance Pay'].map(m => (
+                             <button 
+                                key={m} type="button" onClick={() => setFormData({...formData, payment_method: m})}
+                                className={`p-3 rounded-lg border transition-all flex items-center justify-between group/opt ${formData.payment_method === m ? 'border-primary bg-primary/5 text-primary shadow-sm' : 'border-slate-100 dark:border-white/5 hover:border-primary/20 text-slate-500 bg-slate-50/50 dark:bg-white/5'}`}
+                             >
+                                <span className="text-[10px] font-bold uppercase tracking-tight">{m}</span>
+                                <div className={`size-4 rounded-full border flex items-center justify-center transition-all ${formData.payment_method === m ? 'border-primary bg-primary text-white shadow-inner' : 'border-slate-300 dark:border-slate-700'}`}>
+                                   {formData.payment_method === m && <CheckCircle2 className="size-2.5" />}
+                                </div>
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+                    
+                    <div className="p-4 bg-slate-900 rounded-xl text-white flex items-center gap-3">
+                       <ShieldCheck className="size-5 text-primary flex-shrink-0" />
+                       <p className="text-[8px] font-bold text-white/40 leading-relaxed uppercase tracking-widest">Activos bloqueados via Smart Escrow após início da negociação.</p>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                       <button 
+                         type="button" onClick={() => setStep(1)} 
+                         className="flex-1 h-11 bg-slate-50 dark:bg-white/5 text-slate-400 rounded-lg font-bold uppercase text-[9px] tracking-widest hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                       >
+                          <ArrowLeft className="size-3.5" />
+                          <span>Voltar</span>
+                       </button>
+                       <button 
+                         type="submit" disabled={isPending} 
+                         className="flex-[2] h-11 bg-primary text-white rounded-lg font-bold uppercase text-[9px] tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-primary/95 disabled:opacity-50"
+                       >
+                          {isPending ? <RefreshCcw className="size-3.5 animate-spin" /> : <Zap className="size-3.5" />}
+                          Finalizar & Publicar
+                       </button>
+                    </div>
+                  </motion.div>
                 )}
-              </motion.div>
-            ))}
+              </AnimatePresence>
+            </form>
           </div>
         </div>
 
-        {/* Create Offer Sidebar */}
-        <div className="xl:col-span-1">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col gap-8 rounded-[2rem] border border-gray-100 dark:border-white/5 bg-white dark:bg-[#192633] p-8 shadow-2xl sticky top-24"
-          >
-            <div className="space-y-1">
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Publicar Oferta</h3>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest opacity-70">Defina suas próprias condições</p>
-            </div>
-            
-            <form onSubmit={handleCreateOffer} className="space-y-8">
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Vou Entregar</label>
-                <div className="flex gap-2">
-                  <input 
-                    value={giveAmount}
-                    onChange={(e) => setGiveAmount(e.target.value)}
-                    className="flex-1 h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-none text-xl font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/30 transition-all outline-none" 
-                    placeholder="0.00" 
-                    type="number" 
-                    required
-                  />
-                  <select 
-                    value={giveCurrencyId}
-                    onChange={(e) => setGiveCurrencyId(e.target.value)}
-                    className="px-6 h-14 bg-gray-100 dark:bg-[#233648] rounded-2xl text-xs font-black uppercase tracking-widest border-none outline-none cursor-pointer hover:bg-gray-200 transition-colors"
-                    required
-                  >
-                    <option value="">Selecione</option>
-                    {currencies?.map(c => <option key={c.id} value={c.id}>{c.code}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-center">
-                 <div className="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-xl">sync_alt</span>
+        <div className="lg:col-span-4 space-y-6">
+           <div className="bg-slate-900 dark:bg-black rounded-xl p-5 md:p-6 text-white relative overflow-hidden shadow-xl">
+              <div className="relative z-10 flex flex-col gap-6">
+                 <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                    <div className="size-9 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                       <Zap className="size-4 text-white" />
+                    </div>
+                    <h3 className="text-sm font-bold uppercase tracking-tight">Dicas PRO</h3>
                  </div>
+                 <ul className="space-y-5">
+                    {[
+                      { icon: DollarSign, title: 'Mercado', desc: 'Preços médios.' },
+                      { icon: Banknote, title: 'Límites', desc: 'Minímimo de $10.' },
+                      { icon: ShieldCheck, title: 'Segurança', desc: 'KYC obrigatório.' }
+                    ].map((item, i) => (
+                       <li key={i} className="flex gap-3">
+                          <div className="size-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0">
+                             <item.icon className="size-3.5 text-primary" />
+                          </div>
+                          <div>
+                             <h4 className="text-[10px] font-bold uppercase tracking-widest leading-none mb-1.5">{item.title}</h4>
+                             <p className="text-[9px] text-white/40 font-medium leading-relaxed uppercase tracking-wide opacity-80">{item.desc}</p>
+                          </div>
+                       </li>
+                    ))}
+                 </ul>
               </div>
+           </div>
 
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Desejo Receber</label>
-                <div className="flex gap-2">
-                  <input 
-                    value={wantAmount}
-                    onChange={(e) => setWantAmount(e.target.value)}
-                    className="flex-1 h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-none text-xl font-black text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/30 transition-all outline-none" 
-                    placeholder="0.00" 
-                    type="number" 
-                    required
-                  />
-                  <select 
-                    value={wantCurrencyId}
-                    onChange={(e) => setWantCurrencyId(e.target.value)}
-                    className="px-6 h-14 bg-gray-100 dark:bg-[#233648] rounded-2xl text-xs font-black uppercase tracking-widest border-none outline-none cursor-pointer hover:bg-gray-200 transition-colors"
-                    required
-                  >
-                    <option value="">Selecione</option>
-                    {currencies?.map(c => <option key={c.id} value={c.id}>{c.code}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <button 
-                type="submit"
-                disabled={creatingOffer}
-                className="w-full h-16 bg-primary hover:bg-blue-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-primary/30 active:scale-95 disabled:opacity-50"
-              >
-                {creatingOffer ? 'Processando...' : 'Publicar Agora'}
-              </button>
-            </form>
-          </motion.div>
+           <div className="p-6 bg-emerald-500/5 rounded-xl border border-emerald-500/10 text-center relative">
+              <h3 className="text-emerald-500 text-[9px] font-bold uppercase tracking-widest mb-2 opacity-80">Facto Local</h3>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed italic opacity-80">
+                IBAN Angola permite transferências directas entre bancos locais em tempo real.
+              </p>
+           </div>
         </div>
       </div>
     </div>
+
   );
 };
 

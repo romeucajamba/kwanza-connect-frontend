@@ -1,161 +1,188 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Search, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  History, 
+  ChevronRight, 
+  Download
+} from 'lucide-react';
 import { useTransactions } from '@services/transactions.hooks';
+import { useAuthStore } from '@store/authStore';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
-import type { Transaction } from '../types';
+import { ptBR } from 'date-fns/locale';
 
 const HistoricoTransacoesPage: React.FC = () => {
+  const user = useAuthStore((s) => s.user);
   const { data: transactions, isLoading } = useTransactions();
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const getStatusConfig = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return { label: 'Concluído', class: 'bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' };
-      case 'pending':
-        return { label: 'Pendente', class: 'bg-yellow-500/10 text-yellow-500', dot: 'bg-yellow-500 animate-pulse' };
-      case 'cancelled':
-        return { label: 'Cancelado', class: 'bg-rose-500/10 text-rose-500', dot: 'bg-rose-500' };
-      case 'disputed':
-        return { label: 'Em Disputa', class: 'bg-orange-500/10 text-orange-500', dot: 'bg-orange-500' };
-      default:
-        return { label: status, class: 'bg-gray-500/10 text-gray-500', dot: 'bg-gray-500' };
-    }
-  };
-
-  const getIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'p2p': return 'swap_horiz';
-      case 'deposit': return 'account_balance_wallet';
-      case 'withdrawal': return 'arrow_upward';
-      case 'conversion': return 'currency_exchange';
-      default: return 'payments';
-    }
-  };
+  const filteredTransactions = (transactions as any[])?.filter(tx => {
+    const matchesSearch = tx.give_currency.code.toLowerCase().includes(search.toLowerCase()) ||
+                         tx.want_currency.code.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = statusFilter === 'all' || tx.status === statusFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
-        />
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-6 py-8 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display transition-colors">
-      <div className="flex flex-col gap-2 mb-4">
-        <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-black tracking-tighter uppercase">Histórico de Transações</h1>
-        <p className="text-gray-500 dark:text-[#92adc9] text-sm font-medium">Acompanhe detalhadamente todas as suas atividades financeiras na plataforma.</p>
+    <div className="flex flex-col gap-6 w-full pb-10">
+      
+      {/* Header Section Compacto */}
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight tracking-tight uppercase">
+            Atividade <span className="text-primary italic">P2P</span>
+          </h1>
+          <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest opacity-80 leading-relaxed">
+            Monitorização de trocas e fluxos de activos.
+          </p>
+        </div>
+        <button className="flex items-center justify-center gap-2 bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 text-slate-900 dark:text-white font-bold uppercase text-[9px] tracking-widest px-6 h-10 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+          <Download className="size-3.5" />
+          <span>Exportar CSV</span>
+        </button>
       </div>
 
-      {/* Filters Bar */}
-      <div className="flex flex-col lg:flex-row gap-4 p-5 bg-white dark:bg-[#192633] rounded-2xl border border-gray-100 dark:border-white/5 items-start lg:items-center justify-between shadow-sm">
-        <div className="relative w-full lg:w-96">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-          <input 
-            className="w-full h-12 rounded-xl bg-gray-50 dark:bg-[#101922] border-none pl-12 pr-4 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 transition-all outline-none" 
-            placeholder="Buscar por ID, moeda ou valor..." 
-          />
-        </div>
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-          {['Todos os Tipos', 'Últimos 30 dias', 'Todas as Moedas'].map((label, idx) => (
-            <div key={idx} className="relative min-w-[140px] flex-1 lg:flex-none">
-              <select className="w-full h-12 rounded-xl bg-gray-50 dark:bg-[#101922] border-none text-sm font-black text-gray-700 dark:text-[#92adc9] px-4 cursor-pointer focus:ring-2 focus:ring-primary/50 outline-none appearance-none">
-                <option>{label}</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_content</span>
+      {/* Main Container */}
+      <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md overflow-hidden">
+        {/* Controls */}
+        <div className="p-4 border-b border-slate-100 dark:border-white/5 flex flex-col xl:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#111922] p-1 rounded-lg w-full xl:w-auto">
+            {['all', 'completed', 'pending', 'cancelled'].map((f) => (
+              <button 
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                className={`flex-1 xl:flex-none px-4 py-1.5 text-[9px] font-bold uppercase rounded-md transition-all ${statusFilter === f ? 'bg-white dark:bg-[#192633] text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                {f === 'all' ? 'Tudo' : f === 'completed' ? 'Sucesso' : f === 'pending' ? 'Espera' : 'Falha'}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-3 w-full xl:w-auto">
+            <div className="relative flex-1 xl:w-64 group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-slate-300 group-focus-within:text-primary transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Pesquisar moeda..."
+                className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg pl-9 pr-4 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Transactions Table */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-[#192633] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-xl"
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+        {/* Desktop View Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 dark:bg-[#1a2632] border-b border-gray-100 dark:border-white/5">
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Transação</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">ID Transação</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Moeda/Par</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Valor</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Status</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Ação</th>
+              <tr className="bg-slate-50/20 dark:bg-[#111922]/20 border-b border-slate-100 dark:border-white/5 opacity-50">
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tipo / Data</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Enviado</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Recebido</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right text-transparent">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-              {transactions?.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-12 text-center text-gray-500 font-bold">Nenhuma transação encontrada.</td>
-                </tr>
-              )}
-              {transactions?.map((tx: Transaction) => {
-                const status = getStatusConfig(tx.status);
-                return (
-                  <tr key={tx.id} className="group hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors cursor-pointer">
-                    <td className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className={`flex items-center justify-center size-10 rounded-xl bg-primary/10 text-primary shadow-sm group-hover:scale-110 transition-transform`}>
-                          <span className="material-symbols-outlined text-[20px]">{getIcon('p2p')}</span>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+              <AnimatePresence mode="popLayout">
+                {filteredTransactions?.map((tx: any) => {
+                   const isSeller = tx.seller.id === user?.id;
+                   return (
+                    <motion.tr 
+                      key={tx.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors cursor-default"
+                    >
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`size-9 rounded-lg flex items-center justify-center shadow-inner ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                            {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase leading-none">{isSeller ? 'Venda P2P' : 'Compra P2P'}</p>
+                            <p className="text-[8px] text-slate-400 font-bold mt-1 uppercase tracking-widest opacity-60">{format(new Date(tx.created_at), "dd MMM, HH:mm", { locale: ptBR })}</p>
+                          </div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="font-black text-sm text-gray-900 dark:text-white leading-tight uppercase tracking-tight">Transação P2P</span>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            {format(new Date(tx.created_at), "dd MMM yyyy, HH:mm", { locale: pt })}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <span className="font-mono text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/50 px-2 py-1 rounded">
-                        #{tx.id.slice(0, 8).toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="p-6 text-gray-900 dark:text-white font-black text-sm uppercase tracking-wider">
-                      {tx.give_currency.code} / {tx.want_currency.code}
-                    </td>
-                    <td className="p-6">
-                      <span className={`text-sm font-black ${tx.status === 'cancelled' ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-white'}`}>
-                        {tx.give_amount.toLocaleString('pt-AO')} {tx.give_currency.code}
-                      </span>
-                    </td>
-                    <td className="p-6">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${status.class} border border-current/20`}>
-                        <span className={`size-1.5 rounded-full ${status.dot}`}></span>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="p-6 text-right">
-                      <button className="text-gray-300 group-hover:text-primary transition-all group-hover:translate-x-1">
-                        <span className="material-symbols-outlined">chevron_right</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="p-4 text-right font-mono">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">{(tx.give_amount).toLocaleString()} <span className="text-[9px] text-slate-300 uppercase ml-1 opacity-50">{tx.give_currency.code}</span></p>
+                      </td>
+                      <td className="p-4 text-right font-mono">
+                        <p className={`text-xs font-bold ${isSeller ? 'text-slate-400 opacity-60' : 'text-emerald-500'}`}>{(tx.want_amount).toLocaleString()} <span className={`text-[9px] uppercase ml-1 opacity-50 ${isSeller ? 'text-slate-300' : 'text-emerald-500/60'}`}>{tx.want_currency.code}</span></p>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-widest ${
+                          tx.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' : 
+                          tx.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : 'bg-rose-500/10 text-rose-500'
+                        }`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-200 hover:text-primary transition-all opacity-0 group-hover:opacity-100">
+                          <ChevronRight className="size-3.5" />
+                        </button>
+                      </td>
+                    </motion.tr>
+                   );
+                })}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */}
-        <div className="p-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Mostrando {transactions?.length || 0} de {transactions?.length || 0} transações
-          </span>
-          <div className="flex gap-2">
-            <button className="px-5 py-2 rounded-xl border border-gray-100 dark:border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-400 opacity-50 cursor-not-allowed">Anterior</button>
-            <button className="px-5 py-3 rounded-xl border border-gray-100 dark:border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm active:scale-95 disabled:opacity-50" disabled>Próximo</button>
-          </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden divide-y divide-slate-50 dark:divide-white/5">
+          {filteredTransactions?.map((tx: any) => {
+             const isSeller = tx.seller.id === user?.id;
+             return (
+               <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors active:scale-[0.98]">
+                <div className="flex items-center gap-3 min-w-0">
+                   <div className={`size-10 rounded-lg flex-shrink-0 flex items-center justify-center shadow-inner ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                      {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                   </div>
+                   <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase truncate">{isSeller ? 'Venda P2P' : 'Compra P2P'}</p>
+                      <p className="text-[8px] text-slate-400 font-bold mt-0.5 uppercase tracking-widest opacity-60">
+                        {format(new Date(tx.created_at), "dd/MM/yyyy HH:mm")}
+                      </p>
+                   </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className={`text-xs font-bold ${isSeller ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {isSeller ? '-' : '+'} {tx.give_amount.toLocaleString()} <span className="text-[8px] opacity-50">{tx.give_currency.code}</span>
+                  </p>
+                  <span className={`text-[7px] font-bold uppercase mt-1 block opacity-60 ${tx.status === 'completed' ? 'text-emerald-500' : 'text-amber-500'}`}>{tx.status}</span>
+                </div>
+              </div>
+             );
+          })}
         </div>
-      </motion.div>
+      </div>
+
+      {/* Summary Banner Compacto */}
+      <div className="p-6 bg-slate-900 dark:bg-black rounded-xl text-white relative overflow-hidden shadow-lg flex flex-col sm:flex-row items-center gap-6">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full opacity-50 pointer-events-none" />
+        <div className="size-12 rounded-xl bg-gradient-to-br from-indigo-900 to-blue-600 flex items-center justify-center shadow-xl flex-shrink-0">
+          <History className="size-6 text-white" />
+        </div>
+        <div className="flex-1 text-center sm:text-left">
+          <h2 className="text-lg font-bold uppercase tracking-tight mb-1">Actividade de Fluxo <span className="text-primary italic">Livre</span></h2>
+          <p className="text-[9px] font-medium text-white/40 leading-relaxed uppercase tracking-widest max-w-lg mx-auto sm:mx-0">Monitorizamos cada transação para garantir que os volumes apresentados coincidem com os activos reais.</p>
+        </div>
+        <button className="w-full sm:w-auto px-6 h-10 bg-white text-slate-900 rounded-lg font-bold uppercase text-[9px] tracking-widest hover:scale-105 transition-all shadow-md">Nova Troca</button>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,20 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { 
+  PlusCircle, 
+  MoreVertical, 
+  ArrowRight, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Wallet,
+  TrendingUp,
+  Repeat,
+  Send,
+  Users,
+  Trophy,
+  Activity
+} from 'lucide-react';
 import { useAuthStore } from '@store/authStore';
 import { APP_ROUTES } from '@constants';
 import { useDashboardStats } from '@services/rates.hooks';
@@ -18,36 +33,35 @@ const DashboardPage: React.FC = () => {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0 },
   };
 
   const quickActions = [
-    { icon: 'currency_exchange', label: 'Converter', path: APP_ROUTES.CONVERSAO },
-    { icon: 'send', label: 'Enviar', path: APP_ROUTES.P2P_BROWSE },
-    { icon: 'call_received', label: 'Receber', path: APP_ROUTES.P2P_BROWSE },
-    { icon: 'groups', label: 'Trocas P2P', path: APP_ROUTES.P2P_BROWSE },
+    { icon: Repeat, label: 'Trocar', path: APP_ROUTES.CONVERSAO, color: 'text-primary' },
+    { icon: Send, label: 'Enviar', path: APP_ROUTES.P2P_BROWSE, color: 'text-indigo-500' },
+    { icon: Users, label: 'P2P', path: APP_ROUTES.P2P_BROWSE, color: 'text-emerald-500' },
+    { icon: Wallet, label: 'Carteira', path: '/wallets', color: 'text-amber-500' },
   ];
 
   if (statsLoading || txLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark min-h-screen">
+      <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark min-h-[60vh]">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
+          className="size-10 border-4 border-primary border-t-transparent rounded-full" 
         />
       </div>
     );
   }
 
-  // Format balances based on stats
   const balances = stats?.rates.map(r => ({
     label: r.to_currency.name,
     value: `${r.rate.toLocaleString('pt-AO')} ${r.to_currency.code}`,
@@ -59,170 +73,177 @@ const DashboardPage: React.FC = () => {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex-1 flex flex-col gap-8 mt-8 px-4 md:px-8 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10"
+      className="flex flex-col gap-6 w-full pb-10"
     >
+      {/* Welcome Section */}
       <div className="flex flex-wrap justify-between items-center gap-4">
         <div className="flex flex-col">
-          <h1 className="text-black dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
-            Dashboard de Controlo
+          <h1 className="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight tracking-tight uppercase">
+            Dashboard
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Bem-vindo de volta, {user?.full_name}!</p>
+          <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest">
+            {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="size-8 rounded-full border-2 border-white dark:border-background-dark bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                <img src={`https://i.pravatar.cc/150?u=${i}`} alt="Avatar" className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-          <span className="text-xs font-bold text-gray-500 dark:text-gray-400">+{stats?.active_offers || 0} ativos hoje</span>
+        
+        <div className="flex items-center gap-2 bg-white dark:bg-[#192633] p-1.5 rounded-xl border border-slate-200/50 dark:border-white/5 shadow-sm">
+           <div className="flex -space-x-2.5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="size-7 rounded-full border-2 border-white dark:border-[#101922] bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <img src={`https://i.pravatar.cc/150?u=user${i}`} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
+              ))}
+           </div>
+           <div className="flex flex-col px-1.5">
+              <span className="text-[8px] font-black text-emerald-500 uppercase leading-none">{stats?.active_offers || 0} Ativas</span>
+           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 flex flex-col gap-8">
-          {/* Main Balance Card */}
-          <motion.div variants={itemVariants} className="group relative overflow-hidden flex flex-col items-stretch justify-start rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-gray-100 dark:border-white/5 transition-all hover:shadow-2xl">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full -mr-10 -mt-10 blur-2xl group-hover:bg-primary/20 transition-colors" />
-            <div className="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-2 p-8 relative z-10">
-              <p className="text-gray-500 dark:text-[#92adc9] text-sm font-semibold uppercase tracking-wider">Saldo Total Consolidado</p>
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                  <p className="text-black dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.015em]">
-                    {(stats?.total_balance_aoa || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })} <span className="text-primary">AOA</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Main Column */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          <motion.div variants={itemVariants} className="group relative overflow-hidden flex flex-col items-stretch justify-start rounded-xl shadow-lg bg-primary border border-primary/20">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-bl-[6rem] -mr-12 -mt-12 blur-xl" />
+            <div className="flex w-full grow flex-col items-stretch justify-center gap-4 p-6 relative z-10 text-white">
+              <div className="flex items-center gap-2 opacity-80">
+                <Wallet className="size-3.5" />
+                <p className="text-[9px] font-bold uppercase tracking-widest">Saldo Total Consolidado</p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-2xl sm:text-3xl font-bold leading-tight tracking-tight">
+                    {(stats?.total_balance_aoa || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })} <span className="text-sm opacity-70">AOA</span>
                   </p>
-                  <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-1">
+                  <div className="flex items-center gap-2 text-white/60 font-bold uppercase tracking-widest text-[8px]">
+                    <TrendingUp className="size-3" />
                     ≈ {(stats?.total_balance_usd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                  </p>
+                  </div>
                 </div>
                 <button 
                   onClick={() => navigate(APP_ROUTES.P2P_BROWSE)}
-                  className="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-6 bg-white text-primary text-[10px] font-bold rounded-lg shadow-md hover:bg-slate-50 transition-all uppercase tracking-widest"
                 >
-                  <span className="material-symbols-outlined mr-2">add_circle</span>
-                  <span className="truncate">Adicionar Fundos</span>
+                  <PlusCircle className="size-3.5" />
+                  <span>Adicionar Fundos</span>
                 </button>
               </div>
             </div>
           </motion.div>
 
-          {/* Wallets List */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Asset Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {balances.map((balance, idx) => (
               <motion.div 
                 key={idx}
                 variants={itemVariants}
-                whileHover={{ y: -5 }}
-                className="flex flex-col gap-4 p-5 rounded-2xl bg-white dark:bg-[#192633] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                className="flex flex-col gap-4 p-5 rounded-xl bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group"
               >
                 <div className="flex items-center justify-between">
-                  <div className="size-10 rounded-full border-2 border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner flex items-center justify-center bg-background-light dark:bg-background-dark">
-                    {balance.flag.startsWith('http') ? (
-                       <img src={balance.flag} alt={balance.label} className="w-full h-full object-cover" />
-                    ) : (
-                       <span className="text-xl">{balance.flag}</span>
-                    )}
+                  <div className="size-9 rounded-lg bg-slate-50 dark:bg-[#111922] flex items-center justify-center text-lg">
+                    {balance.flag}
                   </div>
-                  <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">more_vert</span>
                 </div>
-                <div>
-                  <p className="text-black dark:text-white text-lg font-black leading-tight">{balance.value.split(' ')[0]} <span className="text-primary text-sm font-bold">{balance.value.split(' ')[1]}</span></p>
-                  <p className="text-gray-500 dark:text-[#92adc9] text-xs font-semibold uppercase">{balance.label}</p>
+                <div className="space-y-0.5">
+                  <p className="text-slate-900 dark:text-white text-base font-bold tracking-tight">
+                    {balance.value}
+                  </p>
+                  <p className="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-widest">{balance.label}</p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
 
-        <div className="lg:col-span-1 flex flex-col gap-4">
-          {/* Quick Actions Panel */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-[#192633] rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
-            <h2 className="text-black dark:text-white text-xl font-black leading-tight tracking-[-0.015em] mb-6">Ações Rápidas</h2>
-            <div className="grid grid-cols-2 gap-4">
+        {/* Sidebar Column */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          
+          {/* Action List */}
+          <motion.div variants={itemVariants} className="bg-white dark:bg-[#192633] rounded-xl p-6 border border-slate-100 dark:border-white/5 shadow-sm">
+            <h2 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-5">Operações</h2>
+            <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action, idx) => (
                 <button 
                   key={idx}
                   onClick={() => navigate(action.path)}
-                  className="group flex flex-col items-center justify-center gap-3 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-2xl hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all active:scale-95"
+                  className="group flex flex-col items-center justify-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-transparent hover:border-primary/10 transition-all active:scale-95"
                 >
-                  <div className="size-12 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                    <span className="material-symbols-outlined text-[24px]">{action.icon}</span>
+                  <div className={`p-2 rounded-lg bg-white dark:bg-[#111922] shadow-sm ${action.color}`}>
+                    <action.icon className="size-4" />
                   </div>
-                  <span className="text-black dark:text-white text-xs font-bold uppercase tracking-wider">{action.label}</span>
+                  <span className="text-slate-900 dark:text-white text-[9px] font-bold uppercase tracking-widest">{action.label}</span>
                 </button>
               ))}
             </div>
           </motion.div>
 
-          {/* Promotional Card */}
+          {/* Social Proof/Status */}
           <motion.div 
             variants={itemVariants}
-            className="rounded-2xl bg-gradient-to-br from-primary to-blue-700 p-6 text-white overflow-hidden relative"
+            className="rounded-xl bg-slate-900 dark:bg-white/5 p-6 text-white overflow-hidden relative shadow-md"
           >
-            <div className="absolute -bottom-4 -right-4 size-24 bg-white/10 rounded-full blur-2xl" />
-            <h3 className="text-lg font-black pr-10">Convide seus amigos e ganhe bônus!</h3>
-            <p className="text-xs text-white/80 mt-2">Ganhe até 5% em taxas por cada amigo indicado.</p>
-            <button className="mt-4 px-4 py-2 bg-white text-primary text-xs font-black rounded-lg hover:bg-white/90 transition-all active:scale-95">Indicar Agora</button>
+            <Trophy className="absolute -bottom-4 -right-4 size-24 text-white/5 rotate-12" />
+            <h3 className="text-sm font-bold uppercase tracking-tight relative z-10">Convide Amigos</h3>
+            <p className="text-[9px] text-white/50 mt-2 font-medium relative z-10">Bónus de indicação disponível.</p>
+            <button className="mt-5 w-full py-2.5 bg-primary text-white text-[9px] font-bold rounded-lg uppercase tracking-widest relative z-10">
+              Gerar Link
+            </button>
           </motion.div>
         </div>
       </div>
 
-      {/* Recent Transactions Table */}
-      <motion.div variants={itemVariants} className="bg-white dark:bg-[#192633] rounded-2xl p-6 md:p-8 border border-gray-100 dark:border-white/5 shadow-sm">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-black dark:text-white text-2xl font-black leading-tight tracking-[-0.015em]">Atividade Recente</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Suas últimas transações na plataforma</p>
+      {/* Recent Activity */}
+      <motion.div variants={itemVariants} className="bg-white dark:bg-[#192633] rounded-xl p-6 border border-slate-100 dark:border-white/5 shadow-sm">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3">
+             <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <Activity className="size-4" />
+             </div>
+             <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">Atividade Recente</h2>
           </div>
           <button 
             onClick={() => navigate(APP_ROUTES.HISTORICO)}
-            className="flex items-center gap-2 text-primary font-bold hover:underline transition-all"
+            className="text-primary font-bold uppercase text-[9px] tracking-widest hover:underline"
           >
-            <span>Ver Tudo</span>
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            Ver Tudo
           </button>
         </div>
-        <div className="overflow-x-auto -mx-6 md:mx-0">
-          <table className="w-full text-left border-collapse min-w-[600px]">
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[500px]">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-white/5">
-                <th className="p-4 text-xs font-black text-gray-400 uppercase tracking-widest">Tipo</th>
-                <th className="p-4 text-xs font-black text-gray-400 uppercase tracking-widest">Valor</th>
-                <th className="p-4 text-xs font-black text-gray-400 uppercase tracking-widest">Data</th>
-                <th className="p-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Estado</th>
+              <tr className="border-b border-slate-50 dark:border-white/5 opacity-50">
+                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tipo</th>
+                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Valor</th>
+                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">Data</th>
+                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Estado</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/5">
               {(recentTransactions || []).slice(0, 5).map((tx, idx) => {
                 const isSeller = tx.seller.id === user?.id;
                 return (
-                  <tr key={idx} className="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-b border-gray-50 dark:border-white/5 last:border-0">
-                    <td className="p-4">
-                      <div className="flex items-center gap-4">
-                        <div className={`size-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${isSeller ? 'text-rose-500' : 'text-emerald-500'} group-hover:scale-110 transition-transform shadow-sm`}>
-                          <span className="material-symbols-outlined text-[20px]">
-                            {isSeller ? 'arrow_upward' : 'arrow_downward'}
-                          </span>
+                  <tr key={idx} className="group transition-colors">
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`size-8 rounded-lg flex items-center justify-center ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                          {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
                         </div>
-                        <span className="text-sm font-bold text-gray-900 dark:text-white">
-                          {isSeller ? 'Venda P2P' : 'Compra P2P'}
-                        </span>
+                        <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{isSeller ? 'Venda' : 'Compra'}</span>
                       </div>
                     </td>
-                    <td className="p-4 text-sm font-black text-gray-900 dark:text-white">
-                      {isSeller ? '-' : '+'} {tx.give_amount.toLocaleString('pt-AO')} {tx.give_currency.code}
+                    <td className="py-4">
+                      <span className={`text-[11px] font-bold ${tx.status === 'completed' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
+                        {tx.give_amount.toLocaleString()} {tx.give_currency.code}
+                      </span>
                     </td>
-                    <td className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">
-                      {format(new Date(tx.created_at), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                    <td className="py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">
+                      {format(new Date(tx.created_at), "dd MMM HH:mm")}
                     </td>
-                    <td className="p-4 text-right">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
-                        tx.status === 'completed' 
-                          ? 'bg-emerald-500/10 text-emerald-500' 
-                          : tx.status === 'pending'
-                          ? 'bg-yellow-500/10 text-yellow-500'
-                          : 'bg-rose-500/10 text-rose-500'
+                    <td className="py-4 text-right">
+                      <span className={`text-[8px] font-bold tracking-widest uppercase ${
+                        tx.status === 'completed' ? 'text-emerald-500' : tx.status === 'pending' ? 'text-amber-500' : 'text-rose-500'
                       }`}>
                         {tx.status}
                       </span>
@@ -235,6 +256,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </motion.div>
     </motion.div>
+
   );
 };
 

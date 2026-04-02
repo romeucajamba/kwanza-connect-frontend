@@ -11,11 +11,14 @@ export const authService = {
   },
 
   register: async (data: RegisterFormData): Promise<AuthResponse> => {
-    // API expects full_name
+    // API expects full_name and password_confirm
     const payload = {
       full_name: data.fullName.trim(),
       email: data.email,
       password: data.password,
+      password_confirm: data.confirmPassword,
+      phone: '', // Optional but included in serializer
+      country_code: 'AO' // Default
     };
     const response = await api.post(API_ROUTES.AUTH.REGISTER, payload);
     return response.data.data;

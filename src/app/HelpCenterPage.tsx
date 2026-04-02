@@ -1,130 +1,135 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { 
+  Search, 
+  HelpCircle, 
+  ChevronRight, 
+  ShieldCheck, 
+  Zap, 
+  LifeBuoy, 
+  Phone, 
+  Mail, 
+  ExternalLink,
+  MessageSquare,
+  FileText
+} from 'lucide-react';
 
 const HelpCenterPage: React.FC = () => {
-  const categories = [
-    { icon: 'verified_user', title: 'Segurança e KYC', desc: 'Proteja sua conta e valide seus dados para operar com limites maiores.' },
-    { icon: 'handshake', title: 'Negociar P2P', desc: 'Passo a passo detalhado para comprar e vender moedas com segurança.' },
-    { icon: 'account_balance', title: 'Pagamentos', desc: 'Prazos, taxas e métodos de envio via IBAN e bancos locais angolanos.' },
-    { icon: 'gavel', title: 'Disputas', desc: 'Como funciona a mediação imparcial em caso de divergências na troca.' },
-  ];
+  const [search, setSearch] = useState('');
 
   const faqs = [
-    { q: 'Como funciona o sistema de custódia (Escrow)?', a: 'O sistema de Escrow bloqueia temporariamente os ativos do vendedor assim que uma ordem é aberta. Os fundos só são liberados para o comprador após o vendedor confirmar o recebimento do pagamento em sua conta bancária. Isso garante 100% de segurança para ambas as partes.' },
-    { q: 'Quais bancos angolanos são aceitos?', a: 'Aceitamos transferências de todos os principais bancos em Angola, incluindo BAI, BFA, BIC, BCI e Standard Bank. As transações devem ser feitas via IBAN para facilitar a confirmação dos comprovativos.' },
-    { q: 'Por que minha verificação de identidade (KYC) está pendente?', a: 'As verificações levam normalmente entre 15 minutos a 2 horas durante o horário comercial. Certifique-se de que as fotos do seu documento (BI ou Passaporte) estão legíveis e que a selfie corresponde ao documento enviado.' },
-    { q: 'O que fazer se o vendedor não liberar os ativos?', a: 'Se você realizou o pagamento e enviou o comprovativo, aguarde 15 minutos. Se não houver resposta, clique no botão "Abrir Disputa". Nossa equipe de suporte entrará em contato em menos de 10 minutos para mediar o caso.' },
+    { q: 'Como funciona o Escrow P2P?', a: 'O KwanzaConnect bloqueia os ativos do vendedor assim que houver interesse. O ativo só é libertado quando o comprador confirmar o envio do comprovativo e o vendedor validar o recebimento.' },
+    { q: 'Quais as taxas de carregamento?', a: 'O carregamento de saldo via Multicaixa é gratuito. As taxas aplicam-se apenas no momento da negociação P2P, sendo uma das mais baixas do mercado angolano.' },
+    { q: 'É seguro enviar BI pela plataforma?', a: 'Sim. Utilizamos encriptação de ponta-a-ponta e seguimos os padrões RGPD para garantir que seus dados sensíveis nunca sejam expostos.' },
   ];
 
   return (
-    <div className="flex-1 flex flex-col gap-8 py-8 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display">
-      <div className="flex flex-wrap gap-2 py-4">
-        <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Home</span>
-        <span className="text-gray-300 text-xs font-bold">/</span>
-        <span className="text-primary text-xs font-black uppercase tracking-widest">Central de Ajuda</span>
-      </div>
-
-      {/* Hero Section */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary to-blue-800 p-12 md:p-20 text-center text-white shadow-2xl"
-      >
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        <div className="relative z-10 flex flex-col items-center gap-8 max-w-3xl mx-auto">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tighter">Como podemos ajudar?</h1>
-            <p className="text-white/80 text-base md:text-xl font-medium">Encontre respostas rápidas sobre segurança e negociação em Kwanza (AOA).</p>
-          </div>
-          <div className="w-full max-w-xl relative group">
-            <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-2xl group-focus-within:text-primary transition-colors">search</span>
+    <div className="flex flex-col gap-6 w-full pb-10">
+      
+      {/* Search Header Compacto */}
+      <div className="bg-slate-900 rounded-xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg flex flex-col items-center text-center gap-4">
+         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full opacity-50 pointer-events-none" />
+         <div className="relative z-10 space-y-1">
+            <h1 className="text-xl md:text-2xl font-bold uppercase tracking-tight leading-none">Centro de <span className="text-primary italic">Suporte</span></h1>
+            <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest max-w-xs mx-auto">Como podemos ajudar-te a transacionar hoje?</p>
+         </div>
+         <div className="relative w-full max-w-lg group z-10">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/30 group-focus-within:text-primary transition-colors" />
             <input 
-              className="w-full h-16 md:h-20 pl-16 pr-32 rounded-2xl bg-white text-gray-900 placeholder:text-gray-400 font-bold text-lg border-none shadow-xl focus:ring-4 focus:ring-white/20 transition-all outline-none"
-              placeholder="Pesquise sua dúvida..."
+              type="text" 
+              placeholder="Digite sua dúvida ou problema..."
+              className="w-full bg-white/5 border border-white/10 rounded-lg pl-12 pr-4 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-white/20 text-white"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="absolute right-3 top-3 bottom-3 px-6 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-primary/20">
-              Buscar
-            </button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Categories */}
-      <div className="space-y-8 mt-8">
-        <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight">Categorias Principais</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <motion.div 
-              key={idx}
-              whileHover={{ y: -8 }}
-              className="flex flex-col gap-6 p-8 bg-white dark:bg-[#192633] rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all group cursor-pointer"
-            >
-              <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-                <span className="material-symbols-outlined text-3xl font-bold">{cat.icon}</span>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">{cat.title}</h3>
-                <p className="text-xs font-bold text-gray-400 leading-relaxed uppercase tracking-widest opacity-80">{cat.desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+         </div>
+         <div className="flex flex-wrap justify-center gap-4 relative z-10 opacity-60">
+            <div className="flex items-center gap-2">
+               <ShieldCheck className="size-3.5 text-primary" />
+               <span className="text-[8px] font-bold uppercase tracking-widest text-white/60">Garantia Kwanza</span>
+            </div>
+            <div className="flex items-center gap-2">
+               <Zap className="size-3.5 text-primary" />
+               <span className="text-[8px] font-bold uppercase tracking-widest text-white/60">24/7 Suporte Directo</span>
+            </div>
+         </div>
       </div>
 
-      {/* FAQ Accordion */}
-      <div className="max-w-4xl mx-auto w-full space-y-10 mt-16">
-        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight text-center">Dúvidas Frequentes (FAQ)</h2>
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => (
-            <motion.details 
-              key={idx}
-              className="group bg-white dark:bg-[#192633] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-md transition-all"
-            >
-              <summary className="flex items-center justify-between p-6 cursor-pointer list-none appearance-none outline-none">
-                <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">{faq.q}</span>
-                <span className="material-symbols-outlined text-primary group-open:rotate-180 transition-transform duration-300">expand_more</span>
-              </summary>
-              <div className="px-6 pb-6 pt-2 text-sm font-medium text-gray-500 dark:text-[#92adc9] leading-relaxed border-t border-gray-50 dark:border-white/5">
-                {faq.a}
-              </div>
-            </motion.details>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+         
+         <div className="lg:col-span-8 flex flex-col gap-6">
+            {/* Quick Categories */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               {[
+                 { icon: LifeBuoy, label: 'Primeiro Passo', desc: 'Guia de início.' },
+                 { icon: ShieldCheck, label: 'Segurança', desc: 'Sua conta PRO.' },
+                 { icon: FileText, label: 'Documentação', desc: 'Termos e API.' },
+               ].map((cat, i) => (
+                  <button key={i} className="bg-white dark:bg-[#192633] p-4 rounded-lg border border-slate-100 dark:border-white/5 shadow-sm text-center hover:shadow-md hover:translate-y-[-2px] transition-all group flex flex-col items-center gap-2">
+                     <div className="size-8 rounded-lg bg-slate-50 dark:bg-[#111922] shadow-inner flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <cat.icon className="size-4" />
+                     </div>
+                     <h4 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{cat.label}</h4>
+                     <p className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">{cat.desc}</p>
+                  </button>
+               ))}
+            </div>
+
+            {/* FAQs */}
+            <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md p-5 md:p-6 flex flex-col gap-6">
+               <div className="flex items-center gap-3">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shadow-lg">
+                     <HelpCircle className="size-4.5" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Dúvidas Frequentes</h3>
+               </div>
+               <div className="space-y-3">
+                  {faqs.map((faq, i) => (
+                     <div key={i} className="p-4 bg-slate-50 dark:bg-[#111922] rounded-lg border border-transparent hover:border-primary/5 transition-all group cursor-default">
+                        <div className="flex justify-between items-center mb-2">
+                           <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{faq.q}</p>
+                           <ChevronRight className="size-3.5 text-slate-300 group-hover:text-primary transition-transform group-hover:rotate-90" />
+                        </div>
+                        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-tight opacity-70">{faq.a}</p>
+                     </div>
+                  ))}
+               </div>
+               <button className="w-full h-11 border-2 border-slate-50 dark:border-white/5 rounded-lg font-bold uppercase text-[9px] tracking-widest text-slate-400 hover:text-primary transition-all">Ver Toda Documentação</button>
+            </div>
+         </div>
+
+         {/* Sidebar Connect */}
+         <aside className="lg:col-span-4 flex flex-col gap-6">
+            <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md p-6 flex flex-col gap-6">
+               <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Canais Directos</h3>
+               <div className="space-y-4">
+                  {[
+                    { icon: MessageSquare, label: 'Chat Online 24/7', desc: 'Até 5m' },
+                    { icon: Mail, label: 'Suporte Email', desc: 'Até 24h' },
+                    { icon: Phone, label: 'Linha Telefónica', desc: 'Exclusivo VIP' }
+                  ].map((chan, i) => (
+                     <button key={i} className="w-full flex items-center gap-3 group p-1 transition-all">
+                        <div className="size-9 rounded-lg bg-slate-50 dark:bg-[#111922] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                           <chan.icon className="size-4 text-primary" />
+                        </div>
+                        <div className="text-left flex-1 min-w-0">
+                           <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tight truncate">{chan.label}</p>
+                           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-60">Espera: {chan.desc}</p>
+                        </div>
+                        <ChevronRight className="size-3 text-slate-200 group-hover:translate-x-1 transition-transform" />
+                     </button>
+                  ))}
+               </div>
+            </div>
+
+            <div className="p-6 bg-primary/5 rounded-xl border border-primary/5 text-center flex flex-col items-center gap-4">
+               <div className="size-11 rounded-lg bg-white dark:bg-[#111922] shadow-md flex items-center justify-center text-primary">
+                  <ExternalLink className="size-5" />
+               </div>
+               <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-widest shadow-sm opacity-80">Siga nossas actualizações técnicas no canal de status.</p>
+               <button className="w-full py-3 bg-primary text-white rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-transform">Aceder Status</button>
+            </div>
+         </aside>
       </div>
-
-      {/* Support CTA */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-primary/5 dark:bg-primary/10 rounded-[3rem] p-12 md:p-20 text-center border-2 border-primary/10 mt-20 relative overflow-hidden"
-      >
-        <div className="absolute -top-10 -left-10 size-40 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -right-10 size-40 bg-primary/10 rounded-full blur-3xl" />
-        
-        <div className="relative z-10 max-w-2xl mx-auto space-y-10">
-          <div className="space-y-4">
-            <h3 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter">Ainda precisa de ajuda?</h3>
-            <p className="text-gray-500 dark:text-[#92adc9] text-base font-bold uppercase tracking-widest leading-loose">Nossa equipe de suporte técnico está disponível 24/7 para ajudar você.</p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button className="flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-primary/30 active:scale-95 group">
-              <span className="material-symbols-outlined group-hover:animate-bounce">chat</span>
-               Chat ao Vivo
-            </button>
-            <button className="flex items-center gap-3 px-10 py-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-white/5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm active:scale-95">
-              <span className="material-symbols-outlined">mail</span>
-               Enviar E-mail
-            </button>
-          </div>
-        </div>
-      </motion.div>
-
-      <footer className="mt-20 py-10 border-t border-gray-100 dark:border-white/5 text-center">
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-          © 2024 KwanzaConnect Support. Segurança e Transparência em Angola.
-        </p>
-      </footer>
     </div>
   );
 };

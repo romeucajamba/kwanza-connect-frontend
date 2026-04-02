@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -12,60 +11,49 @@
     --background-dark: #101922;
     --brand-primary: #0A2A5B;
     --brand-secondary: #17A2B8;
-    --brand-success: #28A745;
-    --brand-danger: #DC3545;
-    --brand-light: #F5F7FA;
-    --accent: #00d4aa;
+    --brand-success: #10b981;
+    --brand-danger: #ef4444;
   }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-  body { font-family: 'Manrope', sans-serif; min-height: 100dvh; }
+  
+  html { 
+    scroll-behavior: smooth; 
+    -webkit-font-smoothing: antialiased; 
+  }
+  
+  body { 
+    font-family: 'Manrope', sans-serif; 
+    min-height: 100dvh; 
+    @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-200;
+  }
 }
 
 @layer components {
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    font-family: 'Material Symbols Outlined';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-smoothing: antialiased;
+  /* Material Symbols removed */
+
+  .form-input {
+    @apply flex w-full min-w-0 flex-1 rounded-xl text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/40 border border-slate-200 dark:border-white/10 bg-white dark:bg-[#192633] focus:border-primary h-11 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-sm font-medium transition-all;
   }
-  .glass {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-  }
-  .dark .glass {
-    background: rgba(22,27,34,0.7);
-    border: 1px solid rgba(48,54,61,0.6);
-  }
-  .input-field {
-    @apply w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-3 text-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary;
-  }
+
   .btn-primary {
-    @apply flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow-md active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply flex items-center justify-center rounded-xl bg-primary h-11 px-6 text-sm font-bold text-white transition-all hover:bg-primary/95 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-md shadow-primary/20;
   }
-  .btn-ghost {
-    @apply flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-[0.98];
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
   }
-  .card {
-    @apply rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#161b22] shadow-sm;
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(107, 114, 128, 0.15);
+    border-radius: 99px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.3);
   }
 }
 
-.toggle-checkbox:checked { right: 0; border-color: #1173d4; }
-.toggle-checkbox:checked + .toggle-label { background-color: #1173d4; }
-.toggle-checkbox { right: 20px; transition: right 0.2s ease-in-out; }
+.dark {
+  color-scheme: dark;
+}
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(107,114,128,0.3); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(107,114,128,0.5); }

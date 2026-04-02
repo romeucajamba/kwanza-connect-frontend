@@ -1,119 +1,197 @@
-import React from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { Outlet, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Bell, 
+  Sun, 
+  Moon, 
+  User, 
+  Settings, 
+  LogOut, 
+  CheckCircle2, 
+  MessageCircle, 
+  LayoutDashboard, 
+  Users, 
+  Repeat,
+  RefreshCcw,
+  Plus
+} from 'lucide-react';
 import { useAuthStore, useSettingsStore } from '@store/authStore';
 import { useLogout } from '@services/auth.hooks';
-import { APP_ROUTES } from '@constants';
+import Sidebar from './Sidebar';
+
+const NotificationsDropdown: React.FC = () => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.98 }}
+      className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-[#192633] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden z-[70]"
+    >
+      <div className="p-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+        <h3 className="text-xs font-black uppercase tracking-tight">Notificações</h3>
+        <span className="text-[10px] font-black text-primary uppercase cursor-pointer hover:underline">Limpar</span>
+      </div>
+      <div className="max-h-[60vh] overflow-y-auto p-2 scrollbar-hide">
+        {[1, 2].map((i) => (
+          <div key={i} className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer group">
+            <div className={`size-8 rounded-full ${i === 1 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'} flex items-center justify-center flex-shrink-0`}>
+               {i === 1 ? <CheckCircle2 className="size-4" /> : <MessageCircle className="size-4" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+                {i === 1 ? 'Transferência Concluída' : 'Nova Mensagem de P2P'}
+              </p>
+              <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                {i === 1 ? 'Seus 500.000 AOA foram creditados com sucesso.' : 'João enviou uma mensagem sobre sua oferta de USD.'}
+              </p>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase mt-2 block font-black tracking-widest">{i === 1 ? 'Há 2m' : 'Há 15m'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="p-3 bg-slate-50 dark:bg-[#111922] text-center border-t border-slate-100 dark:border-white/5">
+        <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Ver todas</button>
+      </div>
+    </motion.div>
+  );
+};
 
 const AppLayout: React.FC = () => {
   const user = useAuthStore((s) => s.user);
-  const { mutate: logout } = useLogout();
   const { theme, toggleTheme } = useSettingsStore();
-
-  const navItems = [
-    { to: APP_ROUTES.DASHBOARD, label: 'Dashboard' },
-    { to: APP_ROUTES.CAMBIO_MERCADO, label: 'Câmbio' },
-    { to: APP_ROUTES.P2P_BROWSE, label: 'P2P' },
-    { to: APP_ROUTES.CONVERSAO, label: 'Simulador' },
-    { to: APP_ROUTES.MENSAGENS, label: 'Chat' },
-    { to: APP_ROUTES.HISTORICO, label: 'Atividade' },
-    { to: APP_ROUTES.AJUDA, label: 'Suporte' },
-  ];
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { mutate: logout } = useLogout();
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark font-display transition-colors duration-300">
-      {/* Header / Top Bar */}
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200/50 dark:border-white/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-3 md:px-8 lg:px-20">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between">
-          <Link to={APP_ROUTES.DASHBOARD} className="flex items-center gap-3 text-black dark:text-white group">
-            <div className="size-8 text-primary group-hover:scale-110 transition-transform">
-              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
-              </svg>
+    <div className="flex min-h-screen bg-background-light dark:bg-background-dark font-display transition-colors duration-300 overflow-x-hidden selection:bg-primary selection:text-white pb-safe-bottom">
+      <Sidebar />
+
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        <header className="sticky top-0 z-[55] h-14 w-full border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#101922]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-center">
+          
+          <div className="w-full max-w-6xl flex items-center justify-between">
+            <div className="flex items-center gap-3 lg:hidden">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="size-7 bg-primary rounded-lg flex items-center justify-center text-white">
+                  <RefreshCcw className="size-4" />
+                </div>
+                <h1 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">KwanzaConnect</h1>
+              </Link>
             </div>
-            <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Plataforma Digital</h2>
-          </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex flex-1 justify-center items-center gap-8">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `text-sm font-medium transition-all duration-200 hover:text-primary ${
-                    isActive ? 'text-primary font-bold' : 'text-gray-600 dark:text-gray-300'
-                  }`
-                }
+            <div className="hidden lg:block">
+              <h2 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Plataforma Digital de Verificação</h2>
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-5">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center justify-center rounded-lg h-8 w-8 text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
               >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+                {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              </button>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              className="flex items-center justify-center rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
-              title="Alternar tema"
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {theme === 'dark' ? 'light_mode' : 'dark_mode'}
-              </span>
-            </button>
-            
-            <button className="hidden sm:flex items-center justify-center rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95">
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-            </button>
+              <div className="relative">
+                <button 
+                  onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
+                  className={`flex items-center justify-center rounded-lg h-8 w-8 text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 transition-all ${showNotifications ? 'text-primary' : ''}`}
+                >
+                  <div className="relative">
+                    <Bell className="size-4" />
+                    <span className="absolute -top-0.5 -right-0.5 size-1.5 bg-rose-500 rounded-full border-2 border-white dark:border-[#101922]"></span>
+                  </div>
+                </button>
+                <AnimatePresence>
+                  {showNotifications && <NotificationsDropdown />}
+                </AnimatePresence>
+              </div>
 
-            <div className="h-8 w-[1px] bg-gray-200 dark:bg-white/10 mx-1 hidden sm:block" />
+              <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
 
-            <div className="flex items-center gap-3 pl-1 group cursor-pointer" onClick={() => logout()}>
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary transition-all shadow-sm"
-                style={{ backgroundImage: `url(${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.id})` }}
-              />
-              <div className="hidden md:flex flex-col">
-                <span className="text-sm font-bold dark:text-white leading-none">{user?.full_name || 'Usuário'}</span>
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Sair</span>
+              <div className="relative">
+                <div 
+                  className="flex items-center gap-3 cursor-pointer group"
+                  onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
+                >
+                  <div className="hidden sm:flex flex-col items-end">
+                    <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">{user?.full_name?.split(' ')[0]}</span>
+                    <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
+                  </div>
+                  <div 
+                    className="size-8 rounded-lg bg-center bg-cover border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]"
+                    style={{ backgroundImage: `url(${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.id})` }}
+                  />
+                </div>
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                      className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#192633] rounded-xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden z-[70]"
+                    >
+                      <div className="p-3 border-b border-slate-100 dark:border-white/5 bg-slate-50/30 dark:bg-[#111922]/30">
+                          <p className="text-[10px] font-black text-slate-900 dark:text-white uppercase truncate">{user?.full_name}</p>
+                      </div>
+                      <div className="p-1.5 space-y-0.5">
+                         <Link to="/perfil" className="flex items-center gap-2.5 p-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+                            <User className="size-4 text-primary" />
+                            Meu Perfil
+                         </Link>
+                         <Link to="/settings" className="flex items-center gap-2.5 p-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+                            <Settings className="size-4" />
+                            Configurações
+                         </Link>
+                         <hr className="my-1 border-slate-100 dark:border-white/5 mx-2" />
+                         <button 
+                           onClick={() => logout()}
+                           className="flex w-full items-center gap-2.5 p-2 text-xs font-bold text-rose-500 hover:bg-rose-500/5 rounded-lg transition-colors"
+                         >
+                            <LogOut className="size-4" />
+                            Sair
+                         </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        <Outlet />
-      </main>
+        <main className="flex-1 flex flex-col items-center overflow-x-hidden">
+          <div className="w-full max-w-6xl p-4 md:p-6 lg:p-8">
+             <Outlet />
+          </div>
+        </main>
+      </div>
 
-      {/* Mobile Bottom Nav */}
       <motion.nav
-        initial={{ y: 100 }}
+        initial={{ y: 200 }}
         animate={{ y: 0 }}
-        className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl px-6 py-3"
+        className="lg:hidden fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] sm:w-[85%] bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/50 dark:border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] px-6 py-4 sm:py-5 flex items-center justify-between pointer-events-auto"
       >
-        <div className="flex items-center justify-between">
-          {navItems.slice(0, 5).map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 transition-all duration-200 ${
-                  isActive ? 'text-primary scale-110' : 'text-gray-500 dark:text-gray-400'
-                }`
-              }
-            >
-              <span className="material-symbols-outlined">
-                {item.label === 'Dashboard' ? 'dashboard' : 
-                 item.label === 'Câmbio' ? 'currency_exchange' :
-                 item.label === 'P2P' ? 'handshake' :
-                 item.label === 'Simulador' ? 'monitoring' : 'chat'}
-              </span>
-            </NavLink>
-          ))}
-        </div>
+        <Link to="/" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90">
+          <LayoutDashboard className="size-6 sm:size-7" />
+        </Link>
+        <Link to="/p2p/browse" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90">
+          <Users className="size-6 sm:size-7" />
+        </Link>
+        <Link to="/conversao" className="size-14 sm:size-16 bg-primary rounded-2xl flex items-center justify-center text-white -mt-12 sm:-mt-14 shadow-2xl shadow-primary/40 active:scale-90 ring-4 ring-white dark:ring-background-dark transition-all">
+          <Plus className="size-8 sm:size-9" />
+        </Link>
+        <Link to="/mensagens" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90 relative">
+          <MessageCircle className="size-6 sm:size-7" />
+          <span className="absolute -top-1 -right-1 size-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+        </Link>
+        <Link to="/perfil" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90 text-sm">
+          <User className="size-6 sm:size-7" />
+        </Link>
       </motion.nav>
+      
+      <div className="h-28 lg:hidden flex-shrink-0" />
     </div>
   );
 };
