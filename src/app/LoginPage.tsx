@@ -317,8 +317,15 @@ const LoginPage: React.FC = () => {
                           )}
                         </AnimatePresence>
 
+                        {/* Step Indicator */}
+                        <div className="flex items-center gap-2 mb-4 ml-1">
+                          <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${signUpStep >= 1 ? 'bg-primary' : 'bg-slate-100 dark:bg-white/5'}`} />
+                          <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${signUpStep >= 2 ? 'bg-primary' : 'bg-slate-100 dark:bg-white/5'}`} />
+                          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest ml-2">Passo {signUpStep}/2</span>
+                        </div>
+
                         {/* Responsive Button Group */}
-                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <div className="flex flex-col sm:flex-row gap-3">
                           {signUpStep > 1 && (
                             <button
                               type="button" onClick={prevStep}
@@ -329,22 +336,31 @@ const LoginPage: React.FC = () => {
                             </button>
                           )}
 
-                          <button
-                            type={signUpStep < 2 ? "button" : "submit"}
-                            onClick={signUpStep < 2 ? nextStep : undefined}
-                            disabled={signUpStep === 2 && isRegisterPending}
-                            className={`grow h-12 bg-primary text-white rounded-xl font-black uppercase text-[9px] sm:text-xs tracking-[0.2em] shadow-xl shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3 group/btn hover:bg-primary/95
-                              ${signUpStep === 2 && isRegisterPending ? 'opacity-50' : ''}`}
-                          >
-                            {signUpStep === 2 && isRegisterPending ? (
-                              <RefreshCcw className="size-5 animate-spin" />
-                            ) : (
-                              <>
-                                <span>{signUpStep < 2 ? 'Continuar para KYC' : 'Finalizar Encriptação'}</span>
-                                <ChevronRight className="size-4 group-hover/btn:translate-x-1.5 transition-transform" />
-                              </>
-                            )}
-                          </button>
+                          {signUpStep === 1 ? (
+                            <button
+                              type="submit"
+                              className="grow h-12 bg-primary text-white rounded-xl font-black uppercase text-[9px] sm:text-xs tracking-[0.2em] shadow-xl shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3 group/btn hover:bg-primary/95"
+                            >
+                              <span>Continuar para KYC</span>
+                              <ChevronRight className="size-4 group-hover/btn:translate-x-1.5 transition-transform" />
+                            </button>
+                          ) : (
+                            <button
+                              type="submit"
+                              disabled={isRegisterPending}
+                              className={`grow h-12 bg-primary text-white rounded-xl font-black uppercase text-[9px] sm:text-xs tracking-[0.2em] shadow-xl shadow-primary/30 transition-all active:scale-95 flex items-center justify-center gap-3 group/btn hover:bg-primary/95
+                                ${isRegisterPending ? 'opacity-50' : ''}`}
+                            >
+                              {isRegisterPending ? (
+                                <RefreshCcw className="size-5 animate-spin" />
+                              ) : (
+                                <>
+                                  <span>Cadastrar Agora</span>
+                                  <ChevronRight className="size-4 group-hover/btn:translate-x-1.5 transition-transform" />
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </form>
                     </motion.div>
