@@ -71,10 +71,10 @@ const AppLayout: React.FC = () => {
             <div className="flex items-center gap-3 pl-1 group cursor-pointer" onClick={() => logout()}>
               <div 
                 className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-transparent group-hover:border-primary transition-all shadow-sm"
-                style={{ backgroundImage: `url(${user?.profilePicture || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.username})` }}
+                style={{ backgroundImage: `url(${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.id})` }}
               />
               <div className="hidden md:flex flex-col">
-                <span className="text-sm font-bold dark:text-white leading-none">{user?.username || 'Usuário'}</span>
+                <span className="text-sm font-bold dark:text-white leading-none">{user?.full_name || 'Usuário'}</span>
                 <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Sair</span>
               </div>
             </div>

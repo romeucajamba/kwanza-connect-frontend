@@ -20,9 +20,28 @@ export const API_ROUTES = {
     LOGOUT: '/auth/logout/',
     ME: '/auth/me/',
   },
+  OFFERS: {
+    BASE: '/offers/',
+    MINE: '/offers/mine/',
+    CURRENCIES: '/offers/currencies/',
+  },
+  RATES: {
+    BASE: '/rates/',
+    CONVERT: '/rates/convert/',
+    DASHBOARD: '/rates/dashboard/',
+  },
   TRANSACTIONS: {
     BASE: '/transactions/',
+    CONFIRM: '/transactions/confirm/',
   },
+  CHAT: {
+    ROOMS: '/chat/rooms/',
+    MESSAGES: '/chat/messages/',
+  },
+  NOTIFICATIONS: {
+    BASE: '/notifications/',
+    UNREAD: '/notifications/unread-count/',
+  }
 };
 
 export const AUTH_KEYS = {

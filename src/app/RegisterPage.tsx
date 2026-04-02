@@ -54,15 +54,15 @@ const RegisterPage: React.FC = () => {
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Informações de Acesso</h2>
                   
                   <div className="flex flex-col">
-                    <label className="text-sm font-medium text-slate-800 dark:text-slate-300 pb-2">Usuário</label>
+                    <label className="text-sm font-medium text-slate-800 dark:text-slate-300 pb-2">Nome Completo</label>
                     <input
-                      {...register('username')}
+                      {...register('fullName')}
                       className={`form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border ${
-                        errors.username ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
+                        errors.fullName ? 'border-red-500' : 'border-slate-300 dark:border-slate-700'
                       } bg-white dark:bg-background-dark focus:border-primary h-12 px-3.5 text-base`}
-                      placeholder="Escolha um nome de usuário"
+                      placeholder="Seu nome completo"
                     />
-                    {errors.username && <span className="text-red-500 text-xs mt-1">{errors.username.message}</span>}
+                    {errors.fullName && <span className="text-red-500 text-xs mt-1">{errors.fullName.message}</span>}
                   </div>
 
                   <div className="flex flex-col">
