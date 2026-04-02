@@ -1,197 +1,230 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  TrendingUp, 
+  TrendingDown,
+  Search, 
+  Star, 
+  Filter, 
+  ChevronUp, 
+  Activity,
+  ArrowRightLeft,
+  Calendar,
+  Zap
+} from 'lucide-react';
 import { useExchangeRates } from '@services/rates.hooks';
-import { useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '@constants';
+import { Link } from 'react-router-dom';
 
 const CambioMercadoPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { data: rates, isLoading, refetch } = useExchangeRates();
-  const [timeLeft, setTimeLeft] = useState(60);
+  const { data: rates, isLoading } = useExchangeRates();
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'favorites'>('all');
+  const [favorites, setFavorites] = useState<string[]>([]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          refetch();
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [refetch]);
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => 
+      prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
+    );
+  };
+
+  const filteredRates = rates?.filter((rate: any) => {
+    const matchesSearch = rate.to_currency.name.toLowerCase().includes(search.toLowerCase()) || 
+                         rate.to_currency.code.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === 'all' || favorites.includes(rate.id.toString());
+    return matchesSearch && matchesFilter;
+  });
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
-        />
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // Map API rates to stats cards (top 4)
-  const stats = (rates || []).slice(0, 4).map(r => ({
-    pair: `${r.from_currency.code} / ${r.to_currency.code}`,
-    price: r.rate.toLocaleString('pt-AO', { minimumFractionDigits: 2 }),
-    change: '+0.00%', // API currently doesn't provide change, using placeholder
-    trend: 'flat',
-    vol: '--',
-    flag: r.from_currency.flag_emoji || 'https://api.dicebear.com/7.x/initials/svg?seed=' + r.from_currency.code
-  }));
-
   return (
-    <div className="flex-1 flex flex-col gap-6 py-8 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 transition-colors">
+    <div className="flex flex-col gap-6 w-full pb-10">
+      
       {/* Header Section */}
-      <div className="flex flex-wrap justify-between items-end gap-4 px-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <h1 className="text-black dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] uppercase">
-              Mercado de Câmbio
-            </h1>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-500 ring-1 ring-inset ring-emerald-500/20 uppercase tracking-wider">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Live
-            </span>
-          </div>
-          <p className="text-gray-500 dark:text-[#92adc9] text-base font-medium">
-            Taxas de câmbio oficiais atualizadas em tempo real. Base: Kwanza (AOA).
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight tracking-tight uppercase">
+            Câmbio <span className="text-primary italic">Global</span>
+          </h1>
+          <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest opacity-80 flex items-center gap-2">
+            <Calendar className="size-3" />
+            Atualizado em tempo real
           </p>
         </div>
-        <div className="text-right text-sm text-gray-400 dark:text-[#92adc9] font-bold">
-          <p>Próxima atualização em: <span className="font-mono text-primary">{timeLeft}s</span></p>
-        </div>
+        <Link 
+          to={APP_ROUTES.CONVERSAO}
+          className="flex items-center justify-center gap-2 bg-primary text-white font-bold uppercase text-[10px] tracking-widest px-6 h-10 rounded-lg hover:bg-primary/95 transition-all shadow-md shadow-primary/20"
+        >
+          <TrendingUp className="size-3.5" />
+          <span>Simular Troca</span>
+        </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 overflow-hidden">
-        {stats.map((stat, idx) => (
-          <motion.div 
-            key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="flex flex-col gap-2 rounded-2xl p-6 border border-gray-100 dark:border-white/5 bg-white dark:bg-[#1c2a38] shadow-sm hover:shadow-md transition-all cursor-pointer group"
-          >
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-background-light dark:bg-background-dark flex items-center justify-center text-xs">
-                  {stat.flag.startsWith('http') ? (
-                     <img src={stat.flag} alt={stat.pair} className="w-full h-full object-cover" />
-                  ) : (
-                     <span>{stat.flag}</span>
-                  )}
-                </div>
-                <p className="text-black dark:text-white text-sm font-black uppercase tracking-wider">{stat.pair}</p>
+      {/* Market Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Volume (24h)', value: 'Kz 1.2B', change: '+12%', icon: Activity, color: 'text-emerald-500' },
+          { label: 'Taxa USD', value: 'Kz 850.00', change: '-0.5%', icon: TrendingUp, color: 'text-primary' },
+          { label: 'Pares', value: '24 Ativos', change: 'Estável', icon: Star, color: 'text-amber-500' },
+          { label: 'Spread', value: '0.2%', change: '+0.01%', icon: Filter, color: 'text-slate-500' },
+        ].map((stat, i) => (
+          <div key={i} className="p-4 bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex items-center justify-between mb-3">
+              <div className={`p-2 rounded-lg bg-slate-50 dark:bg-white/5 ${stat.color} group-hover:scale-110 transition-transform`}>
+                <stat.icon className="size-3.5" />
               </div>
-              <span className={`material-symbols-outlined text-slate-400`}>trending_flat</span>
-            </div>
-            <div className="flex items-baseline gap-2 mt-2">
-              <p className="text-black dark:text-white text-2xl font-black">{stat.price}</p>
-              <p className={`text-xs font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500`}>
+              <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md ${stat.change.startsWith('+') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
                 {stat.change}
-              </p>
+              </span>
             </div>
-            <p className="text-gray-400 dark:text-[#92adc9] text-[10px] uppercase font-bold tracking-widest mt-1">Atualizado agora</p>
-          </motion.div>
+            <p className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">{stat.value}</p>
+            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">{stat.label}</p>
+          </div>
         ))}
       </div>
 
-      {/* Filters & Table */}
-      <div className="px-4 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          <div className="relative flex-1 max-w-md">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-            <input 
-              className="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#1c2a38] text-black dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50 outline-none transition-all font-bold text-sm"
-              placeholder="Buscar moeda (ex: USD, EUR, GBP)"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button className="flex items-center gap-2 px-4 h-12 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-[20px]">star</span>
+      {/* Main Container */}
+      <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md overflow-hidden">
+        {/* Controls */}
+        <div className="p-4 border-b border-slate-100 dark:border-white/5 flex flex-wrap justify-between items-center gap-4">
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-white/5 p-1 rounded-lg">
+            <button 
+              onClick={() => setFilter('all')}
+              className={`px-4 py-1.5 text-[9px] font-bold uppercase rounded-md transition-all ${filter === 'all' ? 'bg-white dark:bg-[#111922] text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Todos
+            </button>
+            <button 
+              onClick={() => setFilter('favorites')}
+              className={`px-4 py-1.5 text-[9px] font-bold uppercase rounded-md transition-all ${filter === 'favorites' ? 'bg-white dark:bg-[#111922] text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            >
               Favoritos
             </button>
-            <button className="flex items-center justify-center h-12 w-12 rounded-xl bg-white dark:bg-[#1c2a38] border border-gray-100 dark:border-white/5 text-gray-500 hover:text-primary transition-all">
-              <span className="material-symbols-outlined">filter_list</span>
-            </button>
+          </div>
+          <div className="relative w-full sm:w-64 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-slate-300 group-focus-within:text-primary transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Pesquisar moeda..."
+              className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg pl-9 pr-4 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="overflow-hidden rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#1c2a38] shadow-xl"
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-              <thead className="bg-gray-50 dark:bg-[#1a2632]">
-                <tr>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest">Moeda</th>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest text-right">Compra (AOA)</th>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest text-right">Venda (AOA)</th>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest text-right">Var. 24h</th>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest text-center">Gráfico</th>
-                  <th className="px-6 py-5 text-gray-400 text-[10px] font-black uppercase tracking-widest text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-white/5">
-                {(rates || []).map((curr, idx) => (
-                  <tr key={idx} className="group hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-background-light dark:bg-background-dark border-2 border-white dark:border-gray-800 shadow-sm overflow-hidden">
-                          {curr.from_currency.flag_emoji ? (
-                            <span className="text-xl">{curr.from_currency.flag_emoji}</span>
-                          ) : (
-                            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${curr.from_currency.code}`} className="w-full h-full object-cover" />
-                          )}
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-slate-50/20 dark:bg-[#111922]/20 border-b border-slate-100 dark:border-white/5 opacity-50">
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Código</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Compra</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Venda</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Tendência</th>
+                <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Acção</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+              <AnimatePresence>
+                {filteredRates?.map((rate: any) => (
+                  <motion.tr 
+                    key={rate.to_currency.code}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => toggleFavorite(rate.to_currency.code)}
+                          className={`transition-all h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 ${favorites.includes(rate.to_currency.code) ? 'text-amber-500' : 'text-slate-200'}`}
+                        >
+                          <Star className={`size-3.5 ${favorites.includes(rate.to_currency.code) ? 'fill-amber-500' : ''}`} />
+                        </button>
+                        <div className="size-8 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-center text-base shadow-inner group-hover:scale-105 transition-transform overflow-hidden">
+                           {rate.to_currency.flag_emoji || rate.to_currency.code[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-black text-black dark:text-white uppercase tracking-wider">{curr.from_currency.code}</p>
-                          <p className="text-[10px] font-bold text-gray-400">{curr.from_currency.name}</p>
+                          <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase leading-none">{rate.to_currency.code}</p>
+                          <p className="text-[8px] text-slate-400 font-bold mt-1 uppercase tracking-widest">{rate.to_currency.name}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right text-sm font-black text-black dark:text-white font-mono">{(curr.rate * 0.98).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right text-sm font-black text-black dark:text-white font-mono">{(curr.rate * 1.02).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className={`inline-flex items-center gap-1 text-sm font-black text-emerald-500`}>
-                        <span className="material-symbols-outlined text-[20px]">arrow_drop_up</span>
-                        +0.05%
-                      </span>
+                    <td className="p-4 text-right font-mono text-xs font-medium text-slate-900 dark:text-white">
+                      {(rate.rate * 0.995).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center">
-                        <svg viewBox="0 0 100 30" width="80" height="24" className="text-emerald-500">
-                          <path 
-                            d="M0 25 L20 15 L40 20 L60 5 L80 10 L100 0" 
-                            fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" 
-                          />
-                        </svg>
+                    <td className="p-4 text-right font-mono text-xs font-medium text-slate-900 dark:text-white">
+                      {(rate.rate * 1.005).toLocaleString()}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="inline-flex items-center gap-1 text-emerald-500 text-[9px] font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                         <ChevronUp className="size-3" />
+                         <span>0.8%</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <button 
-                        onClick={() => navigate(APP_ROUTES.CONVERSAO)}
-                        className="bg-primary hover:bg-primary/90 text-white text-[10px] font-black uppercase tracking-widest py-2 px-6 rounded-xl transition-all shadow-md shadow-primary/20 hover:scale-105 active:scale-95"
+                    <td className="p-4 text-right">
+                      <Link 
+                        to={`${APP_ROUTES.P2P_BROWSE}?currency=${rate.to_currency.code}`}
+                        className="inline-flex items-center justify-center h-8 px-4 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[9px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm"
                       >
                         Trocar
-                      </button>
+                      </Link>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
+              </AnimatePresence>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Filter View */}
+        <div className="md:hidden p-4 space-y-3">
+           {filteredRates?.map((rate: any) => (
+             <div key={rate.to_currency.code} className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
+                <div className="flex justify-between items-center mb-3">
+                   <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-lg bg-white dark:bg-[#111922] flex items-center justify-center text-base shadow-sm">
+                        {rate.to_currency.flag_emoji}
+                      </div>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white uppercase">{rate.to_currency.code}</p>
+                   </div>
+                   <Star className={`size-3.5 ${favorites.includes(rate.to_currency.code) ? 'fill-amber-500 text-amber-500' : 'text-slate-300'}`} />
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-bold">
+                   <div className="space-y-0.5">
+                      <span className="text-slate-400 opacity-60 uppercase">Compra</span>
+                      <p className="text-slate-900 dark:text-white">{(rate.rate * 0.995).toLocaleString()}</p>
+                   </div>
+                   <div className="space-y-0.5 text-right">
+                      <span className="text-slate-400 opacity-60 uppercase">Venda</span>
+                      <p className="text-slate-900 dark:text-white">{(rate.rate * 1.005).toLocaleString()}</p>
+                   </div>
+                </div>
+                <Link to={`${APP_ROUTES.P2P_BROWSE}?currency=${rate.to_currency.code}`} className="mt-4 w-full h-10 bg-primary text-white rounded-lg text-[9px] font-bold uppercase flex items-center justify-center">Negociar</Link>
+             </div>
+           ))}
+        </div>
+      </div>
+      
+      {/* Banner Section */}
+      <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-4">
+         <div className="size-10 rounded-lg bg-primary text-white flex items-center justify-center shadow-md flex-shrink-0">
+            <ArrowRightLeft className="size-4.5" />
+         </div>
+         <div className="flex-1">
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight">Taxas Médias de Mercado</h3>
+            <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed opacity-70">Valores referenciais. Use o Mercado P2P para as melhores taxas directas.</p>
+         </div>
+         <button className="hidden sm:block px-6 py-2 bg-white dark:bg-[#192633] text-primary font-bold uppercase text-[9px] tracking-widest rounded-lg shadow-sm">Detalhes</button>
       </div>
     </div>
   );

@@ -1,306 +1,135 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useExchangeRates } from '@services/rates.hooks';
-import { useCurrencies } from '@services/offers.hooks';
-import { useNavigate } from 'react-router-dom';
-import { APP_ROUTES } from '@constants';
-import type { Currency, ExchangeRate } from '../types';
+import { 
+  ArrowRightLeft, 
+  TrendingUp, 
+  ShieldCheck, 
+  Clock,
+  Calculator
+} from 'lucide-react';
+import { useExchangeRates } from '../services/rates.hooks';
+import type { ExchangeRate } from '../types';
 
 const ConversaoPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { data: currencies } = useCurrencies();
   const { data: rates, isLoading } = useExchangeRates();
-  
-  const [amount, setAmount] = useState<number>(100);
-  const [fromCurrency, setFromCurrency] = useState('USD');
-  const [toCurrency, setToCurrency] = useState('AOA');
+  const [giveAmount, setGiveAmount] = useState('1');
+  const [giveCurrency, setGiveCurrency] = useState('USD');
+  const [receiveCurrency, setReceiveCurrency] = useState('AOA');
 
-  // Find the rate for the selected pair or use 1 as fallback
-  const currentRate = useMemo(() => {
-    if (!rates) return 1;
-    // The API returns rates relative to AOA mostly, but let's find the specific pair
-    const pair = rates.find((r: ExchangeRate) => r.from_currency.code === fromCurrency && r.to_currency.code === toCurrency);
-    if (pair) return pair.rate;
-    
-    // If not found directly, check if it's the inverse
-    const inverse = rates.find((r: ExchangeRate) => r.from_currency.code === toCurrency && r.to_currency.code === fromCurrency);
-    if (inverse) return 1 / inverse.rate;
-
-    return 1;
-  }, [rates, fromCurrency, toCurrency]);
-
-  const candles = [
-    { type: 'up', h1: 12, h2: 16, h3: 8 },
-    { type: 'up', h1: 4, h2: 12, h3: 6 },
-    { type: 'down', h1: 10, h2: 20, h3: 10 },
-    { type: 'up', h1: 6, h2: 10, h3: 4 },
-    { type: 'up', h1: 8, h2: 24, h3: 12 },
-    { type: 'down', h1: 10, h2: 8, h3: 14 },
-    { type: 'up', h1: 16, h2: 32, h3: 10 },
-    { type: 'down', h1: 4, h2: 14, h3: 8 },
-    { type: 'up', h1: 10, h2: 18, h3: 12 },
-    { type: 'down', h1: 8, h2: 22, h3: 6 },
-    { type: 'up', h1: 4, h2: 12, h3: 8 },
-  ];
+  const currentRate = (rates as ExchangeRate[])?.find(r => r.to_currency.code === giveCurrency)?.rate || 850;
+  const receiveAmount = (parseFloat(giveAmount || '0') * currentRate).toFixed(2);
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
-        />
+      <div className="flex-1 flex items-center justify-center min-h-[400px]">
+        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-8 py-8 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display transition-colors">
-      <div className="flex flex-wrap justify-between items-end gap-3 mb-2">
-        <div className="flex min-w-72 flex-col gap-2">
-          <h1 className="text-zinc-900 dark:text-white text-3xl font-black leading-tight tracking-tight uppercase">Monitor de Mercado</h1>
-          <p className="text-zinc-500 dark:text-[#92adc9] text-sm font-medium">Análise profissional de câmbio para negociações P2P seguras.</p>
+    <div className="flex flex-col gap-6 w-full pb-10">
+      
+      {/* Header Compacto */}
+      <div className="flex flex-wrap justify-between items-center gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-slate-900 dark:text-white text-xl md:text-2xl font-bold leading-tight tracking-tight uppercase">
+            Simulador <span className="text-primary italic">Activos</span>
+          </h1>
+          <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest opacity-80 leading-relaxed">
+            Conversão instantânea com taxas de mercado em tempo real.
+          </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-emerald-500 text-[10px] font-bold uppercase tracking-widest leading-none">Mercado Aberto</span>
+        <div className="hidden sm:flex items-center gap-2.5 bg-white dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-100 dark:border-white/5 overflow-hidden">
+           <Clock className="size-3 text-primary animate-pulse" />
+           <span className="text-[8px] font-bold text-slate-400 dark:text-slate-300 uppercase tracking-widest leading-none">Sync Live: Luanda</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-9 flex flex-col gap-6">
-          {/* Candlestick Chart Card */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden"
-          >
-            <div className="p-4 border-b border-zinc-200 dark:border-[#233648] flex flex-wrap justify-between items-center gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-black border-2 border-white dark:border-[#192633] shadow-sm uppercase">{fromCurrency}</div>
-                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-black border-2 border-white dark:border-[#192633] shadow-sm uppercase">{toCurrency}</div>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-black tracking-tight uppercase">{fromCurrency}/{toCurrency}</h2>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-zinc-500 font-bold">Spot: {currentRate.toFixed(2)}</span>
-                      <span className="text-[10px] text-emerald-500 font-black">+0.05%</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-8 w-[1px] bg-zinc-200 dark:bg-[#233648] hidden sm:block"></div>
-                <div className="hidden sm:flex items-center gap-3">
-                  <div className="flex bg-zinc-100 dark:bg-[#101922] p-1 rounded-xl">
-                    {['1h', '4h', '1D', '1W'].map((t) => (
-                      <button key={t} className={`px-4 py-1.5 text-[11px] font-black rounded-lg transition-all ${t === '1h' ? 'bg-white dark:bg-[#192633] shadow-sm text-primary' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-white'}`}>
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-lg text-primary text-[10px] font-black hover:bg-primary hover:text-white transition-all">
-                  <span className="material-symbols-outlined text-sm">show_chart</span>
-                  MA(20), MA(50)
-                </button>
-              </div>
-            </div>
-
-            <div className="relative h-[400px] bg-white dark:bg-[#101922] p-4 flex items-end justify-between overflow-hidden">
-               {/* Grid Simulation */}
-               <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #233648 1px, transparent 1px), linear-gradient(to bottom, #233648 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-               
-               <div className="flex items-end justify-around w-full h-[80%] pb-10 px-4 space-x-1 relative z-10 transition-all">
-                  {candles.map((c, i) => (
-                    <motion.div 
-                      key={i} 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: '100%' }}
-                      transition={{ delay: i * 0.05 }}
-                      className="flex flex-col items-center flex-1 max-w-[14px] group cursor-pointer"
-                    >
-                      <div className={`w-[1px] ${c.type === 'up' ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ height: `${c.h1 * 4}px` }} />
-                      <div className={`w-full ${c.type === 'up' ? 'bg-emerald-500' : 'bg-rose-500'} rounded-sm shadow-sm group-hover:brightness-125 transition-all`} style={{ height: `${c.h2 * 4}px` }} />
-                      <div className={`w-[1px] ${c.type === 'up' ? 'bg-emerald-500' : 'bg-rose-500'}`} style={{ height: `${c.h3 * 4}px` }} />
-                    </motion.div>
-                  ))}
-               </div>
-
-               {/* Trend Lines Simulation */}
-               <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none">
-                 <motion.path 
-                   initial={{ pathLength: 0 }}
-                   animate={{ pathLength: 1 }}
-                   transition={{ duration: 2 }}
-                   d="M0 320 Q 100 280, 200 310 T 400 260 T 600 290 T 800 240 T 1000 270" 
-                   fill="none" stroke="#137fec" strokeWidth="2" strokeOpacity="0.5"
-                 />
-               </svg>
-
-               {/* Y-Axis Labels */}
-               <div className="absolute right-0 top-0 bottom-0 w-20 border-l border-zinc-200 dark:border-[#233648] bg-white/50 dark:bg-[#101922]/50 backdrop-blur-sm flex flex-col justify-between py-12 items-center text-[10px] font-black text-zinc-500">
-                  <span>{(currentRate * 1.05).toFixed(2)}</span>
-                  <span>{(currentRate * 1.02).toFixed(2)}</span>
-                  <span className="text-emerald-500 bg-emerald-500/10 px-1 rounded ring-1 ring-emerald-500/20">{currentRate.toFixed(2)}</span>
-                  <span>{(currentRate * 0.98).toFixed(2)}</span>
-                  <span>{(currentRate * 0.95).toFixed(2)}</span>
-               </div>
-            </div>
-
-            <div className="bg-zinc-50 dark:bg-[#101922] p-4 flex justify-between border-t border-zinc-200 dark:border-[#233648] text-[10px] font-black uppercase text-zinc-500 tracking-widest">
-              <span>Atualizado em tempo real</span>
-              <span>Refesh em <span className="text-primary font-mono lowercase">60s</span></span>
-            </div>
-          </motion.div>
-
-          {/* Calculator Card */}
-          <div className="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] p-8">
-            <h3 className="text-xl font-black mb-8 flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary text-3xl">calculate</span>
-              Simulador de Câmbio Instantâneo
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="flex flex-col gap-6">
-                <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 block text-center md:text-left ml-1">Vou Trocar</label>
-                  <div className="flex items-center group">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Converter Card */}
+        <div className="lg:col-span-7">
+          <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md p-6 md:p-8 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full opacity-50 pointer-events-none group-hover:bg-primary/10 transition-colors" />
+            
+            <div className="space-y-6 relative z-10">
+              <div className="space-y-3">
+                 <div className="flex justify-between items-center ml-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Converter</label>
+                    <span className="text-[8px] font-bold text-primary uppercase tracking-widest opacity-60">Disponível: 1,250 USD</span>
+                 </div>
+                 <div className="flex items-center gap-3 p-4 md:p-5 bg-slate-50 dark:bg-[#111922] rounded-lg border border-transparent focus-within:border-primary/10 shadow-inner transition-all">
                     <input 
-                      type="number" 
-                      value={amount}
-                      onChange={(e) => setAmount(Number(e.target.value))}
-                      className="flex-1 bg-zinc-100 dark:bg-[#101922] border-2 border-transparent rounded-l-2xl h-16 px-6 text-2xl font-black focus:border-primary focus:bg-white dark:focus:bg-[#15202b] outline-none transition-all shadow-inner uppercase"
+                      type="number" step="0.01" className="flex-1 bg-transparent border-none p-0 text-xl font-bold text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-200" 
+                      value={giveAmount} onChange={(e) => setGiveAmount(e.target.value)}
                     />
-                    <select 
-                      value={fromCurrency}
-                      onChange={(e) => setFromCurrency(e.target.value)}
-                      className="bg-zinc-200 dark:bg-[#233648] border-none rounded-r-2xl h-16 px-4 flex items-center font-black text-sm uppercase outline-none cursor-pointer"
-                    >
-                      {currencies?.map((c: Currency) => <option key={c.id} value={c.code}>{c.code}</option>)}
+                    <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 pr-8 cursor-pointer uppercase tracking-widest" value={giveCurrency} onChange={(e) => setGiveCurrency(e.target.value)}>
+                       <option>USD</option>
+                       <option>EUR</option>
+                       <option>BTC</option>
                     </select>
-                  </div>
-                </div>
-                
-                <div className="flex justify-center -my-3">
-                  <button 
-                    onClick={() => { const tmp = fromCurrency; setFromCurrency(toCurrency); setToCurrency(tmp); }}
-                    className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:rotate-180 transition-transform duration-500 active:scale-90"
-                  >
-                    <span className="material-symbols-outlined text-xl">swap_vert</span>
-                  </button>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 block text-center md:text-left ml-1">Vou Receber (Est.)</label>
-                  <div className="flex items-center">
-                    <div className="flex-1 bg-zinc-100 dark:bg-[#101922] rounded-l-2xl h-16 px-6 flex items-center text-2xl font-black text-emerald-500 shadow-inner">
-                      {(amount * currentRate).toLocaleString('pt-AO', { maximumFractionDigits: 2 })}
-                    </div>
-                    <select 
-                      value={toCurrency}
-                      onChange={(e) => setToCurrency(e.target.value)}
-                      className="bg-zinc-200 dark:bg-[#233648] border-none rounded-r-2xl h-16 px-4 flex items-center font-black text-sm uppercase outline-none cursor-pointer"
-                    >
-                      {currencies?.map((c: Currency) => <option key={c.id} value={c.code}>{c.code}</option>)}
-                    </select>
-                  </div>
-                </div>
+                 </div>
               </div>
 
-              <div className="flex flex-col justify-between bg-emerald-500/5 rounded-2xl p-8 border-2 border-emerald-500/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-                <div className="space-y-6 relative z-10">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Taxa Spot:</span>
-                    <span className="font-black text-sm">1 {fromCurrency} = {currentRate.toFixed(2)} {toCurrency}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Total Estimado:</span>
-                    <span className="text-3xl font-black text-emerald-500">{(amount * currentRate).toLocaleString('pt-AO', { maximumFractionDigits: 2 })} {toCurrency}</span>
-                  </div>
-                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-3 shadow-sm">
-                    <span className="material-symbols-outlined text-amber-500 text-xl">info</span>
-                    <p className="text-[10px] text-amber-800 dark:text-amber-400 leading-normal font-bold">
-                      <strong>AVISO:</strong> Estes valores baseiam-se em taxas oficiais. No Mural P2P, os usuários podem definir seus próprios preços com spreads.
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => navigate(APP_ROUTES.P2P_BROWSE)}
-                  className="w-full mt-8 bg-primary hover:bg-blue-600 text-white font-black h-14 rounded-2xl transition-all shadow-xl shadow-primary/30 flex items-center justify-center gap-3 group/btn hover:scale-[1.02] active:scale-95 uppercase tracking-widest text-xs"
-                >
-                  Acessar Mural P2P
-                  <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">chevron_right</span>
+              <div className="flex justify-center relative py-1">
+                 <div className="size-10 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 flex items-center justify-center transform hover:rotate-180 transition-transform duration-500 cursor-pointer active:scale-90 relative z-20 border-2 border-white dark:border-[#192633]">
+                    <ArrowRightLeft className="size-4" />
+                 </div>
+                 <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 dark:bg-white/5 z-10" />
+              </div>
+
+              <div className="space-y-3">
+                 <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Receber Estimado</label>
+                 <div className="flex items-center gap-3 p-4 md:p-5 bg-slate-50 dark:bg-[#111922] rounded-lg border border-transparent shadow-inner">
+                    <p className="flex-1 text-xl font-bold text-primary tracking-tight">{receiveAmount}</p>
+                    <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 pr-8 cursor-pointer uppercase tracking-widest" value={receiveCurrency} onChange={(e) => setReceiveCurrency(e.target.value)}>
+                       <option>AOA</option>
+                       <option>USD</option>
+                    </select>
+                 </div>
+              </div>
+
+              <div className="pt-4">
+                <button className="w-full h-11 bg-primary text-white rounded-lg font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/95 transition-all group active:scale-95">
+                  Trocar agora no P2P
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sidebar panels */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          <motion.div 
-            whileHover={{ y: -5 }}
-            className="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden"
-          >
-            <div className="p-4 border-b border-zinc-200 dark:border-[#233648] bg-zinc-50 dark:bg-[#101922]/50">
-              <h3 className="font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <span className="material-symbols-outlined text-emerald-500">psychology</span>
-                Sentimento de Mercado
-              </h3>
-            </div>
-            <div className="p-6">
-              <div className="flex justify-between text-[10px] font-black mb-3 tracking-widest uppercase">
-                <span className="text-emerald-500">ALTA (74%)</span>
-                <span className="text-rose-500">BAIXA (26%)</span>
+        {/* Info Column */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+           <div className="p-6 md:p-8 bg-slate-900 rounded-xl text-white space-y-6 relative overflow-hidden shadow-lg">
+              <Calculator className="absolute -bottom-6 -right-6 size-24 text-white/[0.03] -rotate-12 pointer-events-none" />
+              <div className="flex items-center gap-3">
+                 <div className="size-10 rounded-lg bg-primary/20 border border-primary/20 flex items-center justify-center shadow-lg">
+                    <TrendingUp className="size-4.5 text-primary" />
+                 </div>
+                 <h3 className="text-sm font-bold uppercase tracking-tight">Câmbio <span className="text-primary italic">Live</span></h3>
               </div>
-              <div className="w-full h-4 bg-zinc-100 dark:bg-[#101922] rounded-full overflow-hidden flex shadow-inner">
-                <motion.div initial={{ width: 0 }} animate={{ width: '74%' }} transition={{ duration: 1 }} className="h-full bg-emerald-500" />
-                <motion.div initial={{ width: 0 }} animate={{ width: '26%' }} transition={{ duration: 1 }} className="h-full bg-rose-500" />
+              <div className="space-y-5">
+                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-white/40">
+                    <span>Taxa Média Mercado</span>
+                    <span>1 USD = {currentRate} AOA</span>
+                 </div>
+                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: '75%' }} className="h-full bg-primary" />
+                 </div>
+                 <p className="text-[9px] font-medium text-white/30 uppercase tracking-widest leading-relaxed opacity-60">Actualizado via API Global Directa. Variação +/- 0.2% nas últimas horas.</p>
               </div>
-              <p className="mt-4 text-[10px] text-zinc-500 font-bold leading-relaxed opacity-70">
-                Baseado em volumes negociados nas últimas 24h.
+           </div>
+
+           <div className="p-6 bg-emerald-500/5 rounded-xl border border-emerald-500/10 space-y-3">
+              <div className="flex items-center gap-3 opacity-80">
+                 <ShieldCheck className="size-4 text-emerald-500" />
+                 <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Proteção via Smart Escrow</span>
+              </div>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-tight opacity-70">
+                Seu activo será mantido em custódia segura até à confirmação final da liquidez da operação.
               </p>
-            </div>
-          </motion.div>
-
-          <div className="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden">
-            <div className="p-4 border-b border-zinc-200 dark:border-[#233648] bg-zinc-50 dark:bg-[#101922]/50">
-              <h3 className="font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">trending_up</span>
-                Variação ao Minuto
-              </h3>
-            </div>
-            <div className="divide-y divide-zinc-200 dark:divide-[#233648]">
-              {rates?.slice(0, 5).map((r: ExchangeRate, i: number) => (
-                <div key={i} className="p-4 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-[#101922] transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    <div className="size-8 rounded-lg bg-zinc-100 dark:bg-[#101922] flex items-center justify-center font-black text-[10px] shadow-sm group-hover:bg-primary group-hover:text-white transition-all uppercase">
-                      {r.from_currency.code}
-                    </div>
-                    <span className="text-xs font-black tracking-tight uppercase">{r.from_currency.code}/{r.to_currency.code}</span>
-                  </div>
-                  <span className={`text-[10px] font-black text-emerald-500`}>+0.05%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/10 relative group cursor-pointer shadow-indigo-500/20 shadow-lg">
-            <div className="absolute top-0 right-0 p-2 opacity-50 group-hover:scale-125 transition-transform">
-               <span className="material-symbols-outlined text-primary">stars</span>
-            </div>
-            <h4 className="text-xs font-black uppercase tracking-widest mb-2 text-primary">KwanzaConnect Insights</h4>
-            <p className="text-[10px] text-zinc-600 dark:text-zinc-300 leading-relaxed font-bold">
-              Todas as transações são protegidas por custódia (escrow) garantindo que você receba seus fundos ou o dinheiro de volta.
-            </p>
-          </div>
+           </div>
         </div>
       </div>
     </div>
