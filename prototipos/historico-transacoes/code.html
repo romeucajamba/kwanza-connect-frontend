@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Histórico de Transações - Plataforma Digital</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "status-green": "#28A745",
+              "status-yellow": "#FFC107",
+              "status-red": "#DC3545",
+              "status-blue": "#17A2B8",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-gray-200/10 dark:border-white/10 px-4 sm:px-6 lg:px-10 py-3 bg-white/5 dark:bg-black/10 backdrop-blur-sm sticky top-0 z-50">
+<div class="flex items-center gap-4 text-black dark:text-white">
+<div class="text-primary size-6">
+<svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 12.17l7.59-7.59L19 6l-9 9z"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold tracking-tight">Plataforma Digital</h2>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Trocar Moeda</a>
+<a class="text-sm font-medium text-primary dark:text-primary transition-colors" href="#">Atividade</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Ajuda</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-gray-200/50 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCPPe1DHFPV4i_E3s-c93O8yJ6Ved_zivI84VTtMxt7sELlLQRWVwuddvMqz70aZ0yZneOcrkRboKzFMmANJFuGX0mPM96gH2ZONplmUREAXMmS3clbNBSzeDkfSN0M-2QKiAxMu9SuuAZbdlgRB9uG3dWaklTF4i1BaRBKp5EXjaCwfkvKJCSP3E05AtAYSuNYA6re_Kix9ePN8e3a2Yq2pBCYro77Bx5vKT4xTomiYk-MRHTxJUDDmG6_l9kvFp24B1jy1-NUu1I");'></div>
+</div>
+</header>
+<main class="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="layout-content-container flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<h1 class="text-gray-900 dark:text-white text-3xl md:text-4xl font-black tracking-tighter">Histórico de Transações</h1>
+<p class="text-gray-500 dark:text-gray-400 text-base font-normal">Acompanhe detalhadamente suas conversões, depósitos, envios e trocas P2P de todas as moedas.</p>
+</div>
+<div class="flex flex-col lg:flex-row gap-4 p-4 bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10 items-start lg:items-center justify-between">
+<div class="relative w-full lg:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">search</span>
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-11 pl-10" placeholder="Buscar por ID, moeda ou valor..." type="text"/>
+</div>
+<div class="flex flex-wrap gap-3 w-full lg:w-auto">
+<div class="relative min-w-[140px] flex-1 lg:flex-none">
+<select class="form-select w-full rounded-lg text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-11 text-sm font-medium">
+<option>Todos os Tipos</option>
+<option>Conversão</option>
+<option>P2P</option>
+<option>Depósito</option>
+<option>Retirada</option>
+</select>
+</div>
+<div class="relative min-w-[140px] flex-1 lg:flex-none">
+<select class="form-select w-full rounded-lg text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-11 text-sm font-medium">
+<option>Últimos 30 dias</option>
+<option>Últimos 3 meses</option>
+<option>Este ano</option>
+<option>Personalizado</option>
+</select>
+</div>
+<div class="relative min-w-[140px] flex-1 lg:flex-none">
+<select class="form-select w-full rounded-lg text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-11 text-sm font-medium">
+<option>Todas as Moedas</option>
+<option>AOA (Kwanza)</option>
+<option>USD (Dólar)</option>
+<option>EUR (Euro)</option>
+</select>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">
+<th class="p-5">Transação</th>
+<th class="p-5">ID Transação</th>
+<th class="p-5">Moeda</th>
+<th class="p-5">Valor</th>
+<th class="p-5">Status</th>
+<th class="p-5 text-right">Ação</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-200 dark:divide-white/10 text-sm">
+<tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-5">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">swap_horiz</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-gray-900 dark:text-white">Troca P2P</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">12 Out 2023, 14:30</span>
+</div>
+</div>
+</td>
+<td class="p-5 font-mono text-gray-600 dark:text-gray-300">#TRX-882910</td>
+<td class="p-5 text-gray-900 dark:text-white font-medium">USDT <span class="text-gray-400">→</span> AOA</td>
+<td class="p-5 text-status-green font-bold">+ 450.000,00 AOA</td>
+<td class="p-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-status-green/10 text-status-green border border-status-green/20">
+<span class="size-1.5 rounded-full bg-status-green"></span>
+                                    Concluído
+                                </span>
+</td>
+<td class="p-5 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-5">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-status-blue/10 text-status-blue">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-gray-900 dark:text-white">Depósito Bancário</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">12 Out 2023, 10:15</span>
+</div>
+</div>
+</td>
+<td class="p-5 font-mono text-gray-600 dark:text-gray-300">#DEP-992100</td>
+<td class="p-5 text-gray-900 dark:text-white font-medium">AOA</td>
+<td class="p-5 text-gray-900 dark:text-white font-bold">+ 100.000,00 AOA</td>
+<td class="p-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-status-yellow/10 text-status-yellow border border-status-yellow/20">
+<span class="size-1.5 rounded-full bg-status-yellow animate-pulse"></span>
+                                    Pendente
+                                </span>
+</td>
+<td class="p-5 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-5">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined">arrow_upward</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-gray-900 dark:text-white">Retirada para Conta</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">10 Out 2023, 09:45</span>
+</div>
+</div>
+</td>
+<td class="p-5 font-mono text-gray-600 dark:text-gray-300">#WIT-332112</td>
+<td class="p-5 text-gray-900 dark:text-white font-medium">USD</td>
+<td class="p-5 text-gray-900 dark:text-white font-bold">- $ 500.00</td>
+<td class="p-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-status-green/10 text-status-green border border-status-green/20">
+<span class="size-1.5 rounded-full bg-status-green"></span>
+                                    Concluído
+                                </span>
+</td>
+<td class="p-5 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-5">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">currency_exchange</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-gray-900 dark:text-white">Conversão de Moeda</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">08 Out 2023, 16:20</span>
+</div>
+</div>
+</td>
+<td class="p-5 font-mono text-gray-600 dark:text-gray-300">#CNV-554123</td>
+<td class="p-5 text-gray-900 dark:text-white font-medium">AOA <span class="text-gray-400">→</span> EUR</td>
+<td class="p-5 text-gray-900 dark:text-white font-bold">- 250.000,00 AOA</td>
+<td class="p-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-status-green/10 text-status-green border border-status-green/20">
+<span class="size-1.5 rounded-full bg-status-green"></span>
+                                    Concluído
+                                </span>
+</td>
+<td class="p-5 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<td class="p-5">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-full bg-status-red/10 text-status-red">
+<span class="material-symbols-outlined">block</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-gray-900 dark:text-white">Envio Cancelado</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">05 Out 2023, 11:10</span>
+</div>
+</div>
+</td>
+<td class="p-5 font-mono text-gray-600 dark:text-gray-300">#SND-110293</td>
+<td class="p-5 text-gray-900 dark:text-white font-medium">AOA</td>
+<td class="p-5 text-gray-500 dark:text-gray-400 line-through">- 50.000,00 AOA</td>
+<td class="p-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-status-red/10 text-status-red border border-status-red/20">
+<span class="size-1.5 rounded-full bg-status-red"></span>
+                                    Cancelado
+                                </span>
+</td>
+<td class="p-5 text-right">
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-gray-200 dark:border-white/10 flex items-center justify-between">
+<span class="text-sm text-gray-500 dark:text-gray-400">Mostrando 1-5 de 24 transações</span>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-medium text-gray-500 dark:text-gray-400 opacity-50 cursor-not-allowed">Anterior</button>
+<button class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">Próximo</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

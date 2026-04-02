@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monitor de Mercado com Candlesticks | Kwanza P2P</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "up": "#10b981",
+                        "down": "#ef4444"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .chart-grid {
+                background-image: linear-gradient(to right, #233648 1px, transparent 1px),
+                                  linear-gradient(to bottom, #233648 1px, transparent 1px);
+                background-size: 40px 40px;
+            }
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-zinc-900 dark:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-10 md:px-16 lg:px-20 xl:px-40 flex flex-1 justify-center py-8">
+<div class="layout-content-container flex flex-col max-w-[1400px] flex-1">
+<div class="flex flex-wrap justify-between items-end gap-3 mb-8">
+<div class="flex min-w-72 flex-col gap-2">
+<h1 class="text-zinc-900 dark:text-white text-3xl font-black leading-tight tracking-tight">Monitor de Mercado com Candlesticks</h1>
+<p class="text-zinc-500 dark:text-[#92adc9] text-sm">Análise profissional de câmbio para negociações P2P seguras em Angola.</p>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-emerald-500 text-[10px] font-bold uppercase tracking-widest">Mercado Aberto</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="lg:col-span-9 flex flex-col gap-6">
+<div class="flex flex-col rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden">
+<div class="p-4 border-b border-zinc-200 dark:border-[#233648] flex flex-wrap justify-between items-center gap-4">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-bold border-2 border-white dark:border-[#192633]">USD</div>
+<div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold border-2 border-white dark:border-[#192633]">AOA</div>
+</div>
+<div>
+<h2 class="text-lg font-bold">USD/AOA</h2>
+<div class="flex items-center gap-1">
+<span class="text-xs text-zinc-500 font-medium">Spot: 840.45</span>
+<span class="text-[10px] text-up font-bold">+1.2%</span>
+</div>
+</div>
+</div>
+<div class="h-8 w-[1px] bg-zinc-200 dark:bg-[#233648] hidden sm:block"></div>
+<div class="hidden sm:flex items-center gap-3">
+<div class="flex bg-zinc-100 dark:bg-[#101922] p-1 rounded-lg">
+<button class="px-3 py-1 text-[11px] font-bold rounded-md bg-white dark:bg-[#192633] shadow-sm">1h</button>
+<button class="px-3 py-1 text-[11px] font-bold text-zinc-500">4h</button>
+<button class="px-3 py-1 text-[11px] font-bold text-zinc-500">1D</button>
+<button class="px-3 py-1 text-[11px] font-bold text-zinc-500">1W</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 bg-primary/5 px-2 py-1 rounded text-primary text-[10px] font-bold">
+<span class="material-symbols-outlined text-sm">show_chart</span>
+                                            MA(20), MA(50)
+                                        </div>
+<button class="p-2 text-zinc-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<div class="relative h-[450px] chart-grid bg-white dark:bg-[#101922] p-4 flex items-end justify-between overflow-hidden">
+<div class="absolute top-4 left-4 flex gap-4">
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-[10px] text-zinc-500 font-bold">MA(20)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-orange-400"></div>
+<span class="text-[10px] text-zinc-500 font-bold">MA(50)</span>
+</div>
+</div>
+<div class="flex items-end justify-around w-full h-[80%] pb-4 px-2 space-x-1">
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-12 bg-up"></div>
+<div class="w-full h-16 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-8 bg-up"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-4 bg-up"></div>
+<div class="w-full h-12 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-6 bg-up"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-10 bg-down"></div>
+<div class="w-full h-20 bg-down rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-10 bg-down"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-6 bg-up"></div>
+<div class="w-full h-10 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-4 bg-up"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-8 bg-up"></div>
+<div class="w-full h-24 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-12 bg-up"></div>
+</div>
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+<path d="M0 320 Q 100 280, 200 310 T 400 260 T 600 290 T 800 240 T 1000 270" fill="none" stroke="#137fec" stroke-width="2"></path>
+<path d="M0 340 Q 150 300, 300 330 T 600 280 T 900 310" fill="none" stroke="#fb923c" stroke-width="2"></path>
+</svg>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-10 bg-down"></div>
+<div class="w-full h-8 bg-down rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-14 bg-down"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-16 bg-up"></div>
+<div class="w-full h-32 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-10 bg-up"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-4 bg-down"></div>
+<div class="w-full h-14 bg-down rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-8 bg-down"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-10 bg-up"></div>
+<div class="w-full h-18 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-12 bg-up"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-8 bg-down"></div>
+<div class="w-full h-22 bg-down rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-6 bg-down"></div>
+</div>
+<div class="flex flex-col items-center flex-1 max-w-[12px]">
+<div class="w-[1px] h-4 bg-up"></div>
+<div class="w-full h-12 bg-up rounded-sm shadow-sm"></div>
+<div class="w-[1px] h-8 bg-up"></div>
+</div>
+</div>
+<div class="absolute right-0 top-0 bottom-0 w-14 border-l border-zinc-200 dark:border-[#233648] bg-white/50 dark:bg-[#101922]/50 backdrop-blur-sm flex flex-col justify-between py-8 items-center text-[10px] font-bold text-zinc-500">
+<span>860.00</span>
+<span>850.00</span>
+<span class="text-up bg-up/10 px-1 rounded">840.45</span>
+<span>830.00</span>
+<span>820.00</span>
+</div>
+</div>
+<div class="bg-zinc-50 dark:bg-[#101922] p-3 flex justify-between border-t border-zinc-200 dark:border-[#233648] text-[10px] font-bold uppercase text-zinc-500">
+<span>Volume 24h: 1.2M USD</span>
+<span>Próxima atualização em 15s</span>
+</div>
+</div>
+<div class="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] p-6">
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calculate</span>
+                                    Simulador de Câmbio em Tempo Real
+                                </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col gap-4">
+<div>
+<label class="text-xs font-bold text-zinc-500 uppercase mb-2 block">Valor a Trocar</label>
+<div class="flex items-center">
+<input class="flex-1 bg-zinc-100 dark:bg-[#101922] border-none rounded-l-xl h-14 px-4 text-xl font-black focus:ring-2 focus:ring-primary" type="number" value="1000"/>
+<select class="bg-zinc-200 dark:bg-[#233648] border-none rounded-r-xl h-14 font-bold text-sm">
+<option>USD</option>
+<option>EUR</option>
+<option>AOA</option>
+</select>
+</div>
+</div>
+<div class="flex justify-center -my-2">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg cursor-pointer">
+<span class="material-symbols-outlined text-lg">swap_vert</span>
+</div>
+</div>
+<div>
+<label class="text-xs font-bold text-zinc-500 uppercase mb-2 block">Desejo Receber</label>
+<div class="flex items-center">
+<div class="flex-1 bg-zinc-100 dark:bg-[#101922] rounded-l-xl h-14 px-4 flex items-center text-xl font-black text-zinc-400">840.450,00</div>
+<select class="bg-zinc-200 dark:bg-[#233648] border-none rounded-r-xl h-14 font-bold text-sm">
+<option>AOA</option>
+<option>USD</option>
+<option>EUR</option>
+</select>
+</div>
+</div>
+</div>
+<div class="flex flex-col justify-between bg-primary/5 rounded-xl p-6 border border-primary/10">
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-sm text-zinc-500 font-medium">Taxa Média de Mercado:</span>
+<span class="font-bold">1 USD = 840.45 AOA</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm text-zinc-500 font-medium">Estimativa Total:</span>
+<span class="text-2xl font-black text-primary">840.450 AOA</span>
+</div>
+<div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex gap-3">
+<span class="material-symbols-outlined text-amber-500 text-lg">info</span>
+<p class="text-[11px] text-amber-700 dark:text-amber-400 leading-tight">
+<strong>Aviso:</strong> Os valores finais são negociados diretamente entre usuários no Mural P2P. Esta é apenas uma referência de mercado.
+                                                </p>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
+                                            Acessar Mural de Ofertas
+                                            <span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-3 flex flex-col gap-6">
+<div class="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden">
+<div class="p-4 border-b border-zinc-200 dark:border-[#233648]">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-up">psychology</span>
+                                        Sentimento do Mercado
+                                    </h3>
+</div>
+<div class="p-6">
+<div class="flex justify-between text-xs font-bold mb-2">
+<span class="text-up">ALTA (68%)</span>
+<span class="text-down">BAIXA (32%)</span>
+</div>
+<div class="w-full h-3 bg-zinc-100 dark:bg-[#101922] rounded-full overflow-hidden flex">
+<div class="h-full bg-up w-[68%]"></div>
+<div class="h-full bg-down w-[32%]"></div>
+</div>
+<p class="mt-4 text-[11px] text-zinc-500 leading-relaxed">
+                                        Baseado no volume de ordens de compra vs venda nas últimas 4 horas no mural P2P.
+                                    </p>
+</div>
+</div>
+<div class="rounded-2xl shadow-xl bg-white dark:bg-[#192633] border border-zinc-200 dark:border-[#233648] overflow-hidden">
+<div class="p-4 border-b border-zinc-200 dark:border-[#233648]">
+<h3 class="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+                                        Variação (24h)
+                                    </h3>
+</div>
+<div class="divide-y divide-zinc-200 dark:divide-[#233648]">
+<div class="p-4 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-[#101922] transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">EUR</div>
+<div>
+<p class="text-xs font-bold">EUR/AOA</p>
+<p class="text-[10px] text-zinc-500">Euro</p>
+</div>
+</div>
+<span class="text-xs font-bold text-up">+1.45%</span>
+</div>
+<div class="p-4 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-[#101922] transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-xs">USD</div>
+<div>
+<p class="text-xs font-bold">USD/AOA</p>
+<p class="text-[10px] text-zinc-500">Dólar</p>
+</div>
+</div>
+<span class="text-xs font-bold text-up">+1.20%</span>
+</div>
+<div class="p-4 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-[#101922] transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold text-xs">BRL</div>
+<div>
+<p class="text-xs font-bold">BRL/AOA</p>
+<p class="text-[10px] text-zinc-500">Real</p>
+</div>
+</div>
+<span class="text-xs font-bold text-down">-0.85%</span>
+</div>
+<div class="p-4 flex justify-between items-center hover:bg-zinc-50 dark:hover:bg-[#101922] transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold text-xs">GBP</div>
+<div>
+<p class="text-xs font-bold">GBP/AOA</p>
+<p class="text-[10px] text-zinc-500">Libra</p>
+</div>
+</div>
+<span class="text-xs font-bold text-up">+0.32%</span>
+</div>
+</div>
+</div>
+<div class="p-5 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+<span class="material-symbols-outlined text-primary mb-2">stars</span>
+<h4 class="text-sm font-bold mb-1">Dica de Trading</h4>
+<p class="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                    O par USD/AOA está se aproximando de uma resistência histórica. Considere as ofertas do mural para travar seu preço agora.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Perfil do Usuário - Plataforma Digital</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "status-green": "#28A745",
+              "status-yellow": "#FFC107",
+              "status-red": "#DC3545",
+              "status-blue": "#17A2B8",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-gray-200/10 dark:border-white/10 px-4 sm:px-6 lg:px-10 py-3 bg-white/5 dark:bg-black/10 backdrop-blur-sm sticky top-0 z-50">
+<div class="flex items-center gap-4 text-black dark:text-white">
+<div class="text-primary size-6">
+<svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 12.17l7.59-7.59L19 6l-9 9z"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold tracking-tight">Plataforma Digital</h2>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Trocar Moeda</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Atividade</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Ajuda</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-gray-200/50 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCPPe1DHFPV4i_E3s-c93O8yJ6Ved_zivI84VTtMxt7sELlLQRWVwuddvMqz70aZ0yZneOcrkRboKzFMmANJFuGX0mPM96gH2ZONplmUREAXMmS3clbNBSzeDkfSN0M-2QKiAxMu9SuuAZbdlgRB9uG3dWaklTF4i1BaRBKp5EXjaCwfkvKJCSP3E05AtAYSuNYA6re_Kix9ePN8e3a2Yq2pBCYro77Bx5vKT4xTomiYk-MRHTxJUDDmG6_l9kvFp24B1jy1-NUu1I");'></div>
+</div>
+</header>
+<main class="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="layout-content-container flex flex-col gap-8">
+<div class="flex flex-wrap justify-between gap-4">
+<div class="flex flex-col gap-2">
+<h1 class="text-gray-900 dark:text-white text-3xl md:text-4xl font-black tracking-tighter">Meu Perfil</h1>
+<p class="text-gray-500 dark:text-gray-400 text-base font-normal">Veja e atualize suas informações pessoais e métodos de pagamento.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+<div class="lg:col-span-1 flex flex-col gap-8">
+<div class="flex flex-col gap-4 items-center text-center p-6 bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10">
+<div class="relative group">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-32 border-4 border-gray-100 dark:border-white/5" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBS-Ll_KEKN4Zir5f1up4NTELOS3qG5Wui0n63yQfXLMQXnL_k7wtafK38btzW9Pa4SIf7FeLoqF_lBlscsailimw12Z7bwwx-OEWSx5hDeWO6Oo1ZXVWp1YYPdncWEG6WLjKzThGNrEeSOdwYBdN0JewpsxS4zxYD14pohHjM-Cqr2YGfTn7_XjQgwD0OWeeIRXLirk5DunQLgmPATuRkotmOgiehjzYXevBCZZ884KpGJyMgXiZI8UxA5JynQG7NLzYKhOgC34dc");'></div>
+<button class="absolute bottom-0 right-0 bg-primary hover:bg-primary/90 text-white rounded-full p-2 shadow-lg transition-transform hover:scale-105" title="Alterar Foto">
+<span class="material-symbols-outlined text-xl">photo_camera</span>
+</button>
+</div>
+<div class="flex flex-col justify-center items-center gap-2">
+<div>
+<p class="text-gray-900 dark:text-white text-xl font-bold tracking-tight">Diassonama Nlando</p>
+<p class="text-gray-500 dark:text-gray-400 text-base">d.nlando@example.com</p>
+</div>
+<button class="text-sm font-medium text-primary hover:text-primary/80 transition-colors">Alterar Foto</button>
+</div>
+</div>
+<div class="flex flex-col p-6 bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-status-yellow"></div>
+<div class="flex items-center justify-between mb-4 pl-2">
+<h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight">Verificação KYC</h2>
+<span class="material-symbols-outlined text-status-yellow">verified_user</span>
+</div>
+<div class="flex flex-col gap-4 pl-2">
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400">Status Atual</span>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center justify-center size-2.5 rounded-full bg-status-yellow animate-pulse"></span>
+<p class="text-lg font-bold text-status-yellow">Em Análise</p>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-status-yellow/10 border border-status-yellow/20">
+<p class="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                        Seus documentos estão sendo revisados pela nossa equipe de compliance.
+                                    </p>
+<div class="flex items-center gap-2 text-xs font-medium text-status-yellow">
+<span class="material-symbols-outlined !text-base">schedule</span>
+<span>Estimativa: 24 a 48 horas úteis</span>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-white/10 pt-4 mt-2">
+<a class="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">
+<span class="material-symbols-outlined !text-lg">security</span>
+                                        Gerir Segurança da Conta
+                                    </a>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-2 flex flex-col gap-8">
+<div class="flex flex-col p-6 bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10 relative">
+<div class="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 flex items-start gap-3">
+<span class="material-symbols-outlined text-status-green mt-0.5">check_circle</span>
+<div class="flex flex-col">
+<h3 class="text-sm font-bold text-status-green">Dados atualizados</h3>
+<p class="text-sm text-gray-600 dark:text-gray-300">Suas informações de perfil foram salvas com sucesso.</p>
+</div>
+<button class="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+<h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight mb-6">Informações Pessoais</h2>
+<form class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="flex flex-col">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="fullName">Nome Completo</label>
+<div class="relative group">
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-12 pr-10" id="fullName" type="text" value="Diassonama Nlando"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors" title="Editar Nome" type="button">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="email">Endereço de E-mail</label>
+<div class="relative group">
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-12 pr-10" id="email" type="email" value="d.nlando@example.com"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors" title="Editar E-mail" type="button">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<p class="text-xs text-status-blue mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm">info</span>
+                                        Alterar o e-mail requer verificação de código.
+                                    </p>
+</div>
+<div class="flex flex-col">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="bi">Número do BI</label>
+<div class="relative group">
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-12 pr-10" id="bi" type="text" value="001234567LA098"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors" title="Editar BI" type="button">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<p class="text-xs text-status-yellow mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined !text-sm">warning</span>
+                                        Alterações podem exigir re-verificação KYC.
+                                    </p>
+</div>
+<div class="flex flex-col">
+<label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="address">Morada</label>
+<div class="relative group">
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-gray-50 dark:bg-white/5 focus:ring-primary focus:border-primary h-12 pr-10" id="address" type="text" value="Rua da Liberdade, Luanda, Angola"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary cursor-pointer transition-colors" title="Editar Morada" type="button">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<div class="sm:col-span-2 pt-4 border-t border-gray-200 dark:border-white/10">
+<div class="flex flex-col gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-gray-500">lock</span>
+<h3 class="text-sm font-bold text-gray-900 dark:text-white">Confirmação de Segurança</h3>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 items-end">
+<div class="flex-grow w-full">
+<label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block" for="current-password">Senha Atual</label>
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white border-gray-300 dark:border-white/20 bg-white dark:bg-black/20 focus:ring-primary focus:border-primary h-10" id="current-password" placeholder="Digite sua senha para confirmar" type="password"/>
+</div>
+<button class="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors shadow-sm" type="submit">
+                                                Salvar Alterações
+                                            </button>
+</div>
+</div>
+</div>
+</form>
+</div>
+<div class="flex flex-col p-6 bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight">Métodos de Pagamento e Recebimento</h2>
+<button class="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary/10 text-primary text-sm font-bold tracking-wide hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-base">add_circle</span>
+<span>Adicionar Novo Método</span>
+</button>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
+<img class="h-8 w-12 object-contain mr-4" data-alt="Visa Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6jbmhA0OSo2rhQvWRd8S5MvxUA7Ad9-uzja8jf_3ZYzVRokLwGKWY2CdJWTfjZ70MxQ6SKtC7t3R1bad8nO5H-7g7Qqsz0HaFvA7S5TP8NN1nuMc-Rcx2N9i4jEf3ROO9Z0IeF83t2t-OgDDT8KXOIvDGsQ6aybAIq3O7zL6ZHVbYy_BDB7yipOtu0khbdUf9x-v_T5ldDGXwjmqLzkMVBRX8kY5A6ITDHWWhLpj2EGkhFAy_NNBXuSFrF6HVhN3dDbPypDlBvHA"/>
+<div class="flex-grow">
+<p class="font-semibold text-gray-800 dark:text-gray-200">Visa</p>
+<p class="text-sm text-gray-500 dark:text-gray-400 tracking-wider font-mono">**** **** **** 1234</p>
+</div>
+<button class="flex items-center justify-center h-9 w-9 rounded-lg text-status-red hover:bg-status-red/10 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+<div class="flex items-center p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
+<img class="h-8 w-12 object-contain mr-4" data-alt="PayPal Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw5G2RxQFga-Yc7Wvzv-vGFcXIbIVH2rUng7FuUrFbN0q2RDMemQ6LKP36xARlP36LouvRDAfUMhe3irmfK7UzmRAfOtbT2efn8OO2cTycx8fVPK4kLeeYRp6tm5NYLKnnW5BNthcld-1WhjEL9mvhLf-FwE5ru7OsZE0JvGqjnMKVxJJtRC_PZda8Bow-TwmMeDY2guoiGjTpmZU9tXL3C9FfnOKG2CEZwHuy7lwX8K-65Rb9hatUagbaef63xOKBSUWQmq9AIQA"/>
+<div class="flex-grow">
+<p class="font-semibold text-gray-800 dark:text-gray-200">PayPal</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">d.nlan...@example.com</p>
+</div>
+<button class="flex items-center justify-center h-9 w-9 rounded-lg text-status-red hover:bg-status-red/10 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+<div class="flex items-center p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
+<img class="h-8 w-12 object-contain mr-4" data-alt="Unitel Money Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBs16Tu-kpoPImnEphnlpfJ_evxZV3XX25TJRsNBAE1mOe7jGhrJWllQq8CXkuSAmc38szhBXh_ldmrgmIb7EBP5tmpkat3l0VXjSvcQbsazissgsng9nxkqT2cGIwlq6qo4Ku2REZ3ZZPVNeNZspKrXexLAGt-e--2F1Dth83MfNYFzLK18Gr303FqKW5TU8a7S9ySkk9ItbRIvsgIznVKhQFugYlQzndHcVOHQ7dXjHx5y2U2pH1YemJeD0GpHA8U72QUxGohtcQ"/>
+<div class="flex-grow">
+<p class="font-semibold text-gray-800 dark:text-gray-200">Unitel Money</p>
+<p class="text-sm text-gray-500 dark:text-gray-400 tracking-wider font-mono">*** *** 456</p>
+</div>
+<button class="flex items-center justify-center h-9 w-9 rounded-lg text-status-red hover:bg-status-red/10 transition-colors">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>
