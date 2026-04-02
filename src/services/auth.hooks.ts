@@ -13,13 +13,13 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (data: LoginFormData) => authService.login(data),
     onSuccess: (data, variables) => {
-      login(data.user, data.token, !!variables.remember);
+      login(data.user, data.access, !!variables.remember);
       queryClient.setQueryData(['me'], data.user);
       toast.success('Bem-vindo ao KwanzaConnect!');
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Erro ao realizar login';
+      const message = error.response?.data?.message || error.response?.data?.error || 'Erro ao realizar login';
       toast.error(message);
     },
   });
@@ -33,13 +33,13 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (data: RegisterFormData) => authService.register(data),
     onSuccess: (data) => {
-      login(data.user, data.token, false);
+      login(data.user, data.access, false);
       queryClient.setQueryData(['me'], data.user);
       toast.success('Conta criada com sucesso!');
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || 'Erro ao criar conta';
+      const message = error.response?.data?.message || error.response?.data?.error || 'Erro ao criar conta';
       toast.error(message);
     },
   });

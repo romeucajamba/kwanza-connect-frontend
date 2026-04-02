@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuthStore } from '@store/authStore';
+import toast from 'react-hot-toast';
 
 const profileSchema = z.object({
   fullName: z.string().min(3, 'Nome muito curto'),
@@ -21,32 +22,32 @@ const PerfilPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: user?.username || 'Diassonama Nlando',
-      email: user?.email || 'd.nlando@example.com',
-      bi: '001234567LA098',
-      address: 'Rua da Liberdade, Luanda, Angola',
+      fullName: user?.full_name || '',
+      email: user?.email || '',
+      bi: 'COORD-KYC-PENDENTE',
+      address: 'Angola, Luanda',
     },
   });
 
-  const onSubmit = (data: ProfileFormData) => {
+  const onSubmit = async (data: ProfileFormData) => {
+    // Placeholder for API update
     console.log('Update profile:', data);
-    // Logic for updating profile
+    toast.success('Perfil atualizado com sucesso (Simulação)');
   };
 
   const paymentMethods = [
-    { name: 'Visa', detail: '**** **** **** 1234', logo: 'https://cdn-icons-png.flaticon.com/512/349/349221.png' },
-    { name: 'PayPal', detail: 'd.nlan...@example.com', logo: 'https://cdn-icons-png.flaticon.com/512/174/174861.png' },
-    { name: 'Unitel Money', detail: '*** *** 456', logo: 'https://www.unitelmoney.ao/wp-content/uploads/2021/08/logo-unitel-money.png' },
+    { name: 'Conta Bancária (AOA)', detail: 'IBAN: AO06 0000 .... 1234', logo: 'https://cdn-icons-png.flaticon.com/512/3233/3233483.png' },
+    { name: 'USDT (Tether)', detail: 'TRC20: 0x71...8x32', logo: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
   ];
 
   return (
-    <div className="flex-1 flex flex-col gap-8 py-10 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display">
+    <div className="flex-1 flex flex-col gap-8 py-10 px-4 md:px-10 lg:px-20 xl:px-40 max-w-[1400px] mx-auto w-full pb-32 lg:pb-10 font-display transition-colors">
       <div className="flex flex-col gap-2">
-        <h1 className="text-gray-900 dark:text-white text-3xl md:text-5xl font-black tracking-tighter">Meu Perfil</h1>
+        <h1 className="text-gray-900 dark:text-white text-3xl md:text-5xl font-black tracking-tighter uppercase">Meu Perfil</h1>
         <p className="text-gray-500 dark:text-[#92adc9] text-base font-medium">Gerencie suas informações pessoais, segurança e métodos de pagamento.</p>
       </div>
 
@@ -59,28 +60,31 @@ const PerfilPage: React.FC = () => {
             className="flex flex-col gap-6 items-center text-center p-8 bg-white dark:bg-[#192633] rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl"
           >
             <div className="relative group">
-              <div 
-                className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-32 border-4 border-primary/20 shadow-2xl transition-all group-hover:scale-105" 
-                style={{ backgroundImage: `url(${user?.profilePicture || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.username})` }} 
-              />
+              <div className="size-32 rounded-full border-4 border-primary/20 shadow-2xl transition-all group-hover:scale-105 overflow-hidden bg-background-light dark:bg-background-dark flex items-center justify-center">
+                <img 
+                  src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`} 
+                  alt={user?.full_name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <button className="absolute bottom-1 right-1 bg-primary text-white rounded-full p-2.5 shadow-xl hover:scale-110 active:scale-95 transition-all">
                 <span className="material-symbols-outlined text-lg">photo_camera</span>
               </button>
             </div>
             <div>
-              <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight">{user?.username || 'Usuário'}</h2>
-              <p className="text-gray-500 dark:text-gray-400 font-bold text-sm tracking-tight">{user?.email}</p>
+              <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight uppercase">{user?.full_name || 'Usuário'}</h2>
+              <p className="text-gray-400 font-bold text-xs tracking-widest uppercase opacity-70">{user?.email}</p>
             </div>
             <div className="w-full h-[1px] bg-gray-50 dark:bg-white/5" />
             <div className="flex items-center gap-6">
               <div className="flex flex-col">
-                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Nível</span>
-                <span className="text-sm font-black text-primary">Prata</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nível</span>
+                <span className="text-sm font-black text-primary">Standard</span>
               </div>
               <div className="w-[1px] h-8 bg-gray-50 dark:bg-white/5" />
               <div className="flex flex-col">
-                <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Membro desde</span>
-                <span className="text-sm font-black text-gray-700 dark:text-gray-300">Out 2023</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Saldo AOA</span>
+                <span className="text-sm font-black text-emerald-500 font-mono">{user?.balance?.toLocaleString('pt-AO') || '0,00'}</span>
               </div>
             </div>
           </motion.div>
@@ -92,26 +96,30 @@ const PerfilPage: React.FC = () => {
             className="flex flex-col p-8 bg-white dark:bg-[#192633] rounded-3xl border border-gray-100 dark:border-white/5 shadow-xl relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10">
-              <span className="material-symbols-outlined text-6xl text-yellow-500">verified_user</span>
+              <span className="material-symbols-outlined text-6xl text-primary">verified_user</span>
             </div>
             <h2 className="text-gray-900 dark:text-white text-xl font-black mb-6 flex items-center gap-3">
-              <span className="material-symbols-outlined text-yellow-500">verified</span>
+              <span className="material-symbols-outlined text-primary">verified</span>
               Verificação KYC
             </h2>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-black tracking-widest text-gray-400 mb-1">Status Atual</span>
                 <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                  <p className="text-lg font-black text-yellow-500">Em Análise</p>
+                  <span className={`size-2 rounded-full ${user?.is_verified ? 'bg-emerald-500' : 'bg-yellow-500 animate-pulse'}`}></span>
+                  <p className={`text-lg font-black ${user?.is_verified ? 'text-emerald-500' : 'text-yellow-500'}`}>
+                    {user?.is_verified ? 'Verificado' : 'Em Análise'}
+                  </p>
                 </div>
               </div>
-              <div className="p-4 rounded-2xl bg-yellow-500/5 border border-yellow-500/10">
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-bold">
-                  Sua documentação está sendo revisada. Isso pode levar de 24h a 48h úteis.
-                </p>
-              </div>
-              <button className="mt-2 flex items-center justify-center gap-2 text-xs font-black text-primary uppercase tracking-widest hover:underline">
+              {!user?.is_verified && (
+                <div className="p-4 rounded-2xl bg-yellow-500/5 border border-yellow-500/10">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-bold">
+                    Sua documentação está sendo revisada. Isso garante a segurança de todas as trocas P2P.
+                  </p>
+                </div>
+              )}
+              <button className="mt-2 flex items-center justify-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
                 <span className="material-symbols-outlined text-sm">contact_support</span>
                 Suporte de Verificação
               </button>
@@ -126,11 +134,11 @@ const PerfilPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col p-8 bg-white dark:bg-[#192633] rounded-3xl border border-gray-100 dark:border-white/5 shadow-2xl"
           >
-            <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight mb-8">Informações Pessoais</h2>
+            <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight mb-8 uppercase">Informações Pessoais</h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nome Completo</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nome Completo</label>
                   <input 
                     {...register('fullName')}
                     className="w-full h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-2 border-transparent focus:border-primary/50 text-gray-900 dark:text-white font-bold outline-none transition-all"
@@ -138,7 +146,7 @@ const PerfilPage: React.FC = () => {
                   {errors.fullName && <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest ml-1">{errors.fullName.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Endereço de E-mail</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Endereço de E-mail</label>
                   <input 
                     {...register('email')}
                     className="w-full h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-2 border-transparent focus:border-primary/50 text-gray-900 dark:text-white font-bold outline-none transition-all"
@@ -146,7 +154,7 @@ const PerfilPage: React.FC = () => {
                   {errors.email && <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest ml-1">{errors.email.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Número do BI</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Número do BI</label>
                   <input 
                     {...register('bi')}
                     className="w-full h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-2 border-transparent focus:border-primary/50 text-gray-900 dark:text-white font-bold outline-none transition-all"
@@ -154,7 +162,7 @@ const PerfilPage: React.FC = () => {
                   {errors.bi && <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest ml-1">{errors.bi.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Morada</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Morada</label>
                   <input 
                     {...register('address')}
                     className="w-full h-14 px-6 rounded-2xl bg-gray-50 dark:bg-[#101922] border-2 border-transparent focus:border-primary/50 text-gray-900 dark:text-white font-bold outline-none transition-all"
@@ -164,7 +172,7 @@ const PerfilPage: React.FC = () => {
 
               <div className="pt-8 border-t border-gray-50 dark:bg-white/5 space-y-6">
                 <div className="max-w-md space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirmar com Senha</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Confirmar com Senha</label>
                   <input 
                     type="password"
                     {...register('currentPassword')}
@@ -174,9 +182,10 @@ const PerfilPage: React.FC = () => {
                 </div>
                 <button 
                   type="submit"
-                  className="px-10 h-14 bg-primary hover:bg-blue-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 uppercase tracking-widest text-xs"
+                  disabled={isSubmitting}
+                  className="px-10 h-16 bg-primary hover:bg-blue-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 uppercase tracking-widest text-xs disabled:opacity-50"
                 >
-                  Salvar Alterações
+                  {isSubmitting ? 'Salvando...' : 'Atualizar Perfil'}
                 </button>
               </div>
             </form>
@@ -190,21 +199,21 @@ const PerfilPage: React.FC = () => {
             className="flex flex-col p-8 bg-white dark:bg-[#192633] rounded-3xl border border-gray-100 dark:border-white/5 shadow-2xl"
           >
             <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
-              <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight">Métodos de Pagamento</h2>
+              <h2 className="text-gray-900 dark:text-white text-2xl font-black tracking-tight uppercase">Métodos de Pagamento</h2>
               <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-black text-[10px] uppercase tracking-widest">
                 <span className="material-symbols-outlined text-sm">add_circle</span>
-                Adicionar Novo
+                Novo Método
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {paymentMethods.map((method, idx) => (
                 <div key={idx} className="flex items-center p-5 bg-gray-50 dark:bg-[#101922] rounded-2xl border border-transparent hover:border-primary/30 transition-all group">
-                  <div className="size-12 rounded-xl bg-white dark:bg-[#192633] flex items-center justify-center p-2 shadow-sm mr-4 group-hover:scale-110 transition-transform">
+                  <div className="size-12 rounded-xl bg-white dark:bg-[#192633] flex items-center justify-center p-2 shadow-sm mr-4 group-hover:scale-110 transition-transform overflow-hidden">
                     <img src={method.logo} alt={method.name} className="w-full h-full object-contain" />
                   </div>
                   <div className="flex-grow">
                     <p className="font-black text-sm text-gray-900 dark:text-white">{method.name}</p>
-                    <p className="text-[10px] font-bold text-gray-400 tracking-wider font-mono">{method.detail}</p>
+                    <p className="text-[10px] font-bold text-gray-400 tracking-wider font-mono lowercase">{method.detail}</p>
                   </div>
                   <button className="text-gray-400 hover:text-rose-500 transition-colors p-2">
                     <span className="material-symbols-outlined text-xl">delete</span>

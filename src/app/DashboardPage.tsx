@@ -2,10 +2,16 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@store/authStore';
 import { APP_ROUTES } from '@constants';
+import { useDashboardStats } from '@services/rates.hooks';
+import { useTransactions } from '@services/transactions.hooks';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const DashboardPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: recentTransactions, isLoading: txLoading } = useTransactions();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -22,12 +28,6 @@ const DashboardPage: React.FC = () => {
     show: { opacity: 1, y: 0 },
   };
 
-  const balances = [
-    { label: 'Kwanza Angolano', value: '1.500.000,00 AOA', flag: 'https://lh3.googleusercontent.com/aida-public/AB6AXuArA_kHDOOeaEENQEP68Cjekm20956GFyjsLwadimeLc7dZznKfN1TIhpqziJ0mxKvi8JkC1uGdBwqcIU2aettE65o1va39stiyOAWtVzFNy_2g_HVdz6cjXASrYs6yjZwZvu49wTpQY5SbDneHTdlpH59PCVC63rLNal0cgX3P1PXeJzuczzPnJqHbVmevU0mHTmaAxxeLk1eQqLD750W4YZr1p2-3Tap4ZnfhfbM1i_PR-bPMZukKo5QS9shW5cHv36NI7id8GmU' },
-    { label: 'Dólar Americano', value: '2.000,00 USD', flag: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB8X3nvHVOpG-TcyosNq2zH8ozAIqigxXvxgRpHQC8gFoZbsP3drt2WMK-m2ibyYN09UI84eAg5tQRZECqpECAWYS2sBngMXrEUb3RbwYkKFKwvrxFh6kX0SP-vUA0_Tub8BVZvFVocVdtFav0WsLti8IrV1S68i7Ey5mqpvPTgHvRPCTESGy6h5I_UuZYk5M-vRxV62MWxSSTTz0wNHjIblit4ModobiOERNLm9yffqzvsxapAOCEI7BmsMvzasEJizqht4CgBpNk' },
-    { label: 'Euro', value: '1.800,00 EUR', flag: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6s7zlSgfK-FcECxOgUd8MHZbzxoNqXlsRBTzzF_D03afGH9wTLLDXIcuJdBNdja_Qx4GLYiu5bBGlKpIrpRrh4u4KoTUo28KUO46KFnJ1_0KFzcr5z9zyvubWxEfANL_QbkIgjQpkZ1vNjq35ELJs1w2nBlccdsWE6g6LfmC3VLCW8u4j0EUMzOd3rwYkXlXN1Noo99t8hwYSP_oH6XtUiBYLZogDlpTJ8OWf_qQCgsuqpBeghva0qrDdFVUe4_5nKv3dQGAdniQ' },
-  ];
-
   const quickActions = [
     { icon: 'currency_exchange', label: 'Converter', path: APP_ROUTES.CONVERSAO },
     { icon: 'send', label: 'Enviar', path: APP_ROUTES.P2P_BROWSE },
@@ -35,12 +35,24 @@ const DashboardPage: React.FC = () => {
     { icon: 'groups', label: 'Trocas P2P', path: APP_ROUTES.P2P_BROWSE },
   ];
 
-  const transactions = [
-    { type: 'Recebimento', amount: '+ $500.00 USD', date: '15 de Julho, 2024', status: 'Concluída', icon: 'arrow_downward', color: 'text-emerald-500' },
-    { type: 'Envio', amount: '- 150.000,00 AOA', date: '14 de Julho, 2024', status: 'Concluída', icon: 'arrow_upward', color: 'text-rose-500' },
-    { type: 'Conversão', amount: '€100 para $108.50', date: '12 de Julho, 2024', status: 'Concluída', icon: 'currency_exchange', color: 'text-primary' },
-    { type: 'Recebimento', amount: '+ 2.000.000,00 AOA', date: '10 de Julho, 2024', status: 'Pendente', icon: 'arrow_downward', color: 'text-emerald-500' },
-  ];
+  if (statsLoading || txLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background-light dark:bg-background-dark min-h-screen">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="size-12 border-4 border-primary border-t-transparent rounded-full" 
+        />
+      </div>
+    );
+  }
+
+  // Format balances based on stats
+  const balances = stats?.rates.map(r => ({
+    label: r.to_currency.name,
+    value: `${r.rate.toLocaleString('pt-AO')} ${r.to_currency.code}`,
+    flag: r.to_currency.flag_emoji || 'https://api.dicebear.com/7.x/initials/svg?seed=' + r.to_currency.code
+  })) || [];
 
   return (
     <motion.div 
@@ -54,7 +66,7 @@ const DashboardPage: React.FC = () => {
           <h1 className="text-black dark:text-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">
             Dashboard de Controlo
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">Bem-vindo de volta, {user?.username}!</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">Bem-vindo de volta, {user?.full_name}!</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
@@ -64,7 +76,7 @@ const DashboardPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <span className="text-xs font-bold text-gray-500 dark:text-gray-400">+12 ativos hoje</span>
+          <span className="text-xs font-bold text-gray-500 dark:text-gray-400">+{stats?.active_offers || 0} ativos hoje</span>
         </div>
       </div>
 
@@ -78,11 +90,16 @@ const DashboardPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                   <p className="text-black dark:text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.015em]">
-                    1.500.000,00 <span className="text-primary">AOA</span>
+                    {(stats?.total_balance_aoa || 0).toLocaleString('pt-AO', { minimumFractionDigits: 2 })} <span className="text-primary">AOA</span>
                   </p>
-                  <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-1">≈ 1.807,23 USD • 1.666,67 EUR</p>
+                  <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mt-1">
+                    ≈ {(stats?.total_balance_usd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                  </p>
                 </div>
-                <button className="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all">
+                <button 
+                  onClick={() => navigate(APP_ROUTES.P2P_BROWSE)}
+                  className="flex min-w-[140px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
+                >
                   <span className="material-symbols-outlined mr-2">add_circle</span>
                   <span className="truncate">Adicionar Fundos</span>
                 </button>
@@ -100,8 +117,12 @@ const DashboardPage: React.FC = () => {
                 className="flex flex-col gap-4 p-5 rounded-2xl bg-white dark:bg-[#192633] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="size-10 rounded-full border-2 border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner">
-                    <img src={balance.flag} alt={balance.label} className="w-full h-full object-cover" />
+                  <div className="size-10 rounded-full border-2 border-gray-100 dark:border-gray-800 overflow-hidden shadow-inner flex items-center justify-center bg-background-light dark:bg-background-dark">
+                    {balance.flag.startsWith('http') ? (
+                       <img src={balance.flag} alt={balance.label} className="w-full h-full object-cover" />
+                    ) : (
+                       <span className="text-xl">{balance.flag}</span>
+                    )}
                   </div>
                   <span className="material-symbols-outlined text-gray-300 dark:text-gray-600">more_vert</span>
                 </div>
@@ -173,29 +194,42 @@ const DashboardPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx, idx) => (
-                <tr key={idx} className="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-b border-gray-50 dark:border-white/5 last:border-0">
-                  <td className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`size-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${tx.color} group-hover:scale-110 transition-transform shadow-sm`}>
-                        <span className="material-symbols-outlined text-[20px]">{tx.icon}</span>
+              {(recentTransactions || []).slice(0, 5).map((tx, idx) => {
+                const isSeller = tx.seller.id === user?.id;
+                return (
+                  <tr key={idx} className="group hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors border-b border-gray-50 dark:border-white/5 last:border-0">
+                    <td className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`size-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${isSeller ? 'text-rose-500' : 'text-emerald-500'} group-hover:scale-110 transition-transform shadow-sm`}>
+                          <span className="material-symbols-outlined text-[20px]">
+                            {isSeller ? 'arrow_upward' : 'arrow_downward'}
+                          </span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-900 dark:text-white">
+                          {isSeller ? 'Venda P2P' : 'Compra P2P'}
+                        </span>
                       </div>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">{tx.type}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-sm font-black text-gray-900 dark:text-white">{tx.amount}</td>
-                  <td className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">{tx.date}</td>
-                  <td className="p-4 text-right">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
-                      tx.status === 'Concluída' 
-                        ? 'bg-emerald-500/10 text-emerald-500' 
-                        : 'bg-yellow-500/10 text-yellow-500'
-                    }`}>
-                      {tx.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-4 text-sm font-black text-gray-900 dark:text-white">
+                      {isSeller ? '-' : '+'} {tx.give_amount.toLocaleString('pt-AO')} {tx.give_currency.code}
+                    </td>
+                    <td className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">
+                      {format(new Date(tx.created_at), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                    </td>
+                    <td className="p-4 text-right">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
+                        tx.status === 'completed' 
+                          ? 'bg-emerald-500/10 text-emerald-500' 
+                          : tx.status === 'pending'
+                          ? 'bg-yellow-500/10 text-yellow-500'
+                          : 'bg-rose-500/10 text-rose-500'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

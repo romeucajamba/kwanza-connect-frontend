@@ -5,10 +5,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // Security: timeout to prevent resource exhaustion
+  timeout: 15000, 
   headers: {
     'Content-Type': 'application/json',
-    'X-Content-Type-Options': 'nosniff', // Security: prevent MIME type sniffing
+    'X-Content-Type-Options': 'nosniff',
+    'X-API-KEY': import.meta.env.VITE_X_API_KEY || '', // Mandatory API Key
   },
 });
 
