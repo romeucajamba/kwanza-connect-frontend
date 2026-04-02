@@ -43,7 +43,11 @@ const LoginPage: React.FC = () => {
   });
 
   const onLoginSubmit = (data: LoginFormData) => {
-    login(data);
+    login(data, {
+      onSuccess: () => {
+        loginForm.reset();
+      }
+    });
   };
 
   const onRegisterSubmit = (data: RegisterFormData) => {
@@ -55,7 +59,14 @@ const LoginPage: React.FC = () => {
     }
     
     // Só envia para a API se estiver no Step 2
-    registerUser(data);
+    registerUser(data, {
+      onSuccess: () => {
+        registerForm.reset();
+        setSignUpStep(1);
+        setFrontDocName(null);
+        setBackDocName(null);
+      }
+    });
   };
 
   const nextStep = () => setSignUpStep((s) => Math.min(s + 1, 2));
@@ -271,12 +282,52 @@ const LoginPage: React.FC = () => {
                                 </div>
                               </div>
 
-                              <div className="space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.3em] ml-1 text-center">Upload de Documentação</h4>
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="flex flex-col group">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 pb-2 ml-1">Tipo de Documento</label>
+                                    <select
+                                      {...registerForm.register('docType')}
+                                      className="w-full bg-slate-50 dark:bg-[#111922] border-2 border-transparent focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-xl p-3.5 text-sm font-bold text-slate-900 dark:text-white transition-all appearance-none cursor-pointer"
+                                    >
+                                      <option value="bi">Bilhete de Identidade</option>
+                                      <option value="passport">Passaporte</option>
+                                      <option value="residence">Residência</option>
+                                    </select>
+                                  </div>
+                                  <div className="flex flex-col group">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 pb-2 ml-1">Nº do Documento</label>
+                                    <input
+                                      {...registerForm.register('docNumber')}
+                                      className="w-full bg-slate-50 dark:bg-[#111922] border-2 border-transparent focus:border-primary/20 focus:ring-4 focus:ring-primary/5 rounded-xl p-3.5 text-sm font-bold text-slate-900 dark:text-white transition-all placeholder:text-slate-300 dark:placeholder:text-slate-800"
+                                      placeholder="Ex: 000123LA045"
+                                    />
+                                  </div>
+                                </div>
+
+                                <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.3em] ml-1 pt-2">Fotos do Documento</h4>
                                 <div className="flex flex-col sm:flex-row gap-4">
                                   {/* Hidden Inputs */}
-                                  <input type="file" ref={frontDocRef} className="hidden" onChange={(e) => setFrontDocName(e.target.files?.[0]?.name || null)} />
-                                  <input type="file" ref={backDocRef} className="hidden" onChange={(e) => setBackDocName(e.target.files?.[0]?.name || null)} />
+                                  <input 
+                                    type="file" ref={frontDocRef} className="hidden" accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        setFrontDocName(file.name);
+                                        registerForm.setValue('frontDoc', file);
+                                      }
+                                    }} 
+                                  />
+                                  <input 
+                                    type="file" ref={backDocRef} className="hidden" accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        setBackDocName(file.name);
+                                        registerForm.setValue('backDoc', file);
+                                      }
+                                    }} 
+                                  />
 
                                   <button 
                                     type="button" onClick={() => frontDocRef.current?.click()}

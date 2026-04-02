@@ -19,7 +19,16 @@ export const useLogin = () => {
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.response?.data?.error || 'Erro ao realizar login';
+      const data = error.response?.data;
+      let message = 'Erro ao realizar login';
+      if (typeof data === 'string') message = data;
+      else if (data?.message) message = data.message;
+      else if (data?.error) message = data.error;
+      else if (typeof data === 'object') {
+        const firstError = Object.values(data)[0];
+        if (Array.isArray(firstError)) message = firstError[0];
+        else if (typeof firstError === 'string') message = firstError;
+      }
       toast.error(message);
     },
   });
@@ -39,15 +48,23 @@ export const useRegister = () => {
         toast.success('Bem-vindo ao KwanzaConnect!');
         navigate('/dashboard');
       } else {
-        // Handle case where email verification is required
-        toast.success(data?.message || 'Conta criada! Verifique o seu e-mail para ativar.', {
+        toast.success(data?.message || 'Conta criada com sucesso!', {
           duration: 6000,
         });
         navigate('/login');
       }
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.response?.data?.error || 'Erro ao criar conta';
+      const data = error.response?.data;
+      let message = 'Erro ao criar conta';
+      if (typeof data === 'string') message = data;
+      else if (data?.message) message = data.message;
+      else if (data?.error) message = data.error;
+      else if (typeof data === 'object') {
+        const firstError = Object.values(data)[0];
+        if (Array.isArray(firstError)) message = firstError[0];
+        else if (typeof firstError === 'string') message = firstError;
+      }
       toast.error(message);
     },
   });

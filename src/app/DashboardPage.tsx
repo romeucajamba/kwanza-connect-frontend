@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   PlusCircle, 
-  MoreVertical, 
-  ArrowRight, 
   ArrowUpRight, 
   ArrowDownLeft, 
   Wallet,
@@ -62,11 +60,22 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  const balances = stats?.rates.map(r => ({
+  const balances = stats?.rates?.map(r => ({
     label: r.to_currency.name,
     value: `${r.rate.toLocaleString('pt-AO')} ${r.to_currency.code}`,
     flag: r.to_currency.flag_emoji || 'https://api.dicebear.com/7.x/initials/svg?seed=' + r.to_currency.code
   })) || [];
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      'completed': 'Concluída',
+      'pending': 'Pendente',
+      'processing': 'Processando',
+      'cancelled': 'Cancelada',
+      'failed': 'Falhou'
+    };
+    return labels[status.toLowerCase()] || status;
+  };
 
   return (
     <motion.div 
@@ -133,27 +142,33 @@ const DashboardPage: React.FC = () => {
           </motion.div>
 
           {/* Asset Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {balances.map((balance, idx) => (
-              <motion.div 
-                key={idx}
-                variants={itemVariants}
-                className="flex flex-col gap-4 p-5 rounded-xl bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="size-9 rounded-lg bg-slate-50 dark:bg-[#111922] flex items-center justify-center text-lg">
-                    {balance.flag}
+          {balances.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {balances.map((balance, idx) => (
+                <motion.div 
+                  key={idx}
+                  variants={itemVariants}
+                  className="flex flex-col gap-4 p-5 rounded-xl bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="size-9 rounded-lg bg-slate-50 dark:bg-[#111922] flex items-center justify-center text-lg">
+                      {balance.flag}
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-slate-900 dark:text-white text-base font-bold tracking-tight">
-                    {balance.value}
-                  </p>
-                  <p className="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-widest">{balance.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="space-y-0.5">
+                    <p className="text-slate-900 dark:text-white text-base font-bold tracking-tight">
+                      {balance.value}
+                    </p>
+                    <p className="text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-widest">{balance.label}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-32 flex items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-white/5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Sem ativos registados</p>
+            </div>
+          )}
         </div>
 
         {/* Sidebar Column */}
@@ -211,48 +226,54 @@ const DashboardPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[500px]">
-            <thead>
-              <tr className="border-b border-slate-50 dark:border-white/5 opacity-50">
-                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tipo</th>
-                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Valor</th>
-                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">Data</th>
-                <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-              {(recentTransactions || []).slice(0, 5).map((tx, idx) => {
-                const isSeller = tx.seller.id === user?.id;
-                return (
-                  <tr key={idx} className="group transition-colors">
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`size-8 rounded-lg flex items-center justify-center ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                          {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+          {recentTransactions && recentTransactions.length > 0 ? (
+            <table className="w-full text-left min-w-[500px]">
+              <thead>
+                <tr className="border-b border-slate-50 dark:border-white/5 opacity-50">
+                  <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tipo</th>
+                  <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Valor</th>
+                  <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">Data</th>
+                  <th className="pb-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                {recentTransactions.slice(0, 5).map((tx, idx) => {
+                  const isSeller = tx.seller?.id === user?.id;
+                  return (
+                    <tr key={idx} className="group transition-colors">
+                      <td className="py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`size-8 rounded-lg flex items-center justify-center ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                            {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{isSeller ? 'Venda' : 'Compra'}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{isSeller ? 'Venda' : 'Compra'}</span>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <span className={`text-[11px] font-bold ${tx.status === 'completed' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
-                        {tx.give_amount.toLocaleString()} {tx.give_currency.code}
-                      </span>
-                    </td>
-                    <td className="py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">
-                      {format(new Date(tx.created_at), "dd MMM HH:mm")}
-                    </td>
-                    <td className="py-4 text-right">
-                      <span className={`text-[8px] font-bold tracking-widest uppercase ${
-                        tx.status === 'completed' ? 'text-emerald-500' : tx.status === 'pending' ? 'text-amber-500' : 'text-rose-500'
-                      }`}>
-                        {tx.status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="py-4">
+                        <span className={`text-[11px] font-bold ${tx.status === 'completed' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`}>
+                          {tx.give_amount.toLocaleString()} {tx.give_currency.code}
+                        </span>
+                      </td>
+                      <td className="py-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden md:table-cell">
+                        {format(new Date(tx.created_at), "dd MMM HH:mm")}
+                      </td>
+                      <td className="py-4 text-right">
+                        <span className={`text-[8px] font-bold tracking-widest uppercase ${
+                          tx.status === 'completed' ? 'text-emerald-500' : tx.status === 'pending' ? 'text-amber-500' : 'text-rose-500'
+                        }`}>
+                          {getStatusLabel(tx.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="h-24 flex items-center justify-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Nenhuma transação recente</p>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

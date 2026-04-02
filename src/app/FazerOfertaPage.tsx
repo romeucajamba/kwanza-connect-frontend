@@ -13,10 +13,13 @@ import {
   Banknote
 } from 'lucide-react';
 import { useCreateOffer } from '../services/offers.hooks';
+import { useCurrencies } from '../services/rates.hooks';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const FazerOfertaPage: React.FC = () => {
   const navigate = useNavigate();
+  const { data: currencies } = useCurrencies();
   const { mutate: createOffer, isPending } = useCreateOffer();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -29,11 +32,34 @@ const FazerOfertaPage: React.FC = () => {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const giveCurrency = currencies?.find(c => c.code === formData.give_currency);
+    const receiveCurrency = currencies?.find(c => c.code === formData.receive_currency);
+
+    if (!giveCurrency || !receiveCurrency) {
+      toast.error('Moeda inválida ou não carregada');
+      return;
+    }
+
     createOffer({
-      give_currency: 1, // Mock IDs
-      receive_currency: 2,
+      give_currency: giveCurrency.id,
+      receive_currency: receiveCurrency.id,
       give_amount: parseFloat(formData.give_amount),
       receive_amount: parseFloat(formData.receive_amount),
+    }, {
+      onSuccess: () => {
+        toast.success('Oferta publicada com sucesso!');
+        setFormData({
+          ...formData,
+          give_amount: '',
+          receive_amount: '',
+        });
+        setStep(1);
+      },
+      onError: (error: any) => {
+        const message = error.response?.data?.message || 'Erro ao publicar oferta';
+        toast.error(message);
+      }
     });
   };
 
@@ -91,9 +117,7 @@ const FazerOfertaPage: React.FC = () => {
                                placeholder="1.000,00" value={formData.give_amount} onChange={(e) => setFormData({...formData, give_amount: e.target.value})}
                              />
                              <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 cursor-pointer pr-8 uppercase tracking-widest" value={formData.give_currency} onChange={(e) => setFormData({...formData, give_currency: e.target.value})}>
-                                <option>USD</option>
-                                <option>EUR</option>
-                                <option>BTC</option>
+                                {currencies?.map(c => <option key={c.id} value={c.code}>{c.code}</option>) || <option>USD</option>}
                              </select>
                           </div>
                        </div>
@@ -105,8 +129,7 @@ const FazerOfertaPage: React.FC = () => {
                                placeholder="850.000,00" value={formData.receive_amount} onChange={(e) => setFormData({...formData, receive_amount: e.target.value})}
                              />
                              <select className="bg-transparent border-none text-[9px] font-bold text-primary focus:ring-0 cursor-pointer pr-8 uppercase tracking-widest" value={formData.receive_currency} onChange={(e) => setFormData({...formData, receive_currency: e.target.value})}>
-                                <option>AOA</option>
-                                <option>ZAR</option>
+                                {currencies?.map(c => <option key={c.id} value={c.code}>{c.code}</option>) || <option>AOA</option>}
                              </select>
                           </div>
                        </div>

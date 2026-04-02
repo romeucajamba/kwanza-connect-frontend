@@ -1,9 +1,22 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { mockLogs } from '../lib/mockData';
+import { 
+  Shield, 
+  AlertTriangle, 
+  Info, 
+  Terminal, 
+  Activity, 
+  ChevronDown, 
+  Search, 
+  X, 
+  Download,
+  HelpCircle,
+  FileJson
+} from 'lucide-react';
+import { useAuditLogs } from '../services/audit.hooks';
 import { formatTimestamp, severityBg, severityColor, roleLabel, cn } from '../lib/utils';
-import type { LogEntry, LogSeverity } from '../types';
+import type { LogSeverity } from '../types';
 
 // ─── Severity dot ─────────────────────────────────────────────────────────────
 const SeverityDot: React.FC<{ severity: LogSeverity }> = ({ severity }) => (
@@ -18,27 +31,14 @@ const SeverityDot: React.FC<{ severity: LogSeverity }> = ({ severity }) => (
 );
 
 // ─── Log row ──────────────────────────────────────────────────────────────────
-const LogRow: React.FC<{ entry: LogEntry; index: number }> = ({ entry, index }) => {
+const LogRow: React.FC<{ entry: any; index: number }> = ({ entry, index }) => {
   const [expanded, setExpanded] = useState(false);
 
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ delay: index * 0.04, duration: 0.3 }}
-      className="border-b border-gray-100 dark:border-gray-800 last:border-0"
-    >
-      <button
-        className="flex gap-4 w-full px-4 py-3.5 justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
-        onClick={() => setExpanded((v) => !v)}
-        aria-expanded={expanded}
-      >
-        {/* Icon */}
-        <div className={cn('flex items-center justify-center rounded-xl shrink-0 size-11', severityBg[entry.severity])}>
-          <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{entry.icon}</span>
-        </div>
+  const getIcon = (action: string) => {
+    if (action.includes('login')) return <Shield className="size-4" />;
+    if (action.includes('offer')) return <Activity className="size-4" />;
+    return <Terminal className="size-4" />;
+  };
 
         {/* Content */}
         <div className="flex flex-1 flex-col min-w-0">

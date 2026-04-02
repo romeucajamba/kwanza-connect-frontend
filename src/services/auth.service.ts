@@ -11,16 +11,24 @@ export const authService = {
   },
 
   register: async (data: RegisterFormData): Promise<AuthResponse> => {
-    // API expects full_name and password_confirm
-    const payload = {
-      full_name: data.fullName.trim(),
-      email: data.email,
-      password: data.password,
-      password_confirm: data.confirmPassword,
-      phone: '', // Optional but included in serializer
-      country_code: 'AO' // Default
-    };
-    const response = await api.post(API_ROUTES.AUTH.REGISTER, payload);
+    const formData = new FormData();
+    formData.append('full_name', data.fullName.trim());
+    formData.append('email', data.email.toLowerCase());
+    formData.append('password', data.password);
+    formData.append('password_confirm', data.confirmPassword);
+    formData.append('phone', data.phone || '');
+    formData.append('country_code', 'AO');
+
+    if (data.docType) formData.append('doc_type', data.docType);
+    if (data.docNumber) formData.append('doc_number', data.docNumber);
+    if (data.frontDoc) formData.append('front_image', data.frontDoc);
+    if (data.backDoc) formData.append('back_image', data.backDoc);
+
+    const response = await api.post(API_ROUTES.AUTH.REGISTER, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data.data;
   },
 
