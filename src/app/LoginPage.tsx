@@ -47,6 +47,14 @@ const LoginPage: React.FC = () => {
   };
 
   const onRegisterSubmit = (data: RegisterFormData) => {
+    // Se estiver no Step 1, apenas avança para o Step 2 (KYC)
+    // Isso evita submissões acidentais por "Enter" antes dos docs
+    if (signUpStep === 1) {
+      nextStep();
+      return;
+    }
+    
+    // Só envia para a API se estiver no Step 2
     registerUser(data);
   };
 
@@ -138,7 +146,7 @@ const LoginPage: React.FC = () => {
                         <div className="flex flex-col w-full group">
                           <div className="flex justify-between items-center pb-2 ml-1">
                             <label className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Sua Palavra-Passe</label>
-                            <Link to="/forgot-password" px-2 className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline opacity-80">Esquecida?</Link>
+                            <Link to="/forgot-password" className="px-2 text-primary text-[10px] font-black uppercase tracking-widest hover:underline opacity-80">Esquecida?</Link>
                           </div>
                           <div className="relative flex w-full items-center">
                             <input
