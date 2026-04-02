@@ -125,4 +125,4 @@ Os arquivos serão gerados na pasta `dist/`, prontos para serem servidos por qua
 Este projeto é de uso privado para a plataforma **KwanzaConnect**.
 
 ---
-*Desenvolvido com ❤️ pela equipe Antigravity.*
+*Desenvolvido com ❤️ por Romeu Cajamba.*
