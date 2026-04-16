@@ -1,7 +1,7 @@
 import { api } from '@lib/axios';
 import { API_ROUTES } from '@constants';
 import type { User, AuthResponse } from '@types';
-import type { LoginFormData, RegisterFormData } from '@schema/auth.schema';
+import type { LoginFormData, RegisterFormData } from 'src/schemas/auth.schema';
 
 export const authService = {
   login: async (data: LoginFormData): Promise<AuthResponse> => {
@@ -39,5 +39,41 @@ export const authService = {
   getMe: async (): Promise<User> => {
     const response = await api.get(API_ROUTES.AUTH.ME);
     return response.data.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email });
+    return response.data;
+  },
+
+  resetPassword: async (data: any) => {
+    const response = await api.post(API_ROUTES.AUTH.RESET_PASSWORD, data);
+    return response.data;
+  },
+
+  verifyEmail: async (token: string) => {
+    // A API do backend espera o token na URL: /auth/verify-email/<token>/
+    const response = await api.get(`${API_ROUTES.AUTH.VERIFY_EMAIL}${token}/`);
+    return response.data;
+  },
+
+  updateProfile: async (data: Partial<User>): Promise<User> => {
+    const response = await api.patch(API_ROUTES.AUTH.ME, data);
+    return response.data.data;
+  },
+
+  updateAvatar: async (file: File): Promise<User> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.patch(API_ROUTES.AUTH.ME, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.data;
+  },
+
+  changePassword: async (data: any): Promise<void> => {
+    await api.post(API_ROUTES.AUTH.CHANGE_PASSWORD, data);
   },
 };

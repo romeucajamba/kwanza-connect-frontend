@@ -1,0 +1,290 @@
+import React, { useMemo } from 'react';
+import { 
+  ShieldCheck,
+  Settings,
+  Award,
+  Edit3,
+  Camera,
+  User,
+  Clock,
+  AlertCircle
+} from 'lucide-react';
+import { useAuthStore } from '@store/authStore';
+import { useNavigate } from 'react-router-dom';
+import { useTransactions } from '@services/transactions.hooks';
+import { useUpdateProfile, useUpdateAvatar } from '@services/auth.hooks';
+import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
+import { useForm } from 'react-hook-form';
+import { Loader2 } from 'lucide-react';
+import { getAvatarUrl } from '@lib/media';
+
+const PerfilPage: React.FC = () => {
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
+  const { data: transactions } = useTransactions();
+  const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutate: updateAvatar, isPending: isUpdatingAvatar } = useUpdateAvatar();
+
+  const { register, handleSubmit, reset } = useForm({
+    values: {
+      full_name: user?.full_name || '',
+      phone: user?.phone || '',
+      city: user?.city || 'Luanda',
+    }
+  });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const stats = useMemo(() => {
+    if (!transactions) return { count: 0, volume: 0 };
+    const completed = transactions.filter((tx: any) => tx.status === 'completed');
+    const volume = completed.reduce((acc: number, tx: any) => acc + (tx.give_amount || 0), 0);
+    return { count: completed.length, volume };
+  }, [transactions]);
+
+  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      updateAvatar(file);
+    }
+  };
+
+  const onSubmit = (data: any) => {
+    updateProfile(data);
+  };
+
+
+  const avatarUrl = getAvatarUrl(user?.avatar, user?.email);
+
+  return (
+    <div className="w-full mx-auto max-w-7xl pb-12">
+      <div className="flex flex-col gap-8">
+        {/* Header Section */}
+        <div className="flex flex-wrap justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-black tracking-tighter">Meu Perfil</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-base font-normal">Veja e atualize suas informações pessoais e status de verificação.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+          
+          {/* Left Column: Avatar & KYC */}
+          <div className="lg:col-span-1 flex flex-col gap-8">
+            <div className="flex flex-col gap-4 items-center text-center p-8 bg-white dark:bg-[#192633] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none" />
+              
+              <div className="relative group">
+                <Avatar className={`size-32 border-4 border-white dark:border-[#111922] shadow-xl ${isUpdatingAvatar ? 'opacity-50' : ''}`}>
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback className="text-3xl bg-slate-100 dark:bg-slate-800">
+                    <User className="size-16 text-slate-400" />
+                  </AvatarFallback>
+                </Avatar>
+                {isUpdatingAvatar && (
+                   <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="size-6 text-primary animate-spin" />
+                   </div>
+                )}
+                <input 
+                  type="file" ref={fileInputRef} onChange={onAvatarChange} 
+                  accept="image/*" className="hidden" 
+                />
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-1 right-1 bg-primary hover:bg-primary/90 text-white rounded-full p-2.5 shadow-lg transition-transform hover:scale-110 border-2 border-white dark:border-[#192633]"
+                >
+                  <Camera className="size-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col justify-center items-center gap-1 mt-2">
+                <p className="text-gray-900 dark:text-white text-xl font-bold tracking-tight">{user?.full_name}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{user?.email}</p>
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs font-black uppercase tracking-widest text-primary hover:text-primary/80 mt-3 transition-colors"
+                >
+                  Alterar Foto
+                </button>
+              </div>
+            </div>
+
+            {/* KYC Status Card */}
+            <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${
+              user?.verification_status === 'approved' 
+              ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20' 
+              : user?.verification_status === 'submitted'
+              ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
+              : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
+            }`}>
+              <div className={`absolute top-0 left-0 w-1.5 h-full ${
+                user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
+              }`} />
+              
+              <div className="flex items-center justify-between mb-4 pl-2">
+                <h2 className="text-gray-900 dark:text-white text-lg font-bold tracking-tight">Verificação KYC</h2>
+                {user?.verification_status === 'approved' ? (
+                  <ShieldCheck className="size-5 text-emerald-500" />
+                ) : user?.verification_status === 'submitted' ? (
+                  <Clock className="size-5 text-amber-500" />
+                ) : (
+                  <AlertCircle className="size-5 text-rose-500" />
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4 pl-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-500 dark:text-gray-400">Status Atual</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center justify-center size-2.5 rounded-full animate-pulse ${
+                      user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
+                    }`} />
+                    <p className={`text-lg font-black uppercase tracking-tight ${
+                      user?.verification_status === 'approved' ? 'text-emerald-500' : user?.verification_status === 'submitted' ? 'text-amber-500' : 'text-rose-500'
+                    }`}>
+                      {user?.verification_status === 'approved' ? 'Aprovado' : user?.verification_status === 'submitted' ? 'Em Análise' : 'Pendente'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`p-4 rounded-lg border ${
+                  user?.verification_status === 'approved' 
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300' 
+                  : user?.verification_status === 'submitted'
+                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
+                  : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+                }`}>
+                  <p className="text-sm font-medium leading-relaxed">
+                    {user?.verification_status === 'approved' 
+                      ? 'Parabéns! Sua conta está totalmente verificada e você tem acesso a todos os limites.'
+                      : user?.verification_status === 'submitted'
+                      ? 'Seus documentos estão sendo revisados pela nossa equipe de compliance.'
+                      : 'Para realizar transações maiores e ter mais segurança, por favor complete sua verificação KYC.'}
+                  </p>
+                  {user?.verification_status === 'submitted' && (
+                    <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-80 uppercase tracking-widest">
+                      <Clock className="size-3.5" />
+                      <span>Estimativa: 24 a 48 horas úteis</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-white/10 pt-4 mt-2">
+                   <button 
+                     onClick={() => navigate('/settings')}
+                     className="flex items-center gap-2 text-sm font-bold text-primary hover:underline transition-all uppercase tracking-widest"
+                   >
+                     <Settings className="size-4" />
+                     Gerir Segurança
+                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Forms */}
+          <div className="lg:col-span-2 flex flex-col gap-8">
+            <div className="flex flex-col p-8 bg-white dark:bg-[#192633] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm relative">
+               <h2 className="text-gray-900 dark:text-white text-xl font-bold tracking-tight mb-8">Informações Pessoais</h2>
+               
+                <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Nome Completo</label>
+                    <div className="relative group">
+                      <input 
+                        {...register('full_name')}
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Edit3 className="size-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Endereço de E-mail</label>
+                    <div className="relative group">
+                      <input 
+                        readOnly disabled
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white opacity-40 cursor-not-allowed" 
+                        value={user?.email} 
+                      />
+                    </div>
+                    <p className="text-[9px] text-primary font-black uppercase tracking-widest mt-2 ml-1 flex items-center gap-1.5 opacity-80">
+                      <ShieldCheck className="size-3" />
+                      E-mail Verificado
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Número de Telefone</label>
+                    <div className="relative group">
+                      <input 
+                        {...register('phone')}
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Edit3 className="size-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Localização</label>
+                    <div className="relative group">
+                      <input 
+                        {...register('city')}
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <Edit3 className="size-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2 pt-6 mt-2 border-t border-slate-100 dark:border-white/5">
+                    <div className="bg-slate-50 dark:bg-[#111922] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                      <div className="flex items-center gap-4">
+                        <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                          <Award className="size-6" />
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Performance e Histórico</p>
+                          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Baseado em {stats.count} operações concluídas com sucesso.</p>
+                        </div>
+                      </div>
+                      <div className="text-center sm:text-right">
+                         <p className="text-2xl font-black text-primary uppercase tracking-tighter">{user?.is_verified ? 'V.I.P' : 'Novato'}</p>
+                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Status da Rede</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2 flex justify-end gap-4 mt-4">
+                    <button 
+                      type="button" onClick={() => reset()}
+                      className="px-8 h-12 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all outline-none"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="submit" disabled={isUpdatingProfile}
+                      className="px-10 h-12 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all active:scale-95 flex items-center justify-center gap-2 outline-none disabled:opacity-50"
+                    >
+                      {isUpdatingProfile && <Loader2 className="size-4 animate-spin" />}
+                      Salvar Alterações
+                    </button>
+                  </div>
+               </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PerfilPage;

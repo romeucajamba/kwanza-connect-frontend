@@ -11,6 +11,9 @@ export const APP_ROUTES = {
   AJUDA: '/ajuda',
   P2P_POST: '/p2p/post',
   P2P_BROWSE: '/p2p/browse',
+  FORGOT_PASSWORD: '/forgot-password',
+  VERIFY_EMAIL: '/verify-email',
+  NOTIFICATIONS: '/notifications',
 };
 
 export const API_ROUTES = {
@@ -19,6 +22,10 @@ export const API_ROUTES = {
     REGISTER: '/auth/register/',
     LOGOUT: '/auth/logout/',
     ME: '/auth/me/',
+    FORGOT_PASSWORD: '/auth/forgot-password/',
+    RESET_PASSWORD: '/auth/reset-password/',
+    VERIFY_EMAIL: '/auth/verify-email/',
+    CHANGE_PASSWORD: '/auth/change-password/',
   },
   OFFERS: {
     BASE: '/offers/',

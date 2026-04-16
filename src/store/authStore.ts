@@ -72,14 +72,19 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading });
       },
 
-      hydrate: () => {
+      hydrate: async () => {
         const cookieToken = getTokenCookie();
         const storeToken = get().token;
-        if (!cookieToken && storeToken) {
-          // Cookie expired but state still has token → logout
-          set({ user: null, token: null, isAuthenticated: false });
-        } else if (cookieToken && !storeToken) {
-          // Cookie exists but store doesn't → keep cookie as source of truth
+        
+        if (!cookieToken) {
+          if (storeToken) {
+            set({ user: null, token: null, isAuthenticated: false });
+          }
+          return;
+        }
+
+        // Token exists but state might be out of sync
+        if (cookieToken !== storeToken || !get().isAuthenticated) {
           set({ token: cookieToken, isAuthenticated: true });
         }
       },

@@ -11,9 +11,9 @@ import {
   ArrowRightLeft,
   Sparkles
 } from 'lucide-react';
-import { useOffers, useExpressInterest } from '@services/offers.hooks';
-import { useAuthStore } from '@store/authStore';
-import { APP_ROUTES } from '@constants';
+import { useOffers, useExpressInterest } from '@/services/offers.hooks';
+import { useAuthStore } from '@/store/authStore';
+import { APP_ROUTES } from '@/constants';
 import { Link, useNavigate } from 'react-router-dom';
 
 const ReceberOfertaPage: React.FC = () => {

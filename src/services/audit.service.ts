@@ -1,5 +1,5 @@
 import { api } from '@lib/axios';
-import { ApiResponse } from '@types';
+import type { ApiResponse } from '@types';
 
 export interface AuditLog {
   id: string;

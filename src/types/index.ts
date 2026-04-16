@@ -4,6 +4,15 @@ export interface User {
   full_name: string; // API: full_name instead of firstName/lastName
   avatar?: string;   // API: avatar instead of profilePicture
   is_verified?: boolean; // API field
+  verification_status?: 'pending' | 'submitted' | 'approved' | 'rejected';
+  date_joined?: string;
+  last_seen?: string;
+  phone?: string;
+  country_code?: string;
+  address?: string;
+  city?: string;
+  occupation?: string;
+  bio?: string;
   balance?: number;
   currency_code?: string;
 }
