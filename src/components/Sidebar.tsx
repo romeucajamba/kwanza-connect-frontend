@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+
 import { 
   LayoutDashboard, 
   Users, 
@@ -10,9 +10,10 @@ import {
   MessageSquare, 
   User, 
   Settings, 
-  ExternalLink, 
   LogOut, 
-  Repeat
+  Repeat,
+  Tag,
+  Heart
 } from 'lucide-react';
 import { APP_ROUTES } from '@constants';
 import { useAuthStore } from '@store/authStore';
@@ -54,7 +55,9 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-    { to: APP_ROUTES.P2P_BROWSE, icon: Users, label: 'Trocas' },
+    { to: APP_ROUTES.P2P_BROWSE, icon: Users, label: 'Trocas P2P' },
+    { to: APP_ROUTES.P2P_MY_OFFERS, icon: Tag, label: 'Minhas Ofertas' },
+    { to: APP_ROUTES.P2P_INTERESTS, icon: Heart, label: 'Meus Interesses' },
     { to: APP_ROUTES.CONVERSAO, icon: Repeat, label: 'Conversão' },
     { to: APP_ROUTES.CAMBIO_MERCADO, icon: TrendingUp, label: 'Câmbio' },
     { to: APP_ROUTES.HISTORICO, icon: History, label: 'Histórico' },

@@ -14,6 +14,8 @@ import MensagensPage from '@/app/messages/MensagensPage';
 import HelpCenterPage from '@/app/public/HelpCenterPage';
 import FazerOfertaPage from '@/app/offers/FazerOfertaPage';
 import ReceberOfertaPage from '@/app/offers/ReceberOfertaPage';
+import MinhasOfertasPage from '@/app/offers/MinhasOfertasPage';
+import InteressesPage from '@/app/offers/InteressesPage';
 import LogsPage from '@/app/logs/LogsPage';
 import SettingsPage from '@/app/settings/SettingsPage';
 import ForgotPasswordPage from '@/app/public/ForgotPasswordPage';
@@ -80,6 +82,8 @@ const App: React.FC = () => {
             <Route path="/ajuda" element={<HelpCenterPage />} />
             <Route path="/p2p/post" element={<FazerOfertaPage />} />
             <Route path="/p2p/browse" element={<ReceberOfertaPage />} />
+            <Route path="/p2p/minhas-ofertas" element={<MinhasOfertasPage />} />
+            <Route path="/p2p/interesses" element={<InteressesPage />} />
             <Route path="/logs" element={<LogsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />

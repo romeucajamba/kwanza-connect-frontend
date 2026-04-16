@@ -36,3 +36,6 @@ export const notificationSettingsSchema = z.object({
 export type AISettingsFormValues = z.infer<typeof aiSettingsSchema>;
 export type GamificationSettingsFormValues = z.infer<typeof gamificationSettingsSchema>;
 export type NotificationSettingsFormValues = z.infer<typeof notificationSettingsSchema>;
+
+// ─── Offer Schemas ─────────────────────────────────────────────────────────────
+export * from './offer.schema';

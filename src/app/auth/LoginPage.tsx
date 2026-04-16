@@ -20,11 +20,13 @@ import {
 } from 'lucide-react';
 import { loginSchema, registerSchema, type LoginFormData, type RegisterFormData } from '@/schemas/auth.schema';
 import { useLogin, useRegister } from '@/services/auth.hooks';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [signUpStep, setSignUpStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   
   const frontDocRef = useRef<HTMLInputElement>(null);
   const backDocRef = useRef<HTMLInputElement>(null);
@@ -128,10 +130,13 @@ const LoginPage: React.FC = () => {
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center px-1">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Senha</label>
-                      <button type="button" className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Esqueceu a senha?</button>
+                      <button 
+                      onClick={() => navigate("/forgot-password")}
+                      type="button" className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Esqueceu a senha?</button>
                     </div>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
+                      <div
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
                         <Lock className="size-4" />
                       </div>
                       <input 

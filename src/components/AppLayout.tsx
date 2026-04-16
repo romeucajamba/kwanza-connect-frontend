@@ -55,10 +55,10 @@ const AppLayout: React.FC = () => {
   const { mutate: logout } = useLogout();
 
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark font-display transition-colors duration-300 overflow-x-hidden selection:bg-primary selection:text-white pb-safe-bottom">
+    <div className="flex h-[100dvh] md:h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display transition-colors duration-300 selection:bg-primary selection:text-white">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <div className="flex-1 flex flex-col min-w-0 relative overflow-y-auto custom-scrollbar pb-24 lg:pb-0">
         <header className="sticky top-0 z-[55] h-14 w-full border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#101922]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-center">
           
           <div className="w-full max-w-6xl flex items-center justify-between">

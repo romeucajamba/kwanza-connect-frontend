@@ -11,6 +11,8 @@ export const APP_ROUTES = {
   AJUDA: '/ajuda',
   P2P_POST: '/p2p/post',
   P2P_BROWSE: '/p2p/browse',
+  P2P_MY_OFFERS: '/p2p/minhas-ofertas',
+  P2P_INTERESTS: '/p2p/interesses',
   FORGOT_PASSWORD: '/forgot-password',
   VERIFY_EMAIL: '/verify-email',
   NOTIFICATIONS: '/notifications',
@@ -31,6 +33,7 @@ export const API_ROUTES = {
     BASE: '/offers/',
     MINE: '/offers/mine/',
     CURRENCIES: '/offers/currencies/',
+    INTERESTS_MINE: '/offers/interests/mine/',
   },
   RATES: {
     BASE: '/rates/',
