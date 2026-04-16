@@ -18,7 +18,7 @@ import {
   Users,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
 import { useChatRooms, useChatMessages, useSendMessage, useChatRoom } from '@services/chat.hooks';
 import { useAuthStore } from '@store/authStore';
@@ -28,13 +28,15 @@ import type { Room, Message, User } from '@/types';
 const MensagensPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const user_id = user?.id; 
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const { roomId } = useParams<{ roomId: string }>();
+  const navigate = useNavigate();
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(roomId || null);
   const [messageText, setMessageText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: rooms, isLoading: isLoadingRooms } = useChatRooms();
   const { data: messages, isLoading: isLoadingMessages } = useChatMessages(selectedRoomId || '');
-  const { data: currentRoom } = useChatRoom(selectedRoomId || '');
+  //const { data: currentRoom } = useChatRoom(selectedRoomId || '');
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
 
   useEffect(() => {
@@ -42,6 +44,12 @@ const MensagensPage: React.FC = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (roomId && roomId !== selectedRoomId) {
+      setSelectedRoomId(roomId);
+    }
+  }, [roomId, selectedRoomId]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,10 +115,10 @@ const MensagensPage: React.FC = () => {
             ) : rooms.map((room) => {
                const other = getOtherUser(room);
                const lastMsg = room.last_message;
-               return (
+                return (
                   <button 
                      key={room.id}
-                     onClick={() => setSelectedRoomId(room.id)}
+                     onClick={() => navigate(`/mensagens/${room.id}`)}
                      className={`w-full p-4 flex items-center gap-3 border-b border-slate-50 dark:border-white/5 transition-all hover:bg-slate-50 dark:hover:bg-white/5 relative ${selectedRoomId === room.id ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
                   >
                      <div className="relative flex-shrink-0">
@@ -139,7 +147,7 @@ const MensagensPage: React.FC = () => {
             <>
                 <header className="p-4 border-b border-slate-50 dark:border-white/5 flex items-center justify-between bg-white dark:bg-[#192633] z-10 shadow-sm">
                   <div className="flex items-center gap-3">
-                     <button onClick={() => setSelectedRoomId(null)} className="md:hidden p-2 text-slate-400">
+                     <button onClick={() => navigate('/mensagens')} className="md:hidden p-2 text-slate-400">
                         <ChevronLeft className="size-5" />
                      </button>
                       <div 
@@ -281,11 +289,8 @@ const MensagensPage: React.FC = () => {
                <h3 className="text-sm font-black uppercase tracking-tight">Nenhuma Conversa Selecionada</h3>
                <p className="text-[10px] font-bold uppercase tracking-widest max-w-xs mt-2">Escolha uma negociação ao lado para começar a comunicar com segurança.</p>
             </div>
-          )}
+        )}
       </main>
-
-      {/* Sidebar de Detalhes do Trade */}
- 
     </div>
   );
 };

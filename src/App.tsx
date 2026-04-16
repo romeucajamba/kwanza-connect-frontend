@@ -79,6 +79,7 @@ const App: React.FC = () => {
             <Route path="/historico" element={<HistoricoTransacoesPage />} />
             <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/mensagens" element={<MensagensPage />} />
+            <Route path="/mensagens/:roomId" element={<MensagensPage />} />
             <Route path="/ajuda" element={<HelpCenterPage />} />
             <Route path="/p2p/post" element={<FazerOfertaPage />} />
             <Route path="/p2p/browse" element={<ReceberOfertaPage />} />

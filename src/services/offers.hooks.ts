@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { offersService, type CreateOfferPayload, type ExpressInterestPayload } from './offers.service';
+import type { OfferInterest } from '@/types';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 export const offersKeys = {
@@ -152,10 +153,14 @@ export const useAcceptInterest = () => {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: (interestId: string) => offersService.acceptInterest(interestId),
-    onSuccess: () => {
+    onSuccess: (data: OfferInterest) => {
       queryClient.invalidateQueries({ queryKey: offersKeys.all });
       toast.success('Proposta aceite! A sala de chat foi criada.');
-      navigate('/mensagens');
+      if (data.room) {
+        navigate(`/mensagens/${data.room}`);
+      } else {
+        navigate('/mensagens');
+      }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Erro ao aceitar proposta');
