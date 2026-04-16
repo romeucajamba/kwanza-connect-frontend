@@ -62,7 +62,7 @@ const CambioMercadoPage: React.FC = () => {
           className="flex items-center justify-center gap-2 bg-primary text-white font-bold uppercase text-[10px] tracking-widest px-6 h-10 rounded-lg hover:bg-primary/95 transition-all shadow-md shadow-primary/20"
         >
           <TrendingUp className="size-3.5" />
-          <span>Simular Troca</span>
+          <span>Converter moeda</span>
         </Link>
       </div>
 

@@ -148,3 +148,22 @@ export interface LogEntry {
   timestamp: string;
   icon: string;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  notif_type: 'trade' | 'security' | 'message' | 'system' | 'info';
+  is_read: boolean;
+  link?: string;
+  created_at: string;
+}
+
+export interface NotificationPreferences {
+  email_offers: boolean;
+  email_security: boolean;
+  email_promotions: boolean;
+  push_messages: boolean;
+  push_offers: boolean;
+  push_security: boolean;
+}

@@ -8,3 +8,5 @@ export * from './transactions.hooks';
 export * from './transactions.service';
 export * from './chat.hooks';
 export * from './chat.service';
+export * from './notifications.hooks';
+export * from './notifications.service';

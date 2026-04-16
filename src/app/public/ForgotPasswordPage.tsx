@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Shield, 
   Mail, 
   Lock, 
   ArrowLeft, 
@@ -16,8 +15,8 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { useForgotPassword, useResetPassword } from '@services/auth.hooks';
-import { APP_ROUTES } from '@constants';
+import { useForgotPassword, useResetPassword } from '@/services/auth.hooks';
+import { APP_ROUTES } from '@/constants';
 
 // Schemas localizados para esta página
 const forgotSchema = z.object({
@@ -81,15 +80,6 @@ const ForgotPasswordPage: React.FC = () => {
         
         <div className="layout-content-container flex flex-col w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="size-14 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20 rotate-3"
-              >
-                <ShieldCheck className="size-8" />
-              </motion.div>
-            </div>
             <h1 className="text-black dark:text-white tracking-tight text-3xl font-black leading-tight">
               Recuperar <span className="text-primary italic">Conta</span>
             </h1>
@@ -254,12 +244,6 @@ const ForgotPasswordPage: React.FC = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 p-6 text-center">
-            <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold leading-relaxed uppercase tracking-widest max-w-[300px]">
-              O seu acesso é protegido por encriptação AES-256 de nível militar. Nunca partilhe códigos recebidos por SMS ou E-mail.
-            </p>
           </div>
         </div>
 
