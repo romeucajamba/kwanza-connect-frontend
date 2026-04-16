@@ -8,7 +8,6 @@ export const api = axios.create({
   timeout: 15000, 
   headers: {
     'Content-Type': 'application/json',
-    'X-Content-Type-Options': 'nosniff',
     'X-API-KEY': import.meta.env.VITE_X_API_KEY || '', // Mandatory API Key
   },
 });

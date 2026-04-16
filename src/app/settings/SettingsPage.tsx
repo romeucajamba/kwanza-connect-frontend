@@ -14,14 +14,15 @@ import {
   Smartphone, 
   CreditCard, 
   Activity,
-  ArrowLeft,
   X,
   Brain,
   Trophy,
   ChevronLeft
 } from 'lucide-react';
 import { useAuthStore, useSettingsStore } from '@store/authStore';
-import { useLogout } from '@services/auth.hooks';
+import { useLogout, useChangePassword } from '@services/auth.hooks';
+import { useForm } from 'react-hook-form';
+import { Loader2 } from 'lucide-react';
 
 const SettingItem: React.FC<{ icon: React.ElementType; label: string; desc: string; action?: () => void; toggle?: boolean; checked?: boolean }> = ({ icon: Icon, label, desc, action, toggle, checked }) => (
   <button 
@@ -48,11 +49,23 @@ const SettingItem: React.FC<{ icon: React.ElementType; label: string; desc: stri
 );
 
 const SettingsPage: React.FC = () => {
-  const { user } = useAuthStore();
   const { mutate: logout } = useLogout();
+  const { mutate: changePassword, isPending: isChangingPassword } = useChangePassword();
   const { theme, toggleTheme } = useSettingsStore();
   const [activeSection, setActiveSection] = useState<'main' | 'security' | 'payments'>('main');
   const [view, setView] = useState<'nav' | 'content'>('nav');
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+  const { register, handleSubmit, reset } = useForm();
+
+  const onPasswordSubmit = (data: any) => {
+    changePassword(data, {
+      onSuccess: () => {
+        setShowPasswordForm(false);
+        reset();
+      }
+    });
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full pb-10">
@@ -153,11 +166,60 @@ const SettingsPage: React.FC = () => {
                           <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest opacity-60">Configurações de Acesso</p>
                        </div>
                     </div>
-                    <div className="flex-1">
-                       <SettingItem icon={Lock} label="Palavra-Passe" desc="Alterada pela última vez há 2 meses." />
-                       <SettingItem icon={Smartphone} label="2FA via SMS" desc="+244 9XX XX XX XX" toggle checked={true} />
-                       <SettingItem icon={Activity} label="Sessões Actuais" desc="Listagem de IPs e Dispositivos." />
-                    </div>
+                     <div className="flex-1">
+                        {!showPasswordForm ? (
+                          <SettingItem 
+                            icon={Lock} 
+                            label="Palavra-Passe" 
+                            desc="Alterada pela última vez há 2 meses." 
+                            action={() => setShowPasswordForm(true)}
+                          />
+                        ) : (
+                          <div className="p-6 space-y-4 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
+                             <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Alterar Senha</h4>
+                                <button onClick={() => setShowPasswordForm(false)} className="text-slate-400 hover:text-rose-500">
+                                   <X className="size-3.5" />
+                                </button>
+                             </div>
+                             <form onSubmit={handleSubmit(onPasswordSubmit)} className="space-y-4">
+                                <div className="space-y-1.5">
+                                   <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Senha Atual</label>
+                                   <input 
+                                      {...register('current_password', { required: true })}
+                                      type="password"
+                                      className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
+                                   />
+                                </div>
+                                <div className="space-y-1.5">
+                                   <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Nova Senha</label>
+                                   <input 
+                                      {...register('new_password', { required: true })}
+                                      type="password"
+                                      className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
+                                   />
+                                </div>
+                                <div className="flex gap-2 pt-2">
+                                   <button 
+                                      type="button" onClick={() => setShowPasswordForm(false)}
+                                      className="flex-1 h-9 rounded-lg bg-slate-100 dark:bg-white/10 text-[9px] font-black uppercase tracking-widest text-slate-500"
+                                   >
+                                      Cancelar
+                                   </button>
+                                   <button 
+                                      type="submit" disabled={isChangingPassword}
+                                      className="flex-1 h-9 rounded-lg bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                   >
+                                      {isChangingPassword && <Loader2 className="size-3 animate-spin" />}
+                                      Confirmar
+                                   </button>
+                                </div>
+                             </form>
+                          </div>
+                        )}
+                        <SettingItem icon={Smartphone} label="2FA via SMS" desc="+244 9XX XX XX XX" toggle checked={true} />
+                        <SettingItem icon={Activity} label="Sessões Actuais" desc="Listagem de IPs e Dispositivos." />
+                     </div>
                     <div className="p-5 bg-primary/5 rounded-b-xl border-t border-primary/5 flex items-center gap-4 group">
                        <div className="size-12 rounded-lg bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
                           <Brain className="size-6" />

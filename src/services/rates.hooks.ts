@@ -9,6 +9,14 @@ export const useExchangeRates = () => {
   });
 };
 
+export const useCurrencies = () => {
+  return useQuery({
+    queryKey: ['currencies'],
+    queryFn: () => ratesService.getCurrencies(),
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};
+
 export const useConvertRate = (params: { from: string; to: string; amount: number }) => {
   return useQuery({
     queryKey: ['convert', params],

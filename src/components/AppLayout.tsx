@@ -8,17 +8,17 @@ import {
   User, 
   Settings, 
   LogOut, 
-  CheckCircle2, 
   MessageCircle, 
   LayoutDashboard, 
   Users, 
-  Repeat,
   RefreshCcw,
   Plus
 } from 'lucide-react';
 import { useAuthStore, useSettingsStore } from '@store/authStore';
 import { useLogout } from '@services/auth.hooks';
 import Sidebar from './Sidebar';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { getAvatarUrl } from '@lib/media';
 
 const NotificationsDropdown: React.FC = () => {
   return (
@@ -32,23 +32,13 @@ const NotificationsDropdown: React.FC = () => {
         <h3 className="text-xs font-black uppercase tracking-tight">Notificações</h3>
         <span className="text-[10px] font-black text-primary uppercase cursor-pointer hover:underline">Limpar</span>
       </div>
-      <div className="max-h-[60vh] overflow-y-auto p-2 scrollbar-hide">
-        {[1, 2].map((i) => (
-          <div key={i} className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer group">
-            <div className={`size-8 rounded-full ${i === 1 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'} flex items-center justify-center flex-shrink-0`}>
-               {i === 1 ? <CheckCircle2 className="size-4" /> : <MessageCircle className="size-4" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
-                {i === 1 ? 'Transferência Concluída' : 'Nova Mensagem de P2P'}
-              </p>
-              <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                {i === 1 ? 'Seus 500.000 AOA foram creditados com sucesso.' : 'João enviou uma mensagem sobre sua oferta de USD.'}
-              </p>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase mt-2 block font-black tracking-widest">{i === 1 ? 'Há 2m' : 'Há 15m'}</span>
-            </div>
-          </div>
-        ))}
+      <div className="max-h-[60vh] overflow-y-auto p-6 scrollbar-hide flex flex-col items-center justify-center text-center gap-3">
+        <div className="size-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
+          <Bell className="size-6" />
+        </div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+          Sem notificações agora
+        </p>
       </div>
       <div className="p-3 bg-slate-50 dark:bg-[#111922] text-center border-t border-slate-100 dark:border-white/5">
         <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Ver todas</button>
@@ -119,10 +109,12 @@ const AppLayout: React.FC = () => {
                     <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">{user?.full_name?.split(' ')[0]}</span>
                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
                   </div>
-                  <div 
-                    className="size-8 rounded-lg bg-center bg-cover border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]"
-                    style={{ backgroundImage: `url(${user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user?.id})` }}
-                  />
+                  <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]">
+                    <AvatarImage src={getAvatarUrl(user?.avatar, user?.email)} />
+                    <AvatarFallback className="rounded-lg">
+                      <User className="size-4 text-slate-400" />
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 <AnimatePresence>
                   {showProfileMenu && (

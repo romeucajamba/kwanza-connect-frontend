@@ -42,7 +42,8 @@
       "@schema": ["src/schema"],
       "@schema/*": ["src/schema/*"],
       "@assets": ["src/assets"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@/*": ["src/*"]
     }
   },
   "include": ["src"]
