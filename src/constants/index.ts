@@ -46,11 +46,15 @@ export const API_ROUTES = {
   },
   CHAT: {
     ROOMS: '/chat/rooms/',
+    ROOM_DETAIL: (id: string) => `/chat/rooms/${id}/`,
+    ROOM_MESSAGES: (id: string) => `/chat/rooms/${id}/messages/`,
     MESSAGES: '/chat/messages/',
   },
   NOTIFICATIONS: {
     BASE: '/notifications/',
     UNREAD: '/notifications/unread-count/',
+    MARK_READ: '/notifications/mark-read/',
+    PREFERENCES: '/notifications/preferences/',
   }
 };
 

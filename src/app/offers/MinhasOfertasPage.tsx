@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
+import { getAvatarUrl } from '@/lib/media';
 import {
   useMyOffers,
   usePauseOffer,
@@ -86,8 +87,8 @@ const InterestsList = ({ offerId }: { offerId: string }) => {
       {interests.map((interest) => (
         <li key={interest.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 py-3">
           <div
-            className="size-8 rounded-lg bg-cover bg-center flex-shrink-0 border border-slate-50 dark:border-white/5"
-            style={{ backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${interest.buyer.email})` }}
+            className="size-8 rounded-lg bg-center bg-cover flex-shrink-0 border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5"
+            style={{ backgroundImage: `url(${getAvatarUrl(interest.buyer.avatar, interest.buyer.email)})` }}
           />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">
@@ -101,20 +102,22 @@ const InterestsList = ({ offerId }: { offerId: string }) => {
           {interest.status === 'pending' && (
             <div className="flex gap-2 ml-auto">
               <button
-                disabled={accepting}
+                disabled={accepting || rejecting}
                 onClick={() => accept(interest.id)}
-                className="h-7 px-3 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-1"
+                className="h-7 px-3 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50 flex items-center gap-1.5 relative overflow-hidden"
               >
-                {accepting ? <RefreshCcw className="size-2.5 animate-spin" /> : <CheckCircle2 className="size-2.5" />}
-                Aceitar
+                <RefreshCcw className={`size-2.5 animate-spin ${!accepting ? 'hidden' : 'block'}`} />
+                <CheckCircle2 className={`size-2.5 ${accepting ? 'hidden' : 'block'}`} />
+                <span>Aceitar</span>
               </button>
               <button
-                disabled={rejecting}
+                disabled={accepting || rejecting}
                 onClick={() => reject(interest.id)}
-                className="h-7 px-3 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1"
+                className="h-7 px-3 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 relative overflow-hidden"
               >
-                {rejecting ? <RefreshCcw className="size-2.5 animate-spin" /> : <XCircle className="size-2.5" />}
-                Rejeitar
+                <RefreshCcw className={`size-2.5 animate-spin ${!rejecting ? 'hidden' : 'block'}`} />
+                <XCircle className={`size-2.5 ${rejecting ? 'hidden' : 'block'}`} />
+                <span>Rejeitar</span>
               </button>
             </div>
           )}
@@ -170,28 +173,31 @@ const OfferCard = ({ offer }: { offer: Offer }) => {
               <button
                 disabled={pausing}
                 onClick={() => pause(offer.id)}
-                className="h-7 px-3 bg-amber-500/10 text-amber-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-500/20 transition-all disabled:opacity-50 flex items-center gap-1"
+                className="h-7 px-3 bg-amber-500/10 text-amber-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 relative overflow-hidden"
               >
-                {pausing ? <RefreshCcw className="size-2.5 animate-spin" /> : <Pause className="size-2.5" />}
-                Pausar
+                <RefreshCcw className={`size-2.5 animate-spin ${!pausing ? 'hidden' : 'block'}`} />
+                <Pause className={`size-2.5 ${pausing ? 'hidden' : 'block'}`} />
+                <span>Pausar</span>
               </button>
             ) : offer.status === 'paused' ? (
               <button
                 disabled={resuming}
                 onClick={() => resume(offer.id)}
-                className="h-7 px-3 bg-emerald-500/10 text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all disabled:opacity-50 flex items-center gap-1"
+                className="h-7 px-3 bg-emerald-500/10 text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 relative overflow-hidden"
               >
-                {resuming ? <RefreshCcw className="size-2.5 animate-spin" /> : <Play className="size-2.5" />}
-                Retomar
+                <RefreshCcw className={`size-2.5 animate-spin ${!resuming ? 'hidden' : 'block'}`} />
+                <Play className={`size-2.5 ${resuming ? 'hidden' : 'block'}`} />
+                <span>Retomar</span>
               </button>
             ) : null}
             <button
               disabled={closing}
               onClick={() => close(offer.id)}
-              className="h-7 px-3 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1"
+              className="h-7 px-3 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 relative overflow-hidden"
             >
-              {closing ? <RefreshCcw className="size-2.5 animate-spin" /> : <X className="size-2.5" />}
-              Encerrar
+              <RefreshCcw className={`size-2.5 animate-spin ${!closing ? 'hidden' : 'block'}`} />
+              <X className={`size-2.5 ${closing ? 'hidden' : 'block'}`} />
+              <span>Encerrar</span>
             </button>
           </div>
         )}

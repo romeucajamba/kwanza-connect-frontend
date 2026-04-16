@@ -12,15 +12,24 @@ import {
   LayoutDashboard, 
   Users, 
   RefreshCcw,
-  Plus
+  Plus,
+  X,
 } from 'lucide-react';
 import { useAuthStore, useSettingsStore } from '@store/authStore';
 import { useLogout } from '@services/auth.hooks';
+import { useNotifications, useNotificationUnreadCount, useMarkAllNotificationsRead } from '@services/notifications.hooks';
+import { useChatRooms } from '@services/chat.hooks';
 import Sidebar from './Sidebar';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { getAvatarUrl } from '@lib/media';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { Room } from '@types';
 
-const NotificationsDropdown: React.FC = () => {
+const NotificationsDropdown: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { data: notifications, isLoading } = useNotifications();
+  const { mutate: markAllRead } = useMarkAllNotificationsRead();
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -30,18 +39,54 @@ const NotificationsDropdown: React.FC = () => {
     >
       <div className="p-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
         <h3 className="text-xs font-black uppercase tracking-tight">Notificações</h3>
-        <span className="text-[10px] font-black text-primary uppercase cursor-pointer hover:underline">Limpar</span>
-      </div>
-      <div className="max-h-[60vh] overflow-y-auto p-6 scrollbar-hide flex flex-col items-center justify-center text-center gap-3">
-        <div className="size-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
-          <Bell className="size-6" />
+        <div className="flex items-center gap-3">
+          <span 
+            onClick={() => markAllRead()}
+            className="text-[10px] font-black text-primary uppercase cursor-pointer hover:underline"
+          >
+            Limpar
+          </span>
+          <button onClick={onClose} className="p-1 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+            <X className="size-3.5 text-slate-400" />
+          </button>
         </div>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
-          Sem notificações agora
-        </p>
+      </div>
+      <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
+        {isLoading ? (
+          <div className="p-10 flex justify-center"><RefreshCcw className="size-5 text-primary animate-spin" /></div>
+        ) : notifications && notifications.length > 0 ? (
+          <div className="flex flex-col">
+            {notifications.slice(0, 5).map((notif) => (
+              <div key={notif.id} className={`p-4 border-b border-slate-50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer ${!notif.is_read ? 'bg-primary/5' : ''}`}>
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate pr-4">{notif.title}</h4>
+                  <span className="text-[8px] font-medium text-slate-400 whitespace-nowrap">
+                    {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: ptBR })}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{notif.message}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-10 flex flex-col items-center justify-center text-center gap-3">
+            <div className="size-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
+              <Bell className="size-6" />
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Sem notificações agora
+            </p>
+          </div>
+        )}
       </div>
       <div className="p-3 bg-slate-50 dark:bg-[#111922] text-center border-t border-slate-100 dark:border-white/5">
-        <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Ver todas</button>
+        <Link 
+          to="/notifications" 
+          onClick={onClose}
+          className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+        >
+          Ver todas
+        </Link>
       </div>
     </motion.div>
   );
@@ -53,6 +98,26 @@ const AppLayout: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { mutate: logout } = useLogout();
+  const { data: unreadData } = useNotificationUnreadCount();
+  const { data: chatRooms } = useChatRooms();
+
+  const totalUnreadMessages = (chatRooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
+
+  const notifRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="flex h-[100dvh] md:h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display transition-colors duration-300 selection:bg-primary selection:text-white">
@@ -83,24 +148,29 @@ const AppLayout: React.FC = () => {
                 {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               </button>
 
-              <div className="relative">
+              <div className="relative" ref={notifRef}>
                 <button 
                   onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
                   className={`flex items-center justify-center rounded-lg h-8 w-8 text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 transition-all ${showNotifications ? 'text-primary' : ''}`}
                 >
                   <div className="relative">
                     <Bell className="size-4" />
-                    <span className="absolute -top-0.5 -right-0.5 size-1.5 bg-rose-500 rounded-full border-2 border-white dark:border-[#101922]"></span>
+                    {unreadData && unreadData.unread_count > 0 && (
+                      <div className="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 border border-white dark:border-[#101922]"></span>
+                      </div>
+                    )}
                   </div>
                 </button>
                 <AnimatePresence>
-                  {showNotifications && <NotificationsDropdown />}
+                  {showNotifications && <NotificationsDropdown onClose={() => setShowNotifications(false)} />}
                 </AnimatePresence>
               </div>
 
               <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
 
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <div 
                   className="flex items-center gap-3 cursor-pointer group"
                   onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
@@ -176,7 +246,12 @@ const AppLayout: React.FC = () => {
         </Link>
         <Link to="/mensagens" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90 relative">
           <MessageCircle className="size-6 sm:size-7" />
-          <span className="absolute -top-1 -right-1 size-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+          {totalUnreadMessages > 0 && (
+            <div className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 border-2 border-white dark:border-slate-900"></span>
+            </div>
+          )}
         </Link>
         <Link to="/perfil" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90 text-sm">
           <User className="size-6 sm:size-7" />
