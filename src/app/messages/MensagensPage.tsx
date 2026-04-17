@@ -18,7 +18,9 @@ import {
   Users,
   ArrowRightLeft,
   XCircle,
+  User as UserIcon
 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -208,7 +210,12 @@ const MensagensPage: React.FC = () => {
                      className={`w-full p-4 flex items-center gap-3 border-b border-slate-50 dark:border-white/5 transition-all hover:bg-slate-50 dark:hover:bg-white/5 relative ${selectedRoomId === room.id ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
                   >
                      <div className="relative flex-shrink-0">
-                        <div className="size-11 rounded-xl bg-slate-100 dark:bg-white/5 bg-center bg-cover border border-slate-100 dark:border-white/10" style={{ backgroundImage: `url(${getAvatarUrl(other?.avatar, other?.full_name)})` }} />
+                        <Avatar className="size-11 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5">
+                           <AvatarImage src={getAvatarUrl(other?.avatar, other?.full_name)} />
+                           <AvatarFallback className="rounded-xl">
+                              <UserIcon className="size-5 text-slate-400" />
+                           </AvatarFallback>
+                        </Avatar>
                         <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#192633]" />
                      </div>
                      <div className="flex-1 min-w-0 text-left">
@@ -247,10 +254,12 @@ const MensagensPage: React.FC = () => {
                      <button onClick={() => navigate('/mensagens')} className="md:hidden p-2 text-slate-400">
                         <ChevronLeft className="size-5" />
                      </button>
-                      <div 
-                        className="size-10 rounded-xl bg-slate-100 dark:bg-white/5 bg-center bg-cover border border-slate-100 dark:border-white/10" 
-                        style={{ backgroundImage: `url(${getAvatarUrl(otherUser?.avatar, otherUser?.full_name)})` }} 
-                     />
+                      <Avatar className="size-10 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5">
+                        <AvatarImage src={getAvatarUrl(otherUser?.avatar, otherUser?.full_name)} />
+                        <AvatarFallback className="rounded-xl">
+                           <UserIcon className="size-4 text-slate-400" />
+                        </AvatarFallback>
+                     </Avatar>
                      <div>
                         <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">
                            {otherUser?.full_name || 'Participante'}

@@ -7,8 +7,11 @@ import {
   XCircle,
   RefreshCcw,
   Inbox,
+  User as UserIcon
 } from 'lucide-react';
 import { useMyInterests, useCancelInterest } from '@/services/offers.hooks';
+import { getAvatarUrl } from '@/lib/media';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { OfferInterest } from '@/types';
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -77,16 +80,23 @@ const InteressesPage: React.FC = () => {
                 transition={{ delay: i * 0.04 }}
                 className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
               >
-                {/* Icon */}
-                <div className="size-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary flex-shrink-0">
-                  <ArrowRightLeft className="size-4" />
+                <div className="relative flex-shrink-0">
+                  <Avatar className="size-11 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                    <AvatarImage src={getAvatarUrl(interest.offer?.owner?.avatar, interest.offer?.owner?.full_name)} />
+                    <AvatarFallback className="rounded-xl">
+                      <UserIcon className="size-5 text-slate-400" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary/10 border-2 border-white dark:border-[#192633] flex items-center justify-center text-primary">
+                    <ArrowRightLeft className="size-2.5" />
+                  </div>
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                      Interesse #{interest.id.slice(0, 8)}
+                      {interest.offer?.owner?.full_name || 'Utilizador'} • #{interest.id.slice(0, 8)}
                     </span>
                     <StatusPill status={interest.status} />
                   </div>

@@ -16,6 +16,9 @@ import { useDashboardStats, useExchangeRates } from '@services/rates.hooks';
 import { useTransactions } from '@services/transactions.hooks';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getAvatarUrl } from '@lib/media';
+import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
+import { User as UserIcon } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
@@ -230,14 +233,26 @@ const DashboardPage: React.FC = () => {
               <tbody className="divide-y divide-slate-50 dark:divide-white/10">
                 {recentTransactions.slice(0, 5).map((tx, idx) => {
                   const isSeller = tx.seller?.id === user?.id;
+                  const counterparty = isSeller ? tx.buyer : tx.seller;
                   return (
                     <tr key={idx} className="group transition-colors hover:bg-slate-50/50 dark:hover:bg-white/5">
                       <td className="p-3">
                         <div className="flex items-center gap-3">
-                          <div className={`size-8 rounded-lg flex items-center justify-center ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                             {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                          <div className="relative">
+                            <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                              <AvatarImage src={getAvatarUrl(counterparty?.avatar, counterparty?.full_name)} />
+                              <AvatarFallback className="rounded-lg">
+                                <UserIcon className="size-3.5 text-slate-400" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className={`absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-white dark:border-[#192633] flex items-center justify-center shadow-sm ${isSeller ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                               {isSeller ? <ArrowUpRight className="size-2" /> : <ArrowDownLeft className="size-2" />}
+                            </div>
                           </div>
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">{isSeller ? 'Envio' : 'Recebimento'}</span>
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight">{isSeller ? 'Envio P2P' : 'Recebimento P2P'}</span>
+                            <span className="text-[9px] font-medium text-slate-400 uppercase tracking-tight">{counterparty?.full_name || 'Utilizador'}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="p-3">

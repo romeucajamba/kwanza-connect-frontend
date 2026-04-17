@@ -10,9 +10,12 @@ import {
   PlusCircle,
   ArrowRightLeft,
   RefreshCcw,
+  User as UserIcon
 } from 'lucide-react';
 import { useOffers, useExpressInterest } from '@/services/offers.hooks';
 import { useAuthStore } from '@/store/authStore';
+import { getAvatarUrl } from '@/lib/media';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { APP_ROUTES } from '@/constants';
 import { Link } from 'react-router-dom';
 import type { Offer } from '@/types';
@@ -121,10 +124,12 @@ const ReceberOfertaPage: React.FC = () => {
                   {/* Card Header */}
                   <div className="p-4 border-b border-slate-50 dark:border-white/5 flex justify-between items-center bg-slate-50/20 dark:bg-white/5">
                     <div className="flex items-center gap-2.5">
-                      <div
-                        className="size-8 rounded-lg bg-center bg-cover border-2 border-slate-50 dark:border-[#111922] group-hover:border-primary/20 transition-all shadow-sm"
-                        style={{ backgroundImage: `url(https://api.dicebear.com/7.x/avataaars/svg?seed=${offer.owner?.email || offer.id})` }}
-                      />
+                      <Avatar className="size-8 rounded-lg border-2 border-slate-50 dark:border-[#111922] group-hover:border-primary/20 transition-all shadow-sm overflow-hidden bg-white dark:bg-[#111922]">
+                        <AvatarImage src={getAvatarUrl(offer.owner?.avatar, offer.owner?.full_name)} />
+                        <AvatarFallback className="rounded-lg">
+                          <UserIcon className="size-4 text-slate-400" />
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate max-w-[80px] leading-none">

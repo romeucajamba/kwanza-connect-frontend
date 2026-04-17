@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  User as UserIcon
 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
 import { getAvatarUrl } from '@/lib/media';
@@ -86,10 +88,12 @@ const InterestsList = ({ offerId }: { offerId: string }) => {
     <ul className="divide-y divide-slate-100 dark:divide-white/5">
       {interests.map((interest) => (
         <li key={interest.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 py-3">
-          <div
-            className="size-8 rounded-lg bg-center bg-cover flex-shrink-0 border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5"
-            style={{ backgroundImage: `url(${getAvatarUrl(interest.buyer.avatar, interest.buyer.full_name)})` }}
-          />
+          <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5">
+            <AvatarImage src={getAvatarUrl(interest.buyer.avatar, interest.buyer.full_name)} />
+            <AvatarFallback className="rounded-lg">
+              <UserIcon className="size-4 text-slate-400" />
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">
               {interest.buyer.full_name || interest.buyer.email.split('@')[0]}
