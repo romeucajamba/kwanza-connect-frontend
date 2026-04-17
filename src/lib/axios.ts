@@ -39,14 +39,7 @@ api.interceptors.response.use(
       }
     }
     
-    // Security: Filter/mask error response data if it contains sensitive keys
-    const maskedError = { ...error };
-    if (maskedError.response?.data) {
-       // Only expose 'message' or common fields to UI
-       const { message, errors } = maskedError.response.data;
-       maskedError.response.data = { message, errors };
-    }
-    
-    return Promise.reject(maskedError);
+    // Re-throw the full error so hooks can access the real error data from backend
+    return Promise.reject(error);
   }
 );

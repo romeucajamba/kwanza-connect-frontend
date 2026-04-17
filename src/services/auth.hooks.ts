@@ -193,7 +193,13 @@ export const useSubmitKYC = () => {
       queryClient.invalidateQueries({ queryKey: ['kyc-status'] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao submeter documentos');
+      const errData = error.response?.data;
+      const message =
+        errData?.message ||
+        errData?.detail ||
+        (typeof errData === 'object' ? Object.values(errData ?? {}).flat().join(' | ') : null) ||
+        'Erro ao submeter documentos. Verifique os ficheiros e tente novamente.';
+      toast.error(message);
     },
   });
 };
@@ -204,7 +210,7 @@ export const useKYCStatus = () => {
     queryFn: () => authService.getKYCStatus(),
     refetchInterval: (query) => {
       // Se estiver pendente, verificar a cada 1 minuto
-      const status = query.state.data?.data?.status;
+      const status = query.state.data?.status || query.state.data?.data?.status;
       if (status === 'pending' || status === 'submitted') return 60000;
       return false;
     },

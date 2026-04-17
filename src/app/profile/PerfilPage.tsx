@@ -15,6 +15,8 @@ import {
   Briefcase,
   MapPin,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+
 import { useAuthStore } from '@store/authStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactions, useUserReviews } from '@services/transactions.hooks';
@@ -98,21 +100,42 @@ const PerfilPage: React.FC = () => {
   const handleKYCSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    const docType = formData.get('doc_type') as string;
+    const docNumber = formData.get('doc_number') as string;
+
+    if (!docNumber?.trim()) {
+      toast.error('Por favor, insira o número do documento.');
+      return;
+    }
+    if (!kycDocs.front) {
+      toast.error('Por favor, carregue a imagem da frente do documento.');
+      return;
+    }
+    if (!kycDocs.back) {
+      toast.error('Por favor, carregue a imagem do verso do documento.');
+      return;
+    }
+
     const data = {
-      doc_type: formData.get('doc_type'),
-      doc_number: formData.get('doc_number'),
+      doc_type: docType,
+      doc_number: docNumber,
       front_image: kycDocs.front,
       back_image: kycDocs.back,
     };
-
-    if (!data.front_image || !data.back_image) {
-      return; 
-    }
 
     submitKYC(data, {
       onSuccess: () => {
         setIsKYCModalOpen(false);
         setKycDocs({ front: null, back: null });
+        toast.success('Documentos enviados com sucesso! A análise pode demorar 24-48 horas.');
+      },
+      onError: (error: any) => {
+        const errData = error.response?.data;
+        const message = errData?.message || errData?.detail || 
+          (typeof errData === 'object' ? Object.values(errData).flat().join(' | ') : null) ||
+          'Erro ao enviar documentos. Verifique os ficheiros e tente novamente.';
+        toast.error(message);
       }
     });
   };
@@ -511,12 +534,12 @@ const PerfilPage: React.FC = () => {
                       <select 
                         name="doc_type" 
                         required 
-                        defaultValue="BI"
+                        defaultValue="bi"
                         className="w-full h-12 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary/50 transition-all appearance-none"
                       >
-                        <option value="BI">Bilhete de Identidade (BI)</option>
-                        <option value="PASSPORT">Passaporte</option>
-                        <option value="DRIVERS_LICENSE">Carta de Condução</option>
+                        <option value="bi">Bilhete de Identidade (BI)</option>
+                        <option value="passport">Passaporte</option>
+                        <option value="residence">Autorização de Residência</option>
                       </select>
                     </div>
 
@@ -532,20 +555,31 @@ const PerfilPage: React.FC = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Frente do Doc</label>
-                        <div className="relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border border-dashed border-slate-200 dark:border-white/10 rounded-xl overflow-hidden group hover:border-primary/50 transition-colors">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1 flex items-center gap-1">
+                          Frente do Doc
+                          {kycDocs.front && <span className="text-emerald-500 text-[8px]">✓</span>}
+                        </label>
+                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${
+                          kycDocs.front 
+                            ? 'border-emerald-500/50 bg-emerald-500/5' 
+                            : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
+                        }`}>
                           {kycDocs.front ? (
-                            <img src={URL.createObjectURL(kycDocs.front)} className="w-full h-full object-cover" alt="Frente" />
+                            <>
+                              <img src={URL.createObjectURL(kycDocs.front)} className="w-full h-full object-cover" alt="Frente" />
+                              <div className="absolute top-1 right-1 size-5 bg-emerald-500 rounded-full flex items-center justify-center shadow">
+                                <span className="text-white text-[10px] font-black">✓</span>
+                              </div>
+                            </>
                           ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-300 pointer-events-none">
                               <Camera className="size-6" />
-                              <span className="text-[8px] font-black uppercase tracking-widest">Súbir Frente</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br/>carregar frente</span>
                             </div>
                           )}
                           <input 
-                            type="file" 
-                            required
-                            accept="image/*"
+                            type="file"
+                            accept="image/*,application/pdf"
                             onChange={(e) => setKycDocs(prev => ({ ...prev, front: e.target.files?.[0] || null }))}
                             className="absolute inset-0 opacity-0 cursor-pointer"
                           />
@@ -553,20 +587,31 @@ const PerfilPage: React.FC = () => {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Verso do Doc</label>
-                        <div className="relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border border-dashed border-slate-200 dark:border-white/10 rounded-xl overflow-hidden group hover:border-primary/50 transition-colors">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1 flex items-center gap-1">
+                          Verso do Doc
+                          {kycDocs.back && <span className="text-emerald-500 text-[8px]">✓</span>}
+                        </label>
+                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${
+                          kycDocs.back 
+                            ? 'border-emerald-500/50 bg-emerald-500/5' 
+                            : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
+                        }`}>
                           {kycDocs.back ? (
-                            <img src={URL.createObjectURL(kycDocs.back)} className="w-full h-full object-cover" alt="Verso" />
+                            <>
+                              <img src={URL.createObjectURL(kycDocs.back)} className="w-full h-full object-cover" alt="Verso" />
+                              <div className="absolute top-1 right-1 size-5 bg-emerald-500 rounded-full flex items-center justify-center shadow">
+                                <span className="text-white text-[10px] font-black">✓</span>
+                              </div>
+                            </>
                           ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-300 pointer-events-none">
                               <Camera className="size-6" />
-                              <span className="text-[8px] font-black uppercase tracking-widest">Súbir Verso</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br/>carregar verso</span>
                             </div>
                           )}
                           <input 
-                            type="file" 
-                            required
-                            accept="image/*"
+                            type="file"
+                            accept="image/*,application/pdf"
                             onChange={(e) => setKycDocs(prev => ({ ...prev, back: e.target.files?.[0] || null }))}
                             className="absolute inset-0 opacity-0 cursor-pointer"
                           />
