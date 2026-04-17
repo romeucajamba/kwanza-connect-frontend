@@ -180,7 +180,7 @@ const AppLayout: React.FC = () => {
                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
                   </div>
                   <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]">
-                    <AvatarImage src={getAvatarUrl(user?.avatar, user?.email)} />
+                    <AvatarImage src={getAvatarUrl(user?.avatar, user?.full_name)} />
                     <AvatarFallback className="rounded-lg">
                       <User className="size-4 text-slate-400" />
                     </AvatarFallback>

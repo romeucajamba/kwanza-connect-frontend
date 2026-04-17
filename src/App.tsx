@@ -70,7 +70,9 @@ const App: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<Navigate to="/login" replace />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />

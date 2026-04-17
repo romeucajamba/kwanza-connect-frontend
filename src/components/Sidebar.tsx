@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import { 
   LayoutDashboard, 
@@ -16,15 +16,18 @@ import {
   Heart
 } from 'lucide-react';
 import { APP_ROUTES } from '@constants';
-import { useAuthStore } from '@store/authStore';
+import { useLogout } from '@services/auth.hooks';
+import { useChatRooms } from '@services/chat.hooks';
+import type { Room } from '@types';
 
 interface SidebarItemProps {
   to: string;
   icon: React.ElementType;
   label: string;
+  badge?: number;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
@@ -40,7 +43,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
         <Icon 
           className={`size-4.5 transition-transform group-hover:scale-110 ${isActive ? 'fill-primary/10' : ''}`} 
         />
-        <span className="text-[11px] font-bold tracking-tight uppercase">{label}</span>
+        <span className="text-[11px] font-bold tracking-tight uppercase flex-1">{label}</span>
+        
+        {badge ? (
+           <span className="bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-primary/20 animate-pulse">
+              {badge}
+           </span>
+        ) : null}
+
         {isActive && (
           <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />
         )}
@@ -50,8 +60,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
 );
 
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const { mutate: logout } = useLogout();
+  const { data: rooms } = useChatRooms();
+
+  const totalUnreadMessages = (rooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
 
   const menuItems = [
     { to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
@@ -61,7 +73,7 @@ const Sidebar: React.FC = () => {
     { to: APP_ROUTES.CONVERSAO, icon: Repeat, label: 'Conversão' },
     { to: APP_ROUTES.CAMBIO_MERCADO, icon: TrendingUp, label: 'Câmbio' },
     { to: APP_ROUTES.HISTORICO, icon: History, label: 'Histórico' },
-    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens' },
+    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens', badge: totalUnreadMessages },
     { to: APP_ROUTES.PERFIL, icon: User, label: 'Perfil' },
     { to: '/settings', icon: Settings, label: 'Definições' },
   ];
@@ -82,13 +94,8 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="p-4 mt-auto">
-        <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#192633] border border-slate-100 dark:border-white/5 mb-4">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 opacity-70">Apoio</p>
-          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed">Central de Ajuda & FAQ</p>
-        </div>
-
         <button 
-          onClick={() => { logout(); navigate('/login'); }}
+          onClick={() => logout()}
           className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors duration-200 group"
         >
           <LogOut className="size-4.5 transition-transform group-hover:-translate-x-1" />

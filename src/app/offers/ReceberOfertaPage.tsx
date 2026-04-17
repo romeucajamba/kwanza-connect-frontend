@@ -192,7 +192,11 @@ const ReceberOfertaPage: React.FC = () => {
                           'Manifestar Interesse'
                         )}
                       </button>
-                      <button className="h-9 w-9 bg-slate-50 dark:bg-[#111922] text-slate-300 hover:text-primary rounded-lg flex items-center justify-center transition-all border border-slate-100 dark:border-white/5 hover:border-primary/10">
+                      <button 
+                        disabled={isOwner || isLoadingThis}
+                        onClick={() => handleInterest(offer.id)}
+                        className="h-9 w-9 bg-slate-50 dark:bg-[#111922] text-slate-300 hover:text-primary rounded-lg flex items-center justify-center transition-all border border-slate-100 dark:border-white/5 hover:border-primary/10 disabled:opacity-30"
+                      >
                         <MessageCircle className="size-4" />
                       </button>
                     </div>

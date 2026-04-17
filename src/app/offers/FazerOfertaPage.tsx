@@ -9,6 +9,8 @@ import {
   DollarSign,
   Banknote,
   ChevronDown,
+  MapPin,
+  AlignLeft,
 } from 'lucide-react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -116,6 +118,8 @@ const FazerOfertaPage: React.FC = () => {
       give_amount: '',
       want_amount: '',
       offer_type: 'sell',
+      notes: '',
+      city: '',
     },
   });
 
@@ -151,6 +155,8 @@ const FazerOfertaPage: React.FC = () => {
         want_currency_code: data.want_currency_code,
         give_amount: formatDecimal(data.give_amount),
         want_amount: formatDecimal(data.want_amount),
+        notes: data.notes,
+        city: data.city,
       },
       {
         onSuccess: () => {
@@ -160,6 +166,8 @@ const FazerOfertaPage: React.FC = () => {
             give_amount: '',
             want_amount: '',
             offer_type: data.offer_type,
+            notes: '',
+            city: '',
           });
         },
       }
@@ -269,6 +277,42 @@ const FazerOfertaPage: React.FC = () => {
                   {errors.want_amount && (
                     <p className="text-red-500 text-[10px] font-bold ml-1">{errors.want_amount.message}</p>
                   )}
+                </div>
+
+                {/* Localização da Oferta */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                    Localização (Cidade)
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                      <MapPin className="size-4" />
+                    </div>
+                    <input
+                      {...register('city')}
+                      type="text"
+                      placeholder="Ex: Luanda, Talatona..."
+                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Notas/Instruções */}
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                    Notas ou Instruções de Pagamento
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-4 text-slate-400 group-focus-within:text-primary transition-colors">
+                      <AlignLeft className="size-4" />
+                    </div>
+                    <textarea
+                      {...register('notes')}
+                      rows={3}
+                      placeholder="Ex: Aceito transferência via Multicaixa Express ou depósito no BAI..."
+                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary transition-all resize-none"
+                    />
+                  </div>
                 </div>
               </div>
 

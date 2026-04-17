@@ -14,6 +14,7 @@ export const APP_ROUTES = {
   P2P_MY_OFFERS: '/p2p/minhas-ofertas',
   P2P_INTERESTS: '/p2p/interesses',
   FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',
   NOTIFICATIONS: '/notifications',
 };
@@ -27,13 +28,26 @@ export const API_ROUTES = {
     FORGOT_PASSWORD: '/auth/forgot-password/',
     RESET_PASSWORD: '/auth/reset-password/',
     VERIFY_EMAIL: '/auth/verify-email/',
-    CHANGE_PASSWORD: '/auth/change-password/',
+    CHANGE_PASSWORD: '/auth/me/change-password/',
+    USER_PROFILE: (id: string) => `/auth/users/${id}/`,
+    KYC_SUBMIT: '/auth/kyc/submit/',
+    KYC_STATUS: '/auth/kyc/status/',
+    TOKEN_REFRESH: '/auth/token/refresh/',
   },
   OFFERS: {
     BASE: '/offers/',
     MINE: '/offers/mine/',
     CURRENCIES: '/offers/currencies/',
+    DETAIL: (id: string) => `/offers/${id}/`,
+    PAUSE: (id: string) => `/offers/${id}/pause/`,
+    RESUME: (id: string) => `/offers/${id}/resume/`,
+    CLOSE: (id: string) => `/offers/${id}/close/`,
+    INTERESTS: (id: string) => `/offers/${id}/interests/`,
+    EXPRESS_INTEREST: (id: string) => `/offers/${id}/interest/`,
     INTERESTS_MINE: '/offers/interests/mine/',
+    INTEREST_ACCEPT: (id: string) => `/offers/interests/${id}/accept/`,
+    INTEREST_REJECT: (id: string) => `/offers/interests/${id}/reject/`,
+    INTEREST_CANCEL: (id: string) => `/offers/interests/${id}/cancel/`,
   },
   RATES: {
     BASE: '/rates/',
@@ -42,19 +56,29 @@ export const API_ROUTES = {
   },
   TRANSACTIONS: {
     BASE: '/transactions/',
+    DETAIL: (id: string) => `/transactions/${id}/`,
     CONFIRM: '/transactions/confirm/',
+    REVIEW: (id: string) => `/transactions/${id}/review/`,
+    REVIEWS: (userId: string) => `/transactions/reviews/${userId}/`,
   },
   CHAT: {
     ROOMS: '/chat/rooms/',
     ROOM_DETAIL: (id: string) => `/chat/rooms/${id}/`,
     ROOM_MESSAGES: (id: string) => `/chat/rooms/${id}/messages/`,
     MESSAGES: '/chat/messages/',
+    MESSAGE_DETAIL: (id: string) => `/chat/messages/${id}/`,
+    MARK_READ: (id: string) => `/chat/rooms/${id}/mark-all-read/`,
   },
   NOTIFICATIONS: {
     BASE: '/notifications/',
     UNREAD: '/notifications/unread-count/',
     MARK_READ: '/notifications/mark-read/',
+    MARK_READ_SINGLE: (id: string) => `/notifications/mark-read/${id}/`,
     PREFERENCES: '/notifications/preferences/',
+  },
+  AUDIT: {
+    LOGS: '/audit/logs/',
+    LOG_DETAIL: (id: string) => `/audit/logs/${id}/`,
   }
 };
 

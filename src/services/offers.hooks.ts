@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { offersService, type CreateOfferPayload, type ExpressInterestPayload } from './offers.service';
+import { chatKeys } from './chat.hooks';
 import type { OfferInterest } from '@/types';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
@@ -19,6 +20,7 @@ export const useOffers = (params?: Record<string, string>) =>
   useQuery({
     queryKey: offersKeys.active(params),
     queryFn: () => offersService.getActiveOffers(params),
+    staleTime: 1000 * 60, // Ofertas são frescas por 1 minuto
   });
 
 // ─── Detalhes de Uma Oferta ───────────────────────────────────────────────────
@@ -26,6 +28,7 @@ export const useOfferDetails = (id: string) =>
   useQuery({
     queryKey: offersKeys.detail(id),
     queryFn: () => offersService.getOfferDetails(id),
+    staleTime: 1000 * 60 * 5, // Detalhes da oferta duram 5 minutos
     enabled: !!id,
   });
 
@@ -127,12 +130,19 @@ export const useOfferInterests = (offerId: string) =>
 // ─── Manifestar Interesse ─────────────────────────────────────────────────────
 export const useExpressInterest = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   return useMutation({
     mutationFn: ({ offerId, payload }: { offerId: string; payload?: ExpressInterestPayload }) =>
       offersService.expressInterest(offerId, payload),
-    onSuccess: () => {
+    onSuccess: (data: OfferInterest) => {
       queryClient.invalidateQueries({ queryKey: offersKeys.myInterests() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.all });
       toast.success('Interesse enviado!');
+      
+      // Se o backend já devolveu uma sala (deduplicação ou auto-aceitação), navegamos
+      if (data.room) {
+        navigate(`/mensagens/${data.room}`);
+      }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Erro ao enviar interesse');
@@ -155,7 +165,8 @@ export const useAcceptInterest = () => {
     mutationFn: (interestId: string) => offersService.acceptInterest(interestId),
     onSuccess: (data: OfferInterest) => {
       queryClient.invalidateQueries({ queryKey: offersKeys.all });
-      toast.success('Proposta aceite! A sala de chat foi criada.');
+      queryClient.invalidateQueries({ queryKey: chatKeys.all });
+      toast.success('Proposta aceite! A sala de chat foi aberta.');
       if (data.room) {
         navigate(`/mensagens/${data.room}`);
       } else {

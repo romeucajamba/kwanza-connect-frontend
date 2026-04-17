@@ -15,26 +15,24 @@ import { useNavigate } from 'react-router-dom';
 
 const ConversaoPage: React.FC = () => {
   const navigate = useNavigate();
-  const { data: rates, isLoading: isLoadingRates } = useExchangeRates();
-  const { data: currencies, isLoading: isLoadingCurrencies } = useCurrencies();
   
   const [giveAmount, setGiveAmount] = useState('1');
   const [giveCurrency, setGiveCurrency] = useState('USD');
   const [receiveCurrency, setReceiveCurrency] = useState('AOA');
 
+  const { data: rates, isLoading: isLoadingRates } = useExchangeRates(giveCurrency);
+  const { data: currencies, isLoading: isLoadingCurrencies } = useCurrencies();
+
   const localRate = useMemo(() => {
-    if (!rates) return 0;
-    const directRate = (rates as ExchangeRate[])?.find(
-        r => r.from_currency.code === giveCurrency && r.to_currency.code === receiveCurrency
-      )?.rate;
+    if (!rates || !Array.isArray(rates)) return 0;
+    
+    // As the API now returns rates based on giveCurrency, we search directly for receiveCurrency in the list
+    const directRate = rates.find(r => r.to_currency.code === receiveCurrency)?.rate;
     
     if (directRate) return directRate;
+    if (giveCurrency === receiveCurrency) return 1;
 
-    // Fallback calculation via USD
-    const usdToGive = (rates as ExchangeRate[])?.find(r => r.to_currency.code === giveCurrency)?.rate || 1;
-    const usdToReceive = (rates as ExchangeRate[])?.find(r => r.to_currency.code === receiveCurrency)?.rate || 1;
-    
-    return usdToReceive / usdToGive;
+    return 0;
   }, [rates, giveCurrency, receiveCurrency]);
 
   const receiveAmount = (parseFloat(giveAmount || '0') * localRate).toFixed(2);
@@ -60,10 +58,6 @@ const ConversaoPage: React.FC = () => {
           <p className="text-slate-400 dark:text-slate-500 font-bold mt-1 text-[9px] uppercase tracking-widest opacity-80 leading-relaxed">
             Conversão instantânea com taxas de mercado em tempo real.
           </p>
-        </div>
-        <div className="flex items-center gap-2.5 bg-white dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-100 dark:border-white/5 overflow-hidden shadow-sm">
-           <Clock className="size-3 text-primary animate-pulse" />
-           <span className="text-[8px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest leading-none">Status: Sincronizado</span>
         </div>
       </div>
 
@@ -167,16 +161,6 @@ const ConversaoPage: React.FC = () => {
                     <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">As taxas flutuam conforme a liquidez global. O valor final é acordado no chat P2P.</p>
                  </div>
               </div>
-           </div>
-
-           <div className="p-6 bg-emerald-500/5 rounded-xl border border-emerald-500/10 space-y-4">
-              <div className="flex items-center gap-3">
-                 <ShieldCheck className="size-5 text-emerald-500" />
-                 <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Escrow de Proteção Ativo</span>
-              </div>
-              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-widest opacity-80">
-                O capital das ofertas no mercado é protegido por custódia inteligente até a confirmação de recebimento.
-              </p>
            </div>
         </div>
       </div>

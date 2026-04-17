@@ -8,6 +8,8 @@ export interface CreateOfferPayload {
   want_currency_code: string;
   give_amount: string;
   want_amount: string;
+  notes?: string;
+  city?: string;
 }
 
 export interface ExpressInterestPayload {
@@ -42,32 +44,32 @@ export const offersService = {
 
   // GET /api/offers/<offer_id>/
   getOfferDetails: async (id: string): Promise<Offer> => {
-    const response = await api.get<ApiResponse<Offer>>(`${API_ROUTES.OFFERS.BASE}${id}/`);
+    const response = await api.get<ApiResponse<Offer>>(API_ROUTES.OFFERS.DETAIL(id));
     return response.data.data;
   },
 
   // POST /api/offers/<offer_id>/pause/
   pauseOffer: async (id: string): Promise<Offer> => {
-    const response = await api.post<ApiResponse<Offer>>(`${API_ROUTES.OFFERS.BASE}${id}/pause/`);
+    const response = await api.post<ApiResponse<Offer>>(API_ROUTES.OFFERS.PAUSE(id));
     return response.data.data;
   },
 
   // POST /api/offers/<offer_id>/resume/
   resumeOffer: async (id: string): Promise<Offer> => {
-    const response = await api.post<ApiResponse<Offer>>(`${API_ROUTES.OFFERS.BASE}${id}/resume/`);
+    const response = await api.post<ApiResponse<Offer>>(API_ROUTES.OFFERS.RESUME(id));
     return response.data.data;
   },
 
   // POST /api/offers/<offer_id>/close/
   closeOffer: async (id: string): Promise<Offer> => {
-    const response = await api.post<ApiResponse<Offer>>(`${API_ROUTES.OFFERS.BASE}${id}/close/`);
+    const response = await api.post<ApiResponse<Offer>>(API_ROUTES.OFFERS.CLOSE(id));
     return response.data.data;
   },
 
   // GET /api/offers/<offer_id>/interests/
   getOfferInterests: async (offerId: string): Promise<OfferInterest[]> => {
     const response = await api.get<ApiResponse<OfferInterest[]>>(
-      `${API_ROUTES.OFFERS.BASE}${offerId}/interests/`
+      API_ROUTES.OFFERS.INTERESTS(offerId)
     );
     return response.data.data;
   },
@@ -75,7 +77,7 @@ export const offersService = {
   // POST /api/offers/<offer_id>/interest/
   expressInterest: async (offerId: string, payload: ExpressInterestPayload = {}): Promise<OfferInterest> => {
     const response = await api.post<ApiResponse<OfferInterest>>(
-      `${API_ROUTES.OFFERS.BASE}${offerId}/interest/`,
+      API_ROUTES.OFFERS.EXPRESS_INTEREST(offerId),
       payload
     );
     return response.data.data;
@@ -90,7 +92,7 @@ export const offersService = {
   // POST /api/offers/interests/<interest_id>/accept/
   acceptInterest: async (interestId: string): Promise<OfferInterest> => {
     const response = await api.post<ApiResponse<OfferInterest>>(
-      `${API_ROUTES.OFFERS.BASE}interests/${interestId}/accept/`
+      API_ROUTES.OFFERS.INTEREST_ACCEPT(interestId)
     );
     return response.data.data;
   },
@@ -98,7 +100,7 @@ export const offersService = {
   // POST /api/offers/interests/<interest_id>/reject/
   rejectInterest: async (interestId: string): Promise<OfferInterest> => {
     const response = await api.post<ApiResponse<OfferInterest>>(
-      `${API_ROUTES.OFFERS.BASE}interests/${interestId}/reject/`
+      API_ROUTES.OFFERS.INTEREST_REJECT(interestId)
     );
     return response.data.data;
   },
@@ -106,7 +108,7 @@ export const offersService = {
   // POST /api/offers/interests/<interest_id>/cancel/
   cancelInterest: async (interestId: string): Promise<OfferInterest> => {
     const response = await api.post<ApiResponse<OfferInterest>>(
-      `${API_ROUTES.OFFERS.BASE}interests/${interestId}/cancel/`
+      API_ROUTES.OFFERS.INTEREST_CANCEL(interestId)
     );
     return response.data.data;
   },

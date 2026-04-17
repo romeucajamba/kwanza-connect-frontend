@@ -13,7 +13,8 @@ export const useChatRooms = () => {
   return useQuery({
     queryKey: chatKeys.rooms(),
     queryFn: chatService.getRooms,
-    refetchInterval: 10000, // Atualizar lista de salas a cada 10s
+    refetchInterval: 1000 * 20, // Atualizar lista de salas a cada 20s
+    staleTime: 1000 * 5, // Considerar salas frescas por 5s
   });
 };
 
@@ -30,7 +31,8 @@ export const useChatMessages = (roomId: string) => {
     queryKey: chatKeys.messages(roomId),
     queryFn: () => chatService.getMessages(roomId),
     enabled: !!roomId,
-    refetchInterval: 3000, // Poll for new messages every 3s
+    refetchInterval: 1000 * 5, // Poll for new messages every 5s (antes era 3s)
+    staleTime: 1000 * 2, // Mensagens são frescas por 2s
   });
 };
 
@@ -38,8 +40,14 @@ export const useSendMessage = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ roomId, content }: { roomId: string; content: string }) => 
-      chatService.sendMessage(roomId, content),
+    mutationFn: ({ roomId, ...data }: { 
+      roomId: string; 
+      content: string;
+      msg_type?: 'text' | 'image' | 'file';
+      reply_to?: string;
+      file?: File | null;
+    }) => 
+      chatService.sendMessage(roomId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: chatKeys.messages(variables.roomId) });
       queryClient.invalidateQueries({ queryKey: chatKeys.rooms() });
@@ -58,6 +66,39 @@ export const useDeleteMessage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
       toast.success('Mensagem eliminada');
+    },
+  });
+};
+
+export const useUpdateMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ messageId, content }: { messageId: string; content: string }) => 
+      chatService.updateMessage(messageId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: chatKeys.all });
+      toast.success('Mensagem editada');
+    },
+  });
+};
+
+export const useMarkAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (roomId: string) => chatService.markAsRead(roomId),
+    onSuccess: (_, roomId) => {
+      // Atualizar localmente a contagem de não lidas para 0
+      queryClient.setQueryData<any[]|any>(chatKeys.rooms(), (oldRooms: any) => {
+        if (!oldRooms) return oldRooms;
+        return oldRooms.map((room: any) => 
+          room.id === roomId ? { ...room, unread_count: 0 } : room
+        );
+      });
+      // Invalida para sincronizar com o backend
+      queryClient.invalidateQueries({ queryKey: chatKeys.rooms() });
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
     },
   });
 };
