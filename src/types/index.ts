@@ -42,6 +42,7 @@ export interface AuthState {
 export interface OfferInterest {
   id: string;
   buyer: User;
+  offer?: Offer;
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
   message: string;
   room?: string;

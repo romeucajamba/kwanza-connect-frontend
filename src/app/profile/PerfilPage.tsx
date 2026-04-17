@@ -18,7 +18,7 @@ import {
 import { useAuthStore } from '@store/authStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactions, useUserReviews } from '@services/transactions.hooks';
-import { useUpdateProfile, useUpdateAvatar, useSubmitKYC } from '@services/auth.hooks';
+import { useUpdateProfile, useUpdateAvatar, useSubmitKYC, useUserProfile } from '@services/auth.hooks';
 import { useCurrencies } from '@services/rates.hooks';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { useForm } from 'react-hook-form';
@@ -45,7 +45,9 @@ const PerfilPage: React.FC = () => {
   const [kycDocs, setKycDocs] = useState<{ front: File | null, back: File | null }>({ front: null, back: null });
 
   const { data: currencies } = useCurrencies();
-  const user = isOwnProfile ? currentUser : null; // Nota: Em prod, buscaríamos os dados do user alvo via hook
+  const { data: publicProfile, isLoading: isLoadingPublic } = useUserProfile(targetUserId, !isOwnProfile);
+  
+  const user = isOwnProfile ? currentUser : publicProfile;
 
   const { register, handleSubmit, reset } = useForm({
     values: {
@@ -73,6 +75,14 @@ const PerfilPage: React.FC = () => {
 
     return { count: completed.length, volume, rating: avgRating };
   }, [transactions, reviews]);
+
+  if (isLoadingPublic && !isOwnProfile) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[500px]">
+        <Loader2 className="size-10 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

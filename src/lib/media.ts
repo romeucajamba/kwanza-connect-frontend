@@ -2,7 +2,13 @@
  * Utilitários para formatação de URLs de média.
  */
 
-const API_HOST = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const getApiHost = () => {
+  const url = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  // Se a URL terminar em /api ou /api/, removemos para obter o host base da média
+  return url.replace(/\/api\/?$/, '');
+};
+
+const API_HOST = getApiHost();
 
 export const getAvatarUrl = (path: string | null | undefined, seed?: string): string => {
   if (!path) {

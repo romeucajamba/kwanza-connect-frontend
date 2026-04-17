@@ -13,8 +13,11 @@ import {
   ArrowRightLeft,
   ShieldCheck,
   MessageSquare,
-  RefreshCcw
+  RefreshCcw,
+  User as UserIcon
 } from 'lucide-react';
+import { getAvatarUrl } from '@lib/media';
+import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
 import { useTransactions, useReviewTransaction } from '@services/transactions.hooks';
 import { useAuthStore } from '@store/authStore';
 import { format } from 'date-fns';
@@ -143,6 +146,7 @@ const HistoricoTransacoesPage: React.FC = () => {
                 <AnimatePresence mode="popLayout">
                   {filteredTransactions.map((tx: any) => {
                     const isSeller = tx.seller?.id === user?.id;
+                    const counterparty = isSeller ? tx.buyer : tx.seller;
                     return (
                       <motion.tr 
                         key={tx.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -150,8 +154,16 @@ const HistoricoTransacoesPage: React.FC = () => {
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
-                            <div className={`size-9 rounded-lg flex items-center justify-center shadow-inner ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                              {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                            <div className="relative">
+                              <Avatar className="size-9 rounded-lg border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                                <AvatarImage src={getAvatarUrl(counterparty?.avatar, counterparty?.full_name)} />
+                                <AvatarFallback className="rounded-lg">
+                                  <UserIcon className="size-4 text-slate-400" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className={`absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-white dark:border-[#192633] flex items-center justify-center shadow-sm ${isSeller ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                                 {isSeller ? <ArrowUpRight className="size-2" /> : <ArrowDownLeft className="size-2" />}
+                              </div>
                             </div>
                              <div>
                                <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase leading-none">{isSeller ? 'Venda P2P' : 'Compra P2P'}</p>
@@ -219,11 +231,20 @@ const HistoricoTransacoesPage: React.FC = () => {
           {filteredTransactions && filteredTransactions.length > 0 ? (
             filteredTransactions.map((tx: any) => {
               const isSeller = tx.seller?.id === user?.id;
+              const counterparty = isSeller ? tx.buyer : tx.seller;
               return (
                 <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors active:scale-[0.98]">
                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`size-10 rounded-lg flex-shrink-0 flex items-center justify-center shadow-inner ${isSeller ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                       {isSeller ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="size-10 rounded-lg border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                        <AvatarImage src={getAvatarUrl(counterparty?.avatar, counterparty?.full_name)} />
+                        <AvatarFallback className="rounded-lg">
+                          <UserIcon className="size-4 text-slate-400" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className={`absolute -bottom-1 -right-1 size-4 rounded-full border-2 border-white dark:border-[#192633] flex items-center justify-center shadow-sm ${isSeller ? 'bg-rose-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                          {isSeller ? <ArrowUpRight className="size-2" /> : <ArrowDownLeft className="size-2" />}
+                      </div>
                     </div>
                     <div className="min-w-0">
                        <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase truncate">{isSeller ? 'Venda P2P' : 'Compra P2P'}</p>
