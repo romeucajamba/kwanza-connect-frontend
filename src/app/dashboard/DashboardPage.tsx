@@ -7,11 +7,12 @@ import {
   ArrowDownLeft, 
   Users,
   Send,
-  Repeat
+  Repeat,
+  TrendingUp
 } from 'lucide-react';
 import { useAuthStore } from '@store/authStore';
 import { APP_ROUTES } from '@constants';
-import { useDashboardStats } from '@services/rates.hooks';
+import { useDashboardStats, useExchangeRates } from '@services/rates.hooks';
 import { useTransactions } from '@services/transactions.hooks';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -20,8 +21,17 @@ const DashboardPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const { data: stats } = useDashboardStats();
+  const { data: rates } = useExchangeRates('AOA');
   const { data: recentTransactions } = useTransactions();
 
+  // Calcular taxas reais do Kwanza
+  const kwanzaToUsd = rates?.find(r => r.to_currency.code === 'USD')?.rate || 0;
+  const kwanzaToEur = rates?.find(r => r.to_currency.code === 'EUR')?.rate || 0;
+
+  // Saldos estimados (caso o backend retorne 0)
+  const aoaBalance = stats?.total_balance_aoa || 0;
+  const usdValue = stats?.total_balance_usd || (aoaBalance * kwanzaToUsd);
+  const eurValue = aoaBalance * kwanzaToEur;
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -96,22 +106,34 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <p className="text-black dark:text-white text-lg font-bold">
-                  {(stats?.total_balance_usd || 0).toLocaleString('en-US')} USD
+                  {usdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
                 </p>
-                <p className="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-widest">Dólar Americano</p>
+                <div className="flex flex-col gap-0.5">
+                   <p className="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-widest">Dólar Americano</p>
+                   {kwanzaToUsd > 0 && (
+                      <p className="text-[9px] font-black text-primary uppercase tracking-tighter opacity-60">1 AOA ≈ ${kwanzaToUsd.toFixed(5)}</p>
+                   )}
+                </div>
               </div>
             </div>
 
-            {/* Placeholder for EUR if we had it */}
-            <div className="flex flex-col gap-4 text-center p-6 rounded-xl bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 shadow-sm opacity-50">
+            {/* Wallet EUR */}
+            <div className={`flex flex-col gap-4 text-center p-6 rounded-xl bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 shadow-sm ${eurValue === 0 ? 'opacity-50' : ''}`}>
                <div className="px-10">
                 <div className="w-full aspect-square bg-[#f6f7f8] dark:bg-[#111922] rounded-full flex items-center justify-center text-3xl shadow-inner">
                   🇪🇺
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-black dark:text-white text-lg font-bold">0,00 EUR</p>
-                <p className="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-widest">Euro</p>
+                <p className="text-black dark:text-white text-lg font-bold">
+                   {eurValue.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR
+                </p>
+                <div className="flex flex-col gap-0.5">
+                   <p className="text-slate-500 dark:text-[#92adc9] text-xs font-medium uppercase tracking-widest">Euro</p>
+                   {kwanzaToEur > 0 && (
+                      <p className="text-[9px] font-black text-primary uppercase tracking-tighter opacity-60">1 AOA ≈ €{kwanzaToEur.toFixed(5)}</p>
+                   )}
+                </div>
               </div>
             </div>
           </div>
@@ -119,7 +141,32 @@ const DashboardPage: React.FC = () => {
 
         {/* Sidebar (1/3 width) */}
         <div className="lg:col-span-1 flex flex-col gap-8">
-          {/* Quick Actions / What do you want to do? */}
+          {/* Market Rates Card */}
+          <div className="bg-slate-900 rounded-xl p-6 text-white space-y-4 shadow-xl border border-white/5 relative overflow-hidden">
+             <TrendingUp className="absolute -bottom-4 -right-4 size-24 text-white/[0.03] -rotate-12" />
+             <div className="flex flex-col gap-1 relative z-10">
+                <h3 className="text-sm font-black uppercase tracking-tight">Câmbio <span className="text-primary italic text-[11px]">Mercado Global</span></h3>
+                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Sincronizado: Frankfurt (Live)</span>
+             </div>
+             <div className="space-y-3 relative z-10">
+                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/5">
+                   <div className="flex items-center gap-2">
+                      <span className="text-xs">🇺🇸</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">USD/AOA</span>
+                   </div>
+                   <span className="text-xs font-black text-primary">{kwanzaToUsd > 0 ? (1/kwanzaToUsd).toFixed(2) : '-'} <span className="text-[8px] text-white/40">Kz</span></span>
+                </div>
+                <div className="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/5">
+                   <div className="flex items-center gap-2">
+                      <span className="text-xs">🇪🇺</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">EUR/AOA</span>
+                   </div>
+                   <span className="text-xs font-black text-primary">{kwanzaToEur > 0 ? (1/kwanzaToEur).toFixed(2) : '-'} <span className="text-[8px] text-white/40">Kz</span></span>
+                </div>
+             </div>
+          </div>
+
+          {/* Quick Actions */}
           <div className="bg-white dark:bg-[#192633] rounded-xl p-6 border border-slate-100 dark:border-white/5 shadow-sm">
             <h2 className="text-black dark:text-white text-xl font-bold leading-tight tracking-tight mb-5">O que deseja fazer?</h2>
             <div className="grid grid-cols-2 gap-4">
@@ -221,7 +268,6 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
     </motion.div>
-
   );
 };
 

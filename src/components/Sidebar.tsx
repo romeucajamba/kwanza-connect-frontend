@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 import { 
   LayoutDashboard, 
@@ -16,7 +16,7 @@ import {
   Heart
 } from 'lucide-react';
 import { APP_ROUTES } from '@constants';
-import { useAuthStore } from '@store/authStore';
+import { useLogout } from '@services/auth.hooks';
 import { useChatRooms } from '@services/chat.hooks';
 import type { Room } from '@types';
 
@@ -60,8 +60,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge 
 );
 
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const { mutate: logout } = useLogout();
   const { data: rooms } = useChatRooms();
 
   const totalUnreadMessages = (rooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
@@ -95,13 +94,8 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="p-4 mt-auto">
-        <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#192633] border border-slate-100 dark:border-white/5 mb-4">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 opacity-70">Apoio</p>
-          <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed">Central de Ajuda & FAQ</p>
-        </div>
-
         <button 
-          onClick={() => { logout(); navigate('/login'); }}
+          onClick={() => logout()}
           className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors duration-200 group"
         >
           <LogOut className="size-4.5 transition-transform group-hover:-translate-x-1" />

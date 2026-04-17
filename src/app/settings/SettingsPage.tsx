@@ -80,10 +80,6 @@ const SettingsPage: React.FC = () => {
             Consola de gestão e segurança de activos digitais.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 px-4 py-1.5 rounded-full border border-emerald-500/5">
-           <ShieldCheck className="size-3 text-emerald-500" />
-           <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">KYC Verificado</span>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -93,7 +89,6 @@ const SettingsPage: React.FC = () => {
            {[
              { id: 'main', icon: Settings, label: 'Preferências', desc: 'Interface e Perfil' },
              { id: 'security', icon: Lock, label: 'Segurança', desc: 'Identidade e Senha' },
-             { id: 'payments', icon: CreditCard, label: 'Mercado P2P', desc: 'Dados Bancários' },
            ].map((section) => (
              <button 
                key={section.id}
@@ -146,7 +141,7 @@ const SettingsPage: React.FC = () => {
                     <div className="flex-1">
                        <SettingItem icon={User} label="Identidade Digital" desc="Edite seu BI, Nome e Foto de Perfil." />
                        <SettingItem icon={theme === 'dark' ? Moon : Sun} label="Modo Dark" desc="Activação do ambiente nocturno." action={toggleTheme} toggle checked={theme === 'dark'} />
-                       <SettingItem icon={Globe} label="Idioma Local" desc="Padrão: Português (Angola)" />
+                       <SettingItem icon={Globe} label="Idioma Local" desc="Padrão: Português" />
                        <SettingItem icon={Bell} label="Notificações App" desc="Alertas Push em tempo real." toggle checked={true} />
                     </div>
                  </motion.div>
@@ -162,7 +157,7 @@ const SettingsPage: React.FC = () => {
                           <ChevronLeft className="size-4" />
                        </button>
                        <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Proteção de Rede</h3>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Proteção</h3>
                           <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest opacity-60">Configurações de Acesso</p>
                        </div>
                     </div>
@@ -217,54 +212,7 @@ const SettingsPage: React.FC = () => {
                              </form>
                           </div>
                         )}
-                        <SettingItem icon={Smartphone} label="2FA via SMS" desc="+244 9XX XX XX XX" toggle checked={true} />
-                        <SettingItem icon={Activity} label="Sessões Actuais" desc="Listagem de IPs e Dispositivos." />
                      </div>
-                    <div className="p-5 bg-primary/5 rounded-b-xl border-t border-primary/5 flex items-center gap-4 group">
-                       <div className="size-12 rounded-lg bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
-                          <Brain className="size-6" />
-                       </div>
-                       <div className="flex-1">
-                          <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tight mb-1 opacity-90">Kwanza Sentinel <span className="text-primary italic">AI</span></p>
-                          <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-relaxed uppercase tracking-wide opacity-80">Proteção activa via Redes Neuronais.</p>
-                       </div>
-                    </div>
-                 </motion.div>
-              )}
-
-              {activeSection === 'payments' && (
-                 <motion.div 
-                   key="payments" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                   className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-md flex flex-col overflow-hidden h-full"
-                 >
-                    <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center lg:block">
-                       <button onClick={() => setView('nav')} className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 mr-3">
-                          <ChevronLeft className="size-4" />
-                       </button>
-                       <div className="flex justify-between items-center w-full">
-                          <div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">Dados Bancários</h3>
-                            <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest opacity-60">IBANS e Contas Verificadas</p>
-                          </div>
-                          <button className="size-8 flex items-center justify-center bg-primary text-white rounded-lg shadow-md active:scale-95 transition-all">
-                             <Plus className="size-4" />
-                          </button>
-                       </div>
-                    </div>
-                    <div className="p-5 space-y-3">
-                       <div className="bg-slate-50/50 dark:bg-white/5 p-4 rounded-lg border border-slate-100 dark:border-white/5 flex items-center justify-between gap-4 group">
-                          <div className="flex items-center gap-3">
-                             <div className="size-9 rounded-lg bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary">
-                                <Trophy className="size-4" />
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-tight">Multicaixa Express</p>
-                                <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest opacity-60">**** 5623 (BNI)</p>
-                             </div>
-                          </div>
-                          <button className="px-3 py-1.5 rounded-md bg-rose-500/10 text-rose-500 text-[7px] font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">Eliminar</button>
-                       </div>
-                    </div>
                  </motion.div>
               )}
            </AnimatePresence>
@@ -274,12 +222,5 @@ const SettingsPage: React.FC = () => {
 
   );
 };
-
-const Plus: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
-  </svg>
-);
 
 export default SettingsPage;

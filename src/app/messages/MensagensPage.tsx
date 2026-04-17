@@ -23,7 +23,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
-import { useChatRooms, useChatMessages, useSendMessage, useChatRoom, chatKeys, useMarkAsRead } from '@services/chat.hooks';
+import { useChatRooms, useChatMessages, useSendMessage, chatKeys, useMarkAsRead } from '@services/chat.hooks';
 import { useConfirmTransaction } from '@services/transactions.hooks';
 import { useOfferDetails, useRejectInterest, useCancelInterest } from '@services/offers.hooks';
 import { useAuthStore } from '@store/authStore';
@@ -44,7 +44,6 @@ const MensagensPage: React.FC = () => {
 
   const { data: rooms, isLoading: isLoadingRooms } = useChatRooms();
   const { data: messages, isLoading: isLoadingMessages } = useChatMessages(selectedRoomId || '');
-  const { data: currentRoom } = useChatRoom(selectedRoomId || '');
   const { mutate: sendMessage, isPending: isSending } = useSendMessage();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showAbortModal, setShowAbortModal] = useState(false);
@@ -209,7 +208,7 @@ const MensagensPage: React.FC = () => {
                      className={`w-full p-4 flex items-center gap-3 border-b border-slate-50 dark:border-white/5 transition-all hover:bg-slate-50 dark:hover:bg-white/5 relative ${selectedRoomId === room.id ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
                   >
                      <div className="relative flex-shrink-0">
-                        <div className="size-11 rounded-xl bg-slate-100 dark:bg-white/5 bg-center bg-cover border border-slate-100 dark:border-white/10" style={{ backgroundImage: `url(${getAvatarUrl(other?.avatar, other?.email)})` }} />
+                        <div className="size-11 rounded-xl bg-slate-100 dark:bg-white/5 bg-center bg-cover border border-slate-100 dark:border-white/10" style={{ backgroundImage: `url(${getAvatarUrl(other?.avatar, other?.full_name)})` }} />
                         <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#192633]" />
                      </div>
                      <div className="flex-1 min-w-0 text-left">
@@ -250,7 +249,7 @@ const MensagensPage: React.FC = () => {
                      </button>
                       <div 
                         className="size-10 rounded-xl bg-slate-100 dark:bg-white/5 bg-center bg-cover border border-slate-100 dark:border-white/10" 
-                        style={{ backgroundImage: `url(${getAvatarUrl(otherUser?.avatar, otherUser?.email)})` }} 
+                        style={{ backgroundImage: `url(${getAvatarUrl(otherUser?.avatar, otherUser?.full_name)})` }} 
                      />
                      <div>
                         <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">

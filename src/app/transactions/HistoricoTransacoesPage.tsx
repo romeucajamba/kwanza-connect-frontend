@@ -249,19 +249,6 @@ const HistoricoTransacoesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary Banner Compacto */}
-      <div className="p-6 bg-slate-900 dark:bg-black rounded-xl text-white relative overflow-hidden shadow-lg flex flex-col sm:flex-row items-center gap-6">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-bl-full opacity-50 pointer-events-none" />
-        <div className="size-12 rounded-xl bg-gradient-to-br from-indigo-900 to-blue-600 flex items-center justify-center shadow-xl flex-shrink-0">
-          <History className="size-6 text-white" />
-        </div>
-        <div className="flex-1 text-center sm:text-left">
-          <h2 className="text-lg font-bold uppercase tracking-tight mb-1">Actividade de Fluxo <span className="text-primary italic">Livre</span></h2>
-          <p className="text-[9px] font-medium text-white/40 leading-relaxed uppercase tracking-widest max-w-lg mx-auto sm:mx-0">Monitorizamos cada transação para garantir que os volumes apresentados coincidem com os activos reais.</p>
-        </div>
-        <button className="w-full sm:w-auto px-6 h-10 bg-white text-slate-900 rounded-lg font-bold uppercase text-[9px] tracking-widest hover:scale-105 transition-all shadow-md">Nova Troca</button>
-      </div>
-
       {/* Modal de Detalhes da Transação */}
       <AnimatePresence>
         {selectedTx && (

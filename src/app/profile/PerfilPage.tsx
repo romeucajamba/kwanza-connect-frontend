@@ -12,8 +12,6 @@ import {
   MessageSquare,
   Loader2,
   X,
-  Globe,
-  Activity,
   Briefcase,
   MapPin,
 } from 'lucide-react';
@@ -110,7 +108,7 @@ const PerfilPage: React.FC = () => {
   };
 
 
-  const avatarUrl = getAvatarUrl(user?.avatar, user?.email);
+  const avatarUrl = getAvatarUrl(user?.avatar, user?.full_name);
 
   return (
     <div className="w-full mx-auto max-w-7xl pb-12">

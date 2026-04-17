@@ -88,7 +88,7 @@ const InterestsList = ({ offerId }: { offerId: string }) => {
         <li key={interest.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 py-3">
           <div
             className="size-8 rounded-lg bg-center bg-cover flex-shrink-0 border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-100 dark:bg-white/5"
-            style={{ backgroundImage: `url(${getAvatarUrl(interest.buyer.avatar, interest.buyer.email)})` }}
+            style={{ backgroundImage: `url(${getAvatarUrl(interest.buyer.avatar, interest.buyer.full_name)})` }}
           />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">
