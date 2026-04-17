@@ -5,9 +5,9 @@ import type { ApiResponse, Notification, NotificationPreferences } from '@/types
 export const notificationsService = {
   // GET /api/notifications/
   getNotifications: async (unreadOnly = false): Promise<Notification[]> => {
-    const response = await api.get<ApiResponse<Notification[]>>(
-      `${API_ROUTES.NOTIFICATIONS.BASE}${unreadOnly ? '?unread=true' : ''}`
-    );
+    const response = await api.get<ApiResponse<Notification[]>>(API_ROUTES.NOTIFICATIONS.BASE, {
+      params: unreadOnly ? { unread: 'true' } : {}
+    });
     return response.data.data;
   },
 
@@ -26,7 +26,7 @@ export const notificationsService = {
 
   // POST /api/notifications/mark-read/<id>/
   markAsRead: async (notificationId: string): Promise<void> => {
-    await api.post(`${API_ROUTES.NOTIFICATIONS.MARK_READ}${notificationId}/`);
+    await api.post(API_ROUTES.NOTIFICATIONS.MARK_READ_SINGLE(notificationId));
   },
 
   // GET /api/notifications/preferences/

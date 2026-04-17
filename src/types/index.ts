@@ -15,6 +15,9 @@ export interface User {
   bio?: string;
   balance?: number;
   currency_code?: string;
+  is_available?: boolean;
+  preferred_give_currency?: string;
+  preferred_want_currency?: string;
 }
 
 export interface AuthResponse {
@@ -92,9 +95,19 @@ export interface Transaction {
   want_amount: number;
   rate: number;
   status: 'pending' | 'completed' | 'cancelled' | 'disputed';
+  has_review?: boolean;
   notes?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface TransactionReview {
+  id: string;
+  transaction: string;
+  reviewer: User;
+  rating: number; // 1-5
+  comment?: string;
+  created_at: string;
 }
 
 export interface RoomMember {
@@ -108,11 +121,13 @@ export interface RoomMember {
 export interface Message {
   id: string;
   room: string;
-  sender: User;
-  msg_type: 'text' | 'image' | 'file';
+  sender?: User;
+  sender_id?: string;
+  msg_type: 'text' | 'image' | 'file' | 'system';
   content?: string;
   file_url?: string;
   file_name?: string;
+  reply_to?: string | Message; // Added for replies
   is_deleted: boolean;
   created_at: string;
 }
@@ -126,6 +141,7 @@ export interface Room {
   last_message?: Message;
   unread_count: number;
   created_at: string;
+  interest_id?: string;
 }
 
 export interface DashboardStats {

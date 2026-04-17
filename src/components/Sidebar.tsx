@@ -17,14 +17,17 @@ import {
 } from 'lucide-react';
 import { APP_ROUTES } from '@constants';
 import { useAuthStore } from '@store/authStore';
+import { useChatRooms } from '@services/chat.hooks';
+import type { Room } from '@types';
 
 interface SidebarItemProps {
   to: string;
   icon: React.ElementType;
   label: string;
+  badge?: number;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
@@ -40,7 +43,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
         <Icon 
           className={`size-4.5 transition-transform group-hover:scale-110 ${isActive ? 'fill-primary/10' : ''}`} 
         />
-        <span className="text-[11px] font-bold tracking-tight uppercase">{label}</span>
+        <span className="text-[11px] font-bold tracking-tight uppercase flex-1">{label}</span>
+        
+        {badge ? (
+           <span className="bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-primary/20 animate-pulse">
+              {badge}
+           </span>
+        ) : null}
+
         {isActive && (
           <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />
         )}
@@ -52,6 +62,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label }) => (
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
+  const { data: rooms } = useChatRooms();
+
+  const totalUnreadMessages = (rooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
 
   const menuItems = [
     { to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
@@ -61,7 +74,7 @@ const Sidebar: React.FC = () => {
     { to: APP_ROUTES.CONVERSAO, icon: Repeat, label: 'Conversão' },
     { to: APP_ROUTES.CAMBIO_MERCADO, icon: TrendingUp, label: 'Câmbio' },
     { to: APP_ROUTES.HISTORICO, icon: History, label: 'Histórico' },
-    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens' },
+    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens', badge: totalUnreadMessages },
     { to: APP_ROUTES.PERFIL, icon: User, label: 'Perfil' },
     { to: '/settings', icon: Settings, label: 'Definições' },
   ];

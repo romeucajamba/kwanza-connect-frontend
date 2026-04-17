@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   ShieldCheck, 
@@ -13,14 +13,15 @@ import { APP_ROUTES } from '@constants';
 
 const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const { token: pathToken } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
+  const token = searchParams.get('token') || pathToken;
   
   const { mutate: verifyEmail, isPending, isSuccess, isError, error } = useVerifyEmail();
 
   useEffect(() => {
     if (token) {
-      verifyEmail(token);
+       verifyEmail(token);
     }
   }, [token, verifyEmail]);
 

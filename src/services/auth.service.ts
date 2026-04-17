@@ -76,4 +76,28 @@ export const authService = {
   changePassword: async (data: any): Promise<void> => {
     await api.post(API_ROUTES.AUTH.CHANGE_PASSWORD, data);
   },
+
+  submitKYC: async (data: any): Promise<void> => {
+    const formData = new FormData();
+    formData.append('doc_type', data.doc_type);
+    formData.append('doc_number', data.doc_number);
+    formData.append('front_image', data.front_image);
+    formData.append('back_image', data.back_image);
+
+    await api.post(API_ROUTES.AUTH.KYC_SUBMIT, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  getKYCStatus: async (): Promise<any> => {
+    const response = await api.get(API_ROUTES.AUTH.KYC_STATUS);
+    return response.data;
+  },
+
+  getUserProfile: async (userId: string): Promise<User> => {
+    const response = await api.get(API_ROUTES.AUTH.USER_PROFILE(userId));
+    return response.data.data;
+  },
 };

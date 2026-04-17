@@ -181,3 +181,41 @@ export const useChangePassword = () => {
     },
   });
 };
+
+export const useSubmitKYC = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: any) => authService.submitKYC(data),
+    onSuccess: () => {
+      toast.success('Documentos submetidos para análise!');
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      queryClient.invalidateQueries({ queryKey: ['kyc-status'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Erro ao submeter documentos');
+    },
+  });
+};
+
+export const useKYCStatus = () => {
+  return useQuery({
+    queryKey: ['kyc-status'],
+    queryFn: () => authService.getKYCStatus(),
+    refetchInterval: (query) => {
+      // Se estiver pendente, verificar a cada 1 minuto
+      const status = query.state.data?.data?.status;
+      if (status === 'pending' || status === 'submitted') return 60000;
+      return false;
+    },
+  });
+};
+
+export const useUserProfile = (userId: string, enabled = true) => {
+  return useQuery({
+    queryKey: ['user-profile', userId],
+    queryFn: () => authService.getUserProfile(userId),
+    enabled: enabled && !!userId,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};

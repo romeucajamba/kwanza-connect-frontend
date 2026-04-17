@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useSearchParams, useNavigate, Link, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,8 +36,9 @@ type ResetFormData = z.infer<typeof resetSchema>;
 
 const ForgotPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const { token: pathToken } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
+  const token = searchParams.get('token') || pathToken;
   
   const [step, setStep] = useState<'request' | 'success' | 'reset'>(token ? 'reset' : 'request');
   const [showPassword, setShowPassword] = useState(false);
@@ -71,8 +72,6 @@ const ForgotPasswordPage: React.FC = () => {
       }
     });
   };
-
-  const isPending = isForgotPending || isResetPending;
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden font-display selection:bg-primary selection:text-white">
