@@ -5,6 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { LoginFormData, RegisterFormData } from 'src/schemas/auth.schema';
 
+const getErrorMessage = (error: any, defaultMsg: string): string => {
+  const data = error?.response?.data;
+  if (!data) return defaultMsg;
+  if (typeof data === 'string') return data;
+  if (typeof data.message === 'string') return data.message;
+  if (typeof data.error === 'string') return data.error;
+  if (typeof data.detail === 'string') return data.detail;
+  
+  if (typeof data === 'object') {
+    const firstError = Object.values(data)[0];
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') return firstError[0];
+    if (typeof firstError === 'string') return firstError;
+  }
+  return defaultMsg;
+};
+
 export const useLogin = () => {
   const queryClient = useQueryClient();
   const login = useAuthStore((s) => s.login);
@@ -19,17 +35,7 @@ export const useLogin = () => {
       navigate('/dashboard');
     },
     onError: (error: any) => {
-      const data = error.response?.data;
-      let message = 'Erro ao realizar login';
-      if (typeof data === 'string') message = data;
-      else if (data?.message) message = data.message;
-      else if (data?.error) message = data.error;
-      else if (typeof data === 'object') {
-        const firstError = Object.values(data)[0];
-        if (Array.isArray(firstError)) message = firstError[0];
-        else if (typeof firstError === 'string') message = firstError;
-      }
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Erro ao realizar login'));
     },
   });
 };
@@ -42,30 +48,11 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (data: RegisterFormData) => authService.register(data),
     onSuccess: (data: any) => {
-      if (data?.access && data?.user) {
-        login(data.user, data.access, false);
-        queryClient.setQueryData(['me'], data.user);
-        toast.success('Bem-vindo ao KwanzaConnect!');
-        navigate('/dashboard');
-      } else {
-        toast.success(data?.message || 'Conta criada com sucesso!', {
-          duration: 6000,
-        });
-        navigate('/login');
-      }
+      const msg = typeof data?.message === 'string' ? data.message : 'Conta criada com sucesso! Pode agora iniciar sessão.';
+      toast.success(msg, { duration: 6000 });
     },
     onError: (error: any) => {
-      const data = error.response?.data;
-      let message = 'Erro ao criar conta';
-      if (typeof data === 'string') message = data;
-      else if (data?.message) message = data.message;
-      else if (data?.error) message = data.error;
-      else if (typeof data === 'object') {
-        const firstError = Object.values(data)[0];
-        if (Array.isArray(firstError)) message = firstError[0];
-        else if (typeof firstError === 'string') message = firstError;
-      }
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Erro ao criar conta'));
     },
   });
 };
@@ -107,7 +94,7 @@ export const useForgotPassword = () => {
       toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao solicitar recuperação');
+      toast.error(getErrorMessage(error, 'Erro ao solicitar recuperação'));
     },
   });
 };
@@ -119,7 +106,7 @@ export const useResetPassword = () => {
       toast.success('Senha redefinida com sucesso! Pode entrar com a nova senha.');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao redefinir senha');
+      toast.error(getErrorMessage(error, 'Erro ao redefinir senha'));
     },
   });
 };
@@ -131,7 +118,7 @@ export const useVerifyEmail = () => {
       toast.success('E-mail verificado com sucesso! Sua conta está ativa.');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao verificar e-mail');
+      toast.error(getErrorMessage(error, 'Erro ao verificar e-mail'));
     },
   });
 };
@@ -148,7 +135,7 @@ export const useUpdateProfile = () => {
       toast.success('Perfil actualizado com sucesso!');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao actualizar perfil');
+      toast.error(getErrorMessage(error, 'Erro ao actualizar perfil'));
     },
   });
 };
@@ -165,7 +152,7 @@ export const useUpdateAvatar = () => {
       toast.success('Foto de perfil actualizada!');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao carregar foto');
+      toast.error(getErrorMessage(error, 'Erro ao carregar foto'));
     },
   });
 };
@@ -177,7 +164,7 @@ export const useChangePassword = () => {
       toast.success('Senha alterada com sucesso!');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao alterar senha');
+      toast.error(getErrorMessage(error, 'Erro ao alterar senha'));
     },
   });
 };
@@ -193,13 +180,7 @@ export const useSubmitKYC = () => {
       queryClient.invalidateQueries({ queryKey: ['kyc-status'] });
     },
     onError: (error: any) => {
-      const errData = error.response?.data;
-      const message =
-        errData?.message ||
-        errData?.detail ||
-        (typeof errData === 'object' ? Object.values(errData ?? {}).flat().join(' | ') : null) ||
-        'Erro ao submeter documentos. Verifique os ficheiros e tente novamente.';
-      toast.error(message);
+      toast.error(getErrorMessage(error, 'Erro ao submeter documentos. Verifique os ficheiros e tente novamente.'));
     },
   });
 };

@@ -2,14 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Shield, 
+import {  
   User, 
   Lock, 
   Eye, 
   EyeOff, 
   ShieldCheck, 
-  Apple,
   RefreshCcw,
   ChevronRight,
   CheckCircle2,
@@ -56,7 +54,15 @@ const LoginPage: React.FC = () => {
       setSignUpStep(2);
       return;
     }
-    registerUser(data);
+    registerUser(data, {
+      onSuccess: () => {
+        setAuthMode('signin');
+        setSignUpStep(1);
+        registerForm.reset();
+        setFrontDocName(null);
+        setBackDocName(null);
+      }
+    });
   };
 
   const isPending = isLoginPending || isRegisterPending;
@@ -346,7 +352,7 @@ const LoginPage: React.FC = () => {
                              className="flex-1 h-12 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all flex items-center justify-center gap-2"
                            >
                               {isPending ? <RefreshCcw className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                              Finalizar Cadastro
+                              <span>Finalizar Cadastro</span>
                            </button>
                         </div>
                       </motion.div>
