@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
-  TrendingDown,
   Search, 
   Star, 
   Filter, 
@@ -10,7 +9,6 @@ import {
   Activity,
   ArrowRightLeft,
   Calendar,
-  Zap
 } from 'lucide-react';
 import { useExchangeRates } from '@services/rates.hooks';
 import { APP_ROUTES } from '@constants';

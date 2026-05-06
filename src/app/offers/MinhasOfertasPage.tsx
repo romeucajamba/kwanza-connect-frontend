@@ -96,7 +96,7 @@ const InterestsList = ({ offerId }: { offerId: string }) => {
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">
-              {interest.buyer.full_name || interest.buyer.email.split('@')[0]}
+              {interest.buyer.full_name || interest.buyer.email?.split('@')[0] || 'Comprador'}
             </p>
             {interest.message && (
               <p className="text-[9px] text-slate-400 mt-1 truncate max-w-[200px]">{interest.message}</p>

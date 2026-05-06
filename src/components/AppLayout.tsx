@@ -176,7 +176,7 @@ const AppLayout: React.FC = () => {
                   onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
                 >
                   <div className="hidden sm:flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">{user?.full_name?.split(' ')[0]}</span>
+                    <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">{user?.full_name ? user.full_name.split(' ')[0] : 'Usuário'}</span>
                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
                   </div>
                   <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]">
