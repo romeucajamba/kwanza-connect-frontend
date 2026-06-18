@@ -17,6 +17,9 @@ export const APP_ROUTES = {
   RESET_PASSWORD: '/reset-password',
   VERIFY_EMAIL: '/verify-email',
   NOTIFICATIONS: '/notifications',
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_OFFERS: '/admin/offers',
 };
 
 export const API_ROUTES = {

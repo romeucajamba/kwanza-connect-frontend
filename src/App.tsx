@@ -23,6 +23,13 @@ import VerifyEmailPage from '@/app/public/VerifyEmailPage';
 import NotificationsPage from '@/app/notifications/NotificationsPage';
 import { useMe } from '@/services/auth.hooks';
 
+// Admin Pages
+import AdminLayout from '@/app/admin/AdminLayout';
+import AdminDashboardPage from '@/app/admin/AdminDashboardPage';
+import AdminUsersPage from '@/app/admin/AdminUsersPage';
+import AdminUserDetailsPage from '@/app/admin/AdminUserDetailsPage';
+import AdminOffersPage from '@/app/admin/AdminOffersPage';
+
 const App: React.FC = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
   const user = useAuthStore((s) => s.user);
@@ -90,6 +97,14 @@ const App: React.FC = () => {
             <Route path="/logs" element={<LogsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+          </Route>
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users/:id" element={<AdminUserDetailsPage />} />
+            <Route path="offers" element={<AdminOffersPage />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
