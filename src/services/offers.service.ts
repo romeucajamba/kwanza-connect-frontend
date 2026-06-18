@@ -105,9 +105,9 @@ export const offersService = {
     return response.data.data;
   },
 
-  // POST /api/offers/interests/<interest_id>/cancel/
+  // DELETE /api/offers/interests/<interest_id>/cancel/
   cancelInterest: async (interestId: string): Promise<OfferInterest> => {
-    const response = await api.post<ApiResponse<OfferInterest>>(
+    const response = await api.delete<ApiResponse<OfferInterest>>(
       API_ROUTES.OFFERS.INTEREST_CANCEL(interestId)
     );
     return response.data.data;

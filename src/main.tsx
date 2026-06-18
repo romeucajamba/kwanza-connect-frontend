@@ -7,8 +7,10 @@ import './index.css'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 30, // Dados são considerados frescos por 30 segundos
-      refetchOnWindowFocus: false, // Evita refetch ao mudar de aba
+      staleTime: 1000 * 60 * 5, // 5 minutos: os dados são servidos a partir do cache sem requisição ao servidor
+      gcTime: 1000 * 60 * 30, // 30 minutos: tempo que os dados inativos ficam guardados em memória
+      refetchOnWindowFocus: false, // Não faz requisição ao voltar para a aba
+      refetchOnReconnect: false, // Não faz requisição ao reconectar a rede
       retry: 1, // Apenas uma tentativa extra em caso de erro
     },
   },

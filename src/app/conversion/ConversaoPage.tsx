@@ -3,14 +3,12 @@ import { motion } from 'framer-motion';
 import { 
   ArrowRightLeft, 
   TrendingUp, 
-  ShieldCheck, 
-  Clock,
   Calculator,
   RefreshCcw,
   ArrowRight
 } from 'lucide-react';
 import { useExchangeRates, useCurrencies } from '@/services/rates.hooks';
-import type { ExchangeRate, Currency } from '@/types';
+import type { Currency } from '@/types';
 import { useNavigate } from 'react-router-dom';
 
 const ConversaoPage: React.FC = () => {

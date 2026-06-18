@@ -14,7 +14,10 @@ import {
   X,
   Briefcase,
   MapPin,
+  Map,
+  Home,
 } from 'lucide-react';
+import { ANGOLAN_PROVINCES } from '@/constants/geography';
 import toast from 'react-hot-toast';
 
 import { useAuthStore } from '@store/authStore';
@@ -51,11 +54,13 @@ const PerfilPage: React.FC = () => {
   
   const user = isOwnProfile ? currentUser : publicProfile;
 
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     values: {
       full_name: user?.full_name || '',
       phone: user?.phone || '',
-      city: user?.city || '',
+      province: user?.province || '',
+      municipality: user?.municipality || '',
+      neighborhood: user?.neighborhood || '',
       bio: user?.bio || '',
       occupation: user?.occupation || '',
       is_available: user?.is_available || false,
@@ -65,6 +70,11 @@ const PerfilPage: React.FC = () => {
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const selectedProvince = watch('province');
+  const municipalities = useMemo(() => {
+    return ANGOLAN_PROVINCES.find(p => p.name === selectedProvince)?.municipalities || [];
+  }, [selectedProvince]);
 
   const stats = useMemo(() => {
     if (!transactions) return { count: 0, volume: 0, rating: 0 };
@@ -291,13 +301,21 @@ const PerfilPage: React.FC = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Nome Completo</label>
                     <div className="relative group">
                       <input 
-                        {...register('full_name')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                        {...register('full_name', {
+                          pattern: {
+                            value: /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/,
+                            message: 'O nome deve conter apenas letras'
+                          }
+                        })}
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.full_name ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <Edit3 className="size-4" />
                       </div>
                     </div>
+                    {errors.full_name && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.full_name.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
@@ -319,24 +337,71 @@ const PerfilPage: React.FC = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Número de Telefone</label>
                     <div className="relative group">
                       <input 
-                        {...register('phone')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                        {...register('phone', {
+                          pattern: {
+                            value: /^\+244\s*9\d{2}\s*\d{3}\s*\d{3}$|^\+2449\d{8}$/,
+                            message: 'O número deve ser angolano (ex: +244 9XX XXX XXX)'
+                          }
+                        })}
+                        placeholder="+244 9XX XXX XXX"
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <Edit3 className="size-4" />
                       </div>
                     </div>
+                    {errors.phone && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.phone.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Cidade</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Província</label>
+                    <div className="relative group">
+                      <select 
+                        {...register('province')}
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none" 
+                      >
+                        <option value="">Selecione...</option>
+                        {ANGOLAN_PROVINCES.map(p => (
+                          <option key={p.name} value={p.name}>{p.name}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <Map className="size-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Município</label>
+                    <div className="relative group">
+                      <select 
+                        {...register('municipality')}
+                        disabled={!selectedProvince}
+                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none disabled:opacity-50" 
+                      >
+                        <option value="">Selecione...</option>
+                        {municipalities.map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <MapPin className="size-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Bairro / Rua</label>
                     <div className="relative group">
                       <input 
-                        {...register('city')}
+                        {...register('neighborhood')}
                         className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                        placeholder="ex: Bairro Alvalade, Rua X"
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <MapPin className="size-4" />
+                        <Home className="size-4" />
                       </div>
                     </div>
                   </div>
