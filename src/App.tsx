@@ -16,7 +16,6 @@ import FazerOfertaPage from '@/app/offers/FazerOfertaPage';
 import ReceberOfertaPage from '@/app/offers/ReceberOfertaPage';
 import MinhasOfertasPage from '@/app/offers/MinhasOfertasPage';
 import InteressesPage from '@/app/offers/InteressesPage';
-
 import SettingsPage from '@/app/settings/SettingsPage';
 import ForgotPasswordPage from '@/app/public/ForgotPasswordPage';
 import VerifyEmailPage from '@/app/public/VerifyEmailPage';
