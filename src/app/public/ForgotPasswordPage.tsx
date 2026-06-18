@@ -40,7 +40,8 @@ const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const token = searchParams.get('token') || pathToken;
   
-  const [step, setStep] = useState<'request' | 'success' | 'reset'>(token ? 'reset' : 'request');
+  const [step, setStep] = useState<'request' | 'reset'>('request');
+  const [userEmail, setUserEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -56,15 +57,16 @@ const ForgotPasswordPage: React.FC = () => {
   });
 
   const onForgotSubmit = (data: ForgotFormData) => {
+    setUserEmail(data.email);
     forgotPassword(data.email, {
-      onSuccess: () => setStep('success'),
+      onSuccess: () => setStep('reset'),
     });
   };
 
   const onResetSubmit = (data: ResetFormData) => {
-    if (!token) return;
+    if (!userEmail) return;
     resetPassword({
-      token,
+      email: userEmail,
       new_password: data.password,
       confirm_password: data.confirmPassword,
     }, {
@@ -146,30 +148,7 @@ const ForgotPasswordPage: React.FC = () => {
                 </motion.div>
               )}
 
-              {step === 'success' && (
-                <motion.div 
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="py-6 flex flex-col items-center text-center space-y-6"
-                >
-                  <div className="size-20 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 shadow-inner">
-                    <CheckCircle2 className="size-10" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-black dark:text-white text-xl font-black uppercase tracking-tight">Verifique o E-mail</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto">
-                      Enviamos um link de redefinição para o seu endereço de e-mail. Por favor, verifique também a pasta de spam.
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => navigate(APP_ROUTES.LOGIN)}
-                    className="w-full h-12 bg-slate-50 dark:bg-[#111922] text-slate-900 dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-100 dark:border-white/5 hover:bg-white transition-all shadow-sm"
-                  >
-                    OK, Entendido
-                  </button>
-                </motion.div>
-              )}
+
 
               {step === 'reset' && (
                 <motion.div 
