@@ -9,7 +9,14 @@ const getErrorMessage = (error: any, defaultMsg: string): string => {
   const data = error?.response?.data;
   if (!data) return defaultMsg;
   if (typeof data === 'string') return data;
-  if (typeof data.message === 'string') return data.message;
+
+  if (data.errors && typeof data.errors === 'object') {
+    const firstError = Object.values(data.errors)[0];
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') return firstError[0];
+    if (typeof firstError === 'string') return firstError;
+  }
+
+  if (typeof data.message === 'string' && data.message !== 'Erro na operação.') return data.message;
   if (typeof data.error === 'string') return data.error;
   if (typeof data.detail === 'string') return data.detail;
   

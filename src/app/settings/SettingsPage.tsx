@@ -11,6 +11,8 @@ import {
   LogOut, 
   Moon, 
   Sun, 
+  Eye,
+  EyeOff,
   Smartphone, 
   CreditCard, 
   Activity,
@@ -55,11 +57,27 @@ const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'main' | 'security' | 'payments'>('main');
   const [view, setView] = useState<'nav' | 'content'>('nav');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, handleSubmit, reset } = useForm();
 
   const onPasswordSubmit = (data: any) => {
-    changePassword(data, {
+    if (data.new_password.length < 8) {
+      toast.error('A nova senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+    if (data.new_password !== data.confirm_password) {
+      toast.error('As senhas não coincidem.');
+      return;
+    }
+    const payload = {
+        current_password: data.current_password,
+        new_password: data.new_password,
+        confirm_password: data.confirm_password
+    };
+    changePassword(payload, {
       onSuccess: () => {
         setShowPasswordForm(false);
         reset();
@@ -180,19 +198,42 @@ const SettingsPage: React.FC = () => {
                              <form onSubmit={handleSubmit(onPasswordSubmit)} className="space-y-4">
                                 <div className="space-y-1.5">
                                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Senha Atual</label>
-                                   <input 
-                                      {...register('current_password', { required: true })}
-                                      type="password"
-                                      className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
-                                   />
+                                   <div className="relative group">
+                                      <input 
+                                         {...register('current_password', { required: true })}
+                                         type={showCurrentPassword ? 'text' : 'password'}
+                                         className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 pr-10 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
+                                      />
+                                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                         {showCurrentPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                      </button>
+                                   </div>
                                 </div>
                                 <div className="space-y-1.5">
                                    <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Nova Senha</label>
-                                   <input 
-                                      {...register('new_password', { required: true })}
-                                      type="password"
-                                      className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
-                                   />
+                                   <div className="relative group">
+                                      <input 
+                                         {...register('new_password', { required: true })}
+                                         type={showNewPassword ? 'text' : 'password'}
+                                         className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 pr-10 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
+                                      />
+                                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                         {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                      </button>
+                                   </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                   <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Confirmar Nova Senha</label>
+                                   <div className="relative group">
+                                      <input 
+                                         {...register('confirm_password', { required: true })}
+                                         type={showConfirmPassword ? 'text' : 'password'}
+                                         className="w-full bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg p-3 pr-10 text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary/30"
+                                      />
+                                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                         {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                                      </button>
+                                   </div>
                                 </div>
                                 <div className="flex gap-2 pt-2">
                                    <button 

@@ -42,6 +42,7 @@ const ForgotPasswordPage: React.FC = () => {
   
   const [step, setStep] = useState<'request' | 'success' | 'reset'>(token ? 'reset' : 'request');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { mutate: forgotPassword, isPending: isForgotPending } = useForgotPassword();
   const { mutate: resetPassword, isPending: isResetPending } = useResetPassword();
@@ -213,13 +214,20 @@ const ForgotPasswordPage: React.FC = () => {
                           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
                              <Lock className="size-4" />
                           </div>
-                          <input 
+                           <input 
                              {...resetForm.register('confirmPassword')}
-                             type="password"
+                             type={showConfirmPassword ? 'text' : 'password'}
                              className="w-full h-12 pl-11 pr-12 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
                              placeholder="••••••••"
-                          />
-                       </div>
+                           />
+                           <button 
+                             type="button"
+                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                           >
+                             {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                           </button>
+                        </div>
                        {(resetForm.formState.errors.password || resetForm.formState.errors.confirmPassword) && (
                          <p className="text-[10px] font-bold text-rose-500 ml-1 uppercase tracking-tight">
                            {resetForm.formState.errors.password?.message || resetForm.formState.errors.confirmPassword?.message}

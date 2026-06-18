@@ -14,9 +14,13 @@ import {
   ArrowLeft,
   Mail,
   Camera,
-  CreditCard
+  CreditCard,
+  MapPin,
+  Map,
+  Home
 } from 'lucide-react';
 import { loginSchema, registerSchema, type LoginFormData, type RegisterFormData } from '@/schemas/auth.schema';
+import { ANGOLAN_PROVINCES } from '@/constants/geography';
 import { useLogin, useRegister } from '@/services/auth.hooks';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +28,8 @@ const LoginPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [signUpStep, setSignUpStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
   const navigate = useNavigate();
   
   const frontDocRef = useRef<HTMLInputElement>(null);
@@ -44,6 +50,9 @@ const LoginPage: React.FC = () => {
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  const selectedProvince = registerForm.watch('province');
+  const municipalities = ANGOLAN_PROVINCES.find(p => p.name === selectedProvince)?.municipalities || [];
 
   const onLoginSubmit = (data: LoginFormData) => {
     login(data);
@@ -224,22 +233,90 @@ const LoginPage: React.FC = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Senha</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Província</label>
+                            <div className="relative group">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
+                                <Map className="size-4" />
+                              </div>
+                              <select 
+                                {...registerForm.register('province')}
+                                className="w-full h-11 pl-11 pr-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none appearance-none" 
+                              >
+                                <option value="">Selecione...</option>
+                                {ANGOLAN_PROVINCES.map(p => (
+                                  <option key={p.name} value={p.name}>{p.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Município</label>
+                            <div className="relative group">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
+                                <MapPin className="size-4" />
+                              </div>
+                              <select 
+                                {...registerForm.register('municipality')}
+                                disabled={!selectedProvince}
+                                className="w-full h-11 pl-11 pr-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none appearance-none disabled:opacity-50" 
+                              >
+                                <option value="">Selecione...</option>
+                                {municipalities.map(m => (
+                                  <option key={m} value={m}>{m}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Bairro / Rua</label>
+                          <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
+                              <Home className="size-4" />
+                            </div>
                             <input 
-                              {...registerForm.register('password')}
-                              type="password"
-                              className="w-full h-11 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
-                              placeholder="••••••"
+                              {...registerForm.register('neighborhood')}
+                              className="w-full h-11 pl-11 pr-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
+                              placeholder="ex: Bairro Alvalade, Rua X"
                             />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Senha</label>
+                            <div className="relative group">
+                               <input 
+                                 {...registerForm.register('password')}
+                                 type={showRegPassword ? 'text' : 'password'}
+                                 className="w-full h-11 px-4 pr-10 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
+                                 placeholder="••••••"
+                               />
+                               <button 
+                                 type="button" onClick={() => setShowRegPassword(!showRegPassword)}
+                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                               >
+                                  {showRegPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                               </button>
+                            </div>
                           </div>
                           <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Confirmar</label>
-                            <input 
-                              {...registerForm.register('confirmPassword')}
-                              type="password"
-                              className="w-full h-11 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
-                              placeholder="••••••"
-                            />
+                            <div className="relative group">
+                               <input 
+                                 {...registerForm.register('confirmPassword')}
+                                 type={showRegConfirmPassword ? 'text' : 'password'}
+                                 className="w-full h-11 px-4 pr-10 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" 
+                                 placeholder="••••••"
+                               />
+                               <button 
+                                 type="button" onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
+                               >
+                                  {showRegConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                               </button>
+                            </div>
                           </div>
                         </div>
                         

@@ -368,28 +368,36 @@ const MensagensPage: React.FC = () => {
                 </div>
 
                 <footer className="p-4 bg-white dark:bg-[#192633] border-t border-slate-50 dark:border-white/5 z-10">
-                   <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-slate-50 dark:bg-[#111922] p-1.5 rounded-xl border border-transparent focus-within:border-primary/20 shadow-inner group">
-                      <button type="button" className="hidden sm:flex size-10 items-center justify-center rounded-lg text-slate-300 hover:text-primary transition-all active:scale-95 hover:bg-white dark:hover:bg-white/5 shadow-sm">
-                         <Paperclip className="size-4" />
-                      </button>
-                      <input 
-                         className="flex-1 bg-transparent border-none px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-300"
-                         placeholder="Escreva algo seguro..."
-                         value={messageText}
-                         onChange={(e) => setMessageText(e.target.value)}
-                         disabled={isSending}
-                      />
-                      <button type="button" className="hidden sm:flex size-10 items-center justify-center rounded-lg text-slate-300 hover:text-primary transition-all hover:bg-white dark:hover:bg-white/5 shadow-sm">
-                         <Smile className="size-4" />
-                      </button>
-                      <button 
-                         type="submit" 
-                         disabled={isSending || !messageText.trim()}
-                         className="size-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
-                      >
-                         {isSending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                      </button>
-                   </form>
+                   {selectedRoom?.status !== 'active' ? (
+                     <div className="flex items-center justify-center p-3 bg-slate-50 dark:bg-[#111922] rounded-xl border border-slate-200 dark:border-white/5">
+                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">
+                         Esta conversa foi encerrada.
+                       </p>
+                     </div>
+                   ) : (
+                     <form onSubmit={handleSendMessage} className="flex items-center gap-3 bg-slate-50 dark:bg-[#111922] p-1.5 rounded-xl border border-transparent focus-within:border-primary/20 shadow-inner group">
+                        <button type="button" className="hidden sm:flex size-10 items-center justify-center rounded-lg text-slate-300 hover:text-primary transition-all active:scale-95 hover:bg-white dark:hover:bg-white/5 shadow-sm">
+                           <Paperclip className="size-4" />
+                        </button>
+                        <input 
+                           className="flex-1 bg-transparent border-none px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-300"
+                           placeholder="Escreva algo seguro..."
+                           value={messageText}
+                           onChange={(e) => setMessageText(e.target.value)}
+                           disabled={isSending}
+                        />
+                        <button type="button" className="hidden sm:flex size-10 items-center justify-center rounded-lg text-slate-300 hover:text-primary transition-all hover:bg-white dark:hover:bg-white/5 shadow-sm">
+                           <Smile className="size-4" />
+                        </button>
+                        <button 
+                           type="submit" 
+                           disabled={isSending || !messageText.trim()}
+                           className="size-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                        >
+                           {isSending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                        </button>
+                     </form>
+                   )}
                 </footer>
              </>
           ) : !rooms || rooms.length === 0 ? (

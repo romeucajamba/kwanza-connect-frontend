@@ -12,7 +12,7 @@ import {
   RefreshCcw,
   User as UserIcon
 } from 'lucide-react';
-import { useOffers, useExpressInterest } from '@/services/offers.hooks';
+import { useOffers, useExpressInterest, useMyInterests } from '@/services/offers.hooks';
 import { useAuthStore } from '@/store/authStore';
 import { getAvatarUrl } from '@/lib/media';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -29,6 +29,7 @@ const ReceberOfertaPage: React.FC = () => {
   
   const { data: offers, isLoading } = useOffers(queryParams);
   const { mutate: expressInterest, isPending: isInteresting } = useExpressInterest();
+  const { data: myInterests } = useMyInterests();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -110,6 +111,7 @@ const ReceberOfertaPage: React.FC = () => {
             {(offers as Offer[])?.map((offer) => {
               const isOwner = offer.owner?.id === user?.id;
               const isLoadingThis = pendingId === offer.id && isInteresting;
+              const hasInterest = myInterests?.some((interest: any) => interest.offer?.id === offer.id);
               const rate = offer.give_amount > 0 ? (Number(offer.want_amount) / Number(offer.give_amount)).toFixed(4) : '—';
 
               return (
@@ -187,18 +189,20 @@ const ReceberOfertaPage: React.FC = () => {
 
                     <div className="mt-auto pt-4 flex gap-2">
                       <button
-                        disabled={isOwner || isLoadingThis}
+                        disabled={isOwner || isLoadingThis || hasInterest}
                         onClick={() => handleInterest(offer.id)}
                         className="flex-1 h-9 bg-primary text-white rounded-lg font-bold uppercase text-[9px] tracking-widest shadow-md shadow-primary/10 hover:bg-primary/95 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                       >
                         {isLoadingThis ? (
                           <RefreshCcw className="size-3 animate-spin" />
+                        ) : hasInterest ? (
+                          'Interesse Enviado'
                         ) : (
                           'Manifestar Interesse'
                         )}
                       </button>
                       <button 
-                        disabled={isOwner || isLoadingThis}
+                        disabled={isOwner || isLoadingThis || hasInterest}
                         onClick={() => handleInterest(offer.id)}
                         className="h-9 w-9 bg-slate-50 dark:bg-[#111922] text-slate-300 hover:text-primary rounded-lg flex items-center justify-center transition-all border border-slate-100 dark:border-white/5 hover:border-primary/10 disabled:opacity-30"
                       >
