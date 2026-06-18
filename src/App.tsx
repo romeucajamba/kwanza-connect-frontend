@@ -35,19 +35,19 @@ import AdminCurrenciesPage from '@/app/admin/AdminCurrenciesPage';
 
 const App: React.FC = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
-  const user = useAuthStore((s) => s.user);
+  //const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const theme = useSettingsStore((s) => s.theme);
 
-  // Auto-fetch user when authenticated but no user data
-  const { data: userData } = useMe(!user && isAuthenticated);
+  // Always fetch fresh user data when authenticated to sync verification status etc.
+  const { data: userData } = useMe(isAuthenticated);
 
   useEffect(() => {
-    if (userData && !user) {
+    if (userData) {
       setUser(userData);
     }
-  }, [userData, user, setUser]);
+  }, [userData, setUser]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -114,6 +114,7 @@ const App: React.FC = () => {
             <Route path="offers" element={<AdminOffersPage />} />
             <Route path="currencies" element={<AdminCurrenciesPage />} />
             <Route path="logs" element={<AdminLogsPage />} />
+            <Route path="profile" element={<PerfilPage />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

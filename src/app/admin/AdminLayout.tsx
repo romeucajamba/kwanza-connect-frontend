@@ -32,6 +32,7 @@ const AdminLayout: React.FC = () => {
     { to: '/admin/offers', icon: ArrowRightLeft, label: 'Ofertas' },
     { to: '/admin/currencies', icon: Coins, label: 'Moedas' },
     { to: '/admin/logs', icon: FileText, label: 'Logs de Auditoria' },
+    { to: '/admin/profile', icon: Settings, label: 'O Meu Perfil' },
   ];
 
   return (
