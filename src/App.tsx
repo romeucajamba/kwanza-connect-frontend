@@ -16,7 +16,7 @@ import FazerOfertaPage from '@/app/offers/FazerOfertaPage';
 import ReceberOfertaPage from '@/app/offers/ReceberOfertaPage';
 import MinhasOfertasPage from '@/app/offers/MinhasOfertasPage';
 import InteressesPage from '@/app/offers/InteressesPage';
-import LogsPage from '@/app/logs/LogsPage';
+
 import SettingsPage from '@/app/settings/SettingsPage';
 import ForgotPasswordPage from '@/app/public/ForgotPasswordPage';
 import VerifyEmailPage from '@/app/public/VerifyEmailPage';
@@ -29,6 +29,10 @@ import AdminDashboardPage from '@/app/admin/AdminDashboardPage';
 import AdminUsersPage from '@/app/admin/AdminUsersPage';
 import AdminUserDetailsPage from '@/app/admin/AdminUserDetailsPage';
 import AdminOffersPage from '@/app/admin/AdminOffersPage';
+import AdminLoginPage from '@/app/admin/auth/AdminLoginPage';
+import AdminRegisterPage from '@/app/admin/auth/AdminRegisterPage';
+import AdminLogsPage from '@/app/admin/AdminLogsPage';
+import AdminCurrenciesPage from '@/app/admin/AdminCurrenciesPage';
 
 const App: React.FC = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -80,6 +84,11 @@ const App: React.FC = () => {
         <Route path="/reset-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+        
+        {/* Admin Auth Routes */}
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin/cadastro" element={<AdminRegisterPage />} />
+        
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -94,7 +103,6 @@ const App: React.FC = () => {
             <Route path="/p2p/browse" element={<ReceberOfertaPage />} />
             <Route path="/p2p/minhas-ofertas" element={<MinhasOfertasPage />} />
             <Route path="/p2p/interesses" element={<InteressesPage />} />
-            <Route path="/logs" element={<LogsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
@@ -105,6 +113,8 @@ const App: React.FC = () => {
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:id" element={<AdminUserDetailsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
+            <Route path="currencies" element={<AdminCurrenciesPage />} />
+            <Route path="logs" element={<AdminLogsPage />} />
           </Route>
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

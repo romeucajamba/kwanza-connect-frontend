@@ -71,11 +71,11 @@ const AdminUsersPage: React.FC = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500">Carregando utilizadores...</td>
+                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500"><span>Carregando utilizadores...</span></td>
                 </tr>
               ) : usersData?.data?.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500">Nenhum utilizador encontrado.</td>
+                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500"><span>Nenhum utilizador encontrado.</span></td>
                 </tr>
               ) : (
                 usersData?.data?.map((u: any) => (

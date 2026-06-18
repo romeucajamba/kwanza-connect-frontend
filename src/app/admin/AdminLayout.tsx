@@ -8,22 +8,31 @@ import {
   ShieldCheck, 
   ArrowRightLeft, 
   LogOut,
-  Bell
+  Bell,
+  FileText,
+  Coins
 } from 'lucide-react';
 import { APP_ROUTES } from '@/constants';
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
 
+  // Se o utilizador ainda não carregou, aguarda
+  if (!user) {
+    return <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1117]"><span>Carregando painel admin...</span></div>;
+  }
+
   // Guard: Somente admins (staff)
-  if (!user?.is_staff) {
-    return <Navigate to={APP_ROUTES.DASHBOARD} replace />;
+  if (!user.is_staff) {
+    return <Navigate to={APP_ROUTES.ADMIN_LOGIN} replace />;
   }
 
   const navLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { to: '/admin/users', icon: Users, label: 'Utilizadores' },
     { to: '/admin/offers', icon: ArrowRightLeft, label: 'Ofertas' },
+    { to: '/admin/currencies', icon: Coins, label: 'Moedas' },
+    { to: '/admin/logs', icon: FileText, label: 'Logs de Auditoria' },
   ];
 
   return (

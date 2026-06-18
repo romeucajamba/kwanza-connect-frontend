@@ -61,11 +61,11 @@ const AdminOffersPage: React.FC = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500">Carregando ofertas...</td>
+                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500"><span>Carregando ofertas...</span></td>
                 </tr>
               ) : offersData?.data?.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500">Nenhuma oferta encontrada.</td>
+                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500"><span>Nenhuma oferta encontrada.</span></td>
                 </tr>
               ) : (
                 offersData?.data?.map((offer: any) => (

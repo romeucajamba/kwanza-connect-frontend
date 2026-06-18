@@ -15,11 +15,11 @@ export const APP_ROUTES = {
   P2P_INTERESTS: '/p2p/interesses',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
-  VERIFY_EMAIL: '/verify-email',
-  NOTIFICATIONS: '/notifications',
   ADMIN_DASHBOARD: '/admin',
   ADMIN_USERS: '/admin/users',
   ADMIN_OFFERS: '/admin/offers',
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_REGISTER: '/admin/cadastro',
 };
 
 export const API_ROUTES = {
@@ -82,6 +82,10 @@ export const API_ROUTES = {
   AUDIT: {
     LOGS: '/audit/logs/',
     LOG_DETAIL: (id: string) => `/audit/logs/${id}/`,
+  },
+  ADMIN: {
+    LOGIN: '/admin/auth/login/',
+    REGISTER: '/admin/auth/register/',
   }
 };
 

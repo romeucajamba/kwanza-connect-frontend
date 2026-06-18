@@ -1,4 +1,6 @@
-import api from './api';
+import { api } from '@lib/axios';
+import { API_ROUTES } from '@/constants';
+import type { AuthResponse } from '@types';
 
 export interface AdminUser {
   id: string;
@@ -29,6 +31,17 @@ export interface AdminStats {
 }
 
 export const adminService = {
+  // Auth
+  login: async (data: any): Promise<AuthResponse> => {
+    const response = await api.post(API_ROUTES.ADMIN.LOGIN, data);
+    return response.data.data;
+  },
+
+  register: async (data: any): Promise<AuthResponse> => {
+    const response = await api.post(API_ROUTES.ADMIN.REGISTER, data);
+    return response.data.data;
+  },
+
   // Dashboard
   getStats: async (): Promise<AdminStats> => {
     const res = await api.get('/admin/dashboard-stats/');
@@ -69,6 +82,17 @@ export const adminService = {
 
   updateOfferStatus: async (offerId: string, action: 'close' | 'pause') => {
     const res = await api.post(`/admin/offers/${offerId}/action/`, { action });
+    return res.data;
+  },
+
+  // Currencies
+  getCurrencies: async () => {
+    const res = await api.get('/admin/currencies/');
+    return res.data.data;
+  },
+
+  seedCurrencies: async () => {
+    const res = await api.post('/admin/currencies/seed/');
     return res.data;
   }
 };
