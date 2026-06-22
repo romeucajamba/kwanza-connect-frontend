@@ -106,10 +106,6 @@ const HistoricoTransacoesPage: React.FC = () => {
             Monitorização de trocas e fluxos de activos.
           </p>
         </div>
-        <button className="flex items-center justify-center gap-2 bg-white dark:bg-[#192633] border border-slate-100 dark:border-white/5 text-slate-900 dark:text-white font-bold uppercase text-[9px] tracking-widest px-6 h-10 rounded-lg hover:bg-slate-50 transition-all shadow-sm">
-          <Download className="size-3.5" />
-          <span>Exportar CSV</span>
-        </button>
       </div>
 
       {/* Main Container */}

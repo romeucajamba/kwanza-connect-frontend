@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRightLeft,
   Clock,
@@ -12,6 +12,7 @@ import {
 import { useMyInterests, useCancelInterest } from '@/services/offers.hooks';
 import { getAvatarUrl } from '@/lib/media';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Pagination } from '@/components/ui/Pagination';
 import type { OfferInterest } from '@/types';
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -38,6 +39,15 @@ const StatusPill = ({ status }: { status: OfferInterest['status'] }) => {
 const InteressesPage: React.FC = () => {
   const { data: interests, isLoading } = useMyInterests();
   const { mutate: cancel, isPending: cancelling, variables: cancellingId } = useCancelInterest();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  const totalPages = Math.ceil((interests?.length || 0) / itemsPerPage);
+  const paginatedInterests = interests?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  ) as OfferInterest[];
 
   return (
     <div className="flex flex-col gap-6 w-full pb-10">
@@ -67,67 +77,165 @@ const InteressesPage: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {(interests as OfferInterest[]).map((interest, i) => {
-            const isCancellingThis = cancelling && cancellingId === interest.id;
-            const canCancel = interest.status === 'pending';
+        <div className="flex flex-col gap-6">
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50/20 dark:bg-[#111922]/20 border-b border-slate-100 dark:border-white/5 opacity-50">
+                    <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Oferta / Destinatário</th>
+                    <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Mensagem</th>
+                    <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Data</th>
+                    <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                    <th className="p-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                  <AnimatePresence>
+                    {paginatedInterests?.map((interest: any) => {
+                      const isCancellingThis = cancelling && cancellingId === interest.id;
+                      const canCancel = interest.status === 'pending';
 
-            return (
-              <motion.div
-                key={interest.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-                className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-              >
-                <div className="relative flex-shrink-0">
-                  <Avatar className="size-11 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
-                    <AvatarImage src={getAvatarUrl(interest.offer?.owner?.avatar, interest.offer?.owner?.full_name)} />
-                    <AvatarFallback className="rounded-xl">
-                      <UserIcon className="size-5 text-slate-400" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary/10 border-2 border-white dark:border-[#192633] flex items-center justify-center text-primary">
-                    <ArrowRightLeft className="size-2.5" />
+                      return (
+                        <motion.tr 
+                          key={interest.id}
+                          layout
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="group hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors"
+                        >
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <Avatar className="size-9 rounded-lg border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                                  <AvatarImage src={getAvatarUrl(interest.offer?.owner?.avatar, interest.offer?.owner?.full_name)} />
+                                  <AvatarFallback className="rounded-lg">
+                                    <UserIcon className="size-4 text-slate-400" />
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary/10 border-2 border-white dark:border-[#192633] flex items-center justify-center text-primary">
+                                  <ArrowRightLeft className="size-2.5" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase leading-none">
+                                  {interest.offer?.owner?.full_name || 'Utilizador'}
+                                </p>
+                                <p className="text-[8px] text-slate-400 font-bold mt-1 uppercase tracking-widest">
+                                  Oferta #{interest.offer?.id?.toString().slice(0, 8)}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs font-medium">
+                              {interest.message ? `"${interest.message}"` : '—'}
+                            </p>
+                          </td>
+                          <td className="p-4">
+                            <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase">
+                              {new Date(interest.created_at).toLocaleString('pt-AO')}
+                            </p>
+                          </td>
+                          <td className="p-4 text-center">
+                            <StatusPill status={interest.status} />
+                          </td>
+                          <td className="p-4 text-right">
+                            {canCancel && (
+                              <button
+                                disabled={isCancellingThis}
+                                onClick={() => cancel(interest.id)}
+                                className="inline-flex h-8 px-4 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 items-center justify-center gap-1.5 shadow-sm"
+                              >
+                                {isCancellingThis ? (
+                                  <RefreshCcw className="size-3 animate-spin" />
+                                ) : (
+                                  <XCircle className="size-3" />
+                                )}
+                                Cancelar
+                              </button>
+                            )}
+                          </td>
+                        </motion.tr>
+                      );
+                    })}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="md:hidden flex flex-col gap-4">
+            {paginatedInterests?.map((interest, i) => {
+              const isCancellingThis = cancelling && cancellingId === interest.id;
+              const canCancel = interest.status === 'pending';
+
+              return (
+                <motion.div
+                  key={interest.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+                >
+                  <div className="relative flex-shrink-0">
+                    <Avatar className="size-11 rounded-xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden bg-slate-50 dark:bg-white/5">
+                      <AvatarImage src={getAvatarUrl(interest.offer?.owner?.avatar, interest.offer?.owner?.full_name)} />
+                      <AvatarFallback className="rounded-xl">
+                        <UserIcon className="size-5 text-slate-400" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary/10 border-2 border-white dark:border-[#192633] flex items-center justify-center text-primary">
+                      <ArrowRightLeft className="size-2.5" />
+                    </div>
                   </div>
-                </div>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                      {interest.offer?.owner?.full_name || 'Utilizador'} • #{interest.id.slice(0, 8)}
-                    </span>
-                    <StatusPill status={interest.status} />
-                  </div>
-                  {interest.message && (
-                    <p className="text-[9px] text-slate-400 font-medium truncate max-w-xs">
-                      "{interest.message}"
-                    </p>
-                  )}
-                  <p className="text-[8px] text-slate-400 mt-1 uppercase tracking-widest opacity-60">
-                    {new Date(interest.created_at).toLocaleString('pt-AO')}
-                  </p>
-                </div>
-
-                {/* Cancel */}
-                {canCancel && (
-                  <button
-                    disabled={isCancellingThis}
-                    onClick={() => cancel(interest.id)}
-                    className="h-8 px-4 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    {isCancellingThis ? (
-                      <RefreshCcw className="size-3 animate-spin" />
-                    ) : (
-                      <XCircle className="size-3" />
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                        {interest.offer?.owner?.full_name || 'Utilizador'} • #{interest.id.slice(0, 8)}
+                      </span>
+                      <StatusPill status={interest.status} />
+                    </div>
+                    {interest.message && (
+                      <p className="text-[9px] text-slate-400 font-medium truncate max-w-xs">
+                        "{interest.message}"
+                      </p>
                     )}
-                    Cancelar
-                  </button>
-                )}
-              </motion.div>
-            );
-          })}
+                    <p className="text-[8px] text-slate-400 mt-1 uppercase tracking-widest opacity-60">
+                      {new Date(interest.created_at).toLocaleString('pt-AO')}
+                    </p>
+                  </div>
+
+                  {/* Cancel */}
+                  {canCancel && (
+                    <button
+                      disabled={isCancellingThis}
+                      onClick={() => cancel(interest.id)}
+                      className="h-8 px-4 bg-red-500/10 text-red-400 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
+                    >
+                      {isCancellingThis ? (
+                        <RefreshCcw className="size-3 animate-spin" />
+                      ) : (
+                        <XCircle className="size-3" />
+                      )}
+                      Cancelar
+                    </button>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 px-4 shadow-sm">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          )}
         </div>
       )}
     </div>

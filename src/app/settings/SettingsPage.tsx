@@ -157,9 +157,7 @@ const SettingsPage: React.FC = () => {
                        </div>
                     </div>
                     <div className="flex-1">
-                       <SettingItem icon={User} label="Identidade Digital" desc="Edite seu BI, Nome e Foto de Perfil." />
                        <SettingItem icon={theme === 'dark' ? Moon : Sun} label="Modo Dark" desc="Activação do ambiente nocturno." action={toggleTheme} toggle checked={theme === 'dark'} />
-                       <SettingItem icon={Globe} label="Idioma Local" desc="Padrão: Português" />
                        <SettingItem icon={Bell} label="Notificações App" desc="Alertas Push em tempo real." toggle checked={true} />
                     </div>
                  </motion.div>
