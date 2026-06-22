@@ -78,6 +78,14 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden font-display selection:bg-primary selection:text-white">
+      <button 
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-4 md:left-10 z-10 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors"
+      >
+        <ArrowLeft className="size-4" />
+        Página Inicial
+      </button>
+
       <div className="layout-container flex h-full grow flex-col px-4 py-10 md:px-10 lg:px-20 justify-center items-center">
         
         <div className="layout-content-container flex flex-col w-full max-w-md">

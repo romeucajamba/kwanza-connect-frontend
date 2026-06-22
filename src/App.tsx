@@ -20,6 +20,7 @@ import SettingsPage from '@/app/settings/SettingsPage';
 import ForgotPasswordPage from '@/app/public/ForgotPasswordPage';
 import VerifyEmailPage from '@/app/public/VerifyEmailPage';
 import NotificationsPage from '@/app/notifications/NotificationsPage';
+import { LandingPage } from '@/app/public/LeadingPage';
 import { useMe } from '@/services/auth.hooks';
 
 // Admin Pages
@@ -117,8 +118,8 @@ const App: React.FC = () => {
             <Route path="profile" element={<PerfilPage />} />
           </Route>
         </Route>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
