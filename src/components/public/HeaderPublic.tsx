@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ArrowLeftRight, LogIn, ArrowRight } from 'lucide-react';
+import { Menu, X, ArrowLeftRight, ArrowRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export const HeaderPublic = () => {
