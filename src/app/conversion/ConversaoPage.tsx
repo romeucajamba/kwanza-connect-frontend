@@ -135,28 +135,28 @@ const ConversaoPage: React.FC = () => {
 
         {/* Info Column */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-           <div className="p-8 bg-slate-900 rounded-xl text-white space-y-8 relative overflow-hidden shadow-2xl">
-              <Calculator className="absolute -bottom-8 -right-8 size-32 text-white/[0.03] -rotate-12 pointer-events-none" />
+           <div className="p-8 bg-white dark:bg-slate-900 rounded-xl text-slate-900 dark:text-white space-y-8 relative overflow-hidden shadow-2xl border border-slate-100 dark:border-white/5">
+              <Calculator className="absolute -bottom-8 -right-8 size-32 text-slate-900/[0.03] dark:text-white/[0.03] -rotate-12 pointer-events-none" />
               <div className="flex items-center gap-4 relative z-10">
-                 <div className="size-12 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center shadow-lg">
+                 <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-lg">
                     <TrendingUp className="size-6 text-primary" />
                  </div>
                  <div>
                     <h3 className="text-sm font-black uppercase tracking-tight">Câmbio <span className="text-primary italic">Live Feed</span></h3>
-                    <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Fonte: Market Global API</span>
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-widest">Fonte: Market Global API</span>
                  </div>
               </div>
               <div className="space-y-6 relative z-10">
-                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-white/40">
+                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
                     <span>Taxa Referencial</span>
-                    <span className="text-white">1 {giveCurrency} = {localRate.toFixed(4)} {receiveCurrency}</span>
+                    <span className="text-slate-900 dark:text-white">1 {giveCurrency} = {localRate.toFixed(4)} {receiveCurrency}</span>
                  </div>
-                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                 <div className="h-2 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 2 }} className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" />
                  </div>
-                 <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/5">
+                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                     <RefreshCcw className="size-4 text-primary animate-spin-slow" />
-                    <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-relaxed">As taxas flutuam conforme a liquidez global. O valor final é acordado no chat P2P.</p>
+                    <p className="text-[9px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-widest leading-relaxed">As taxas flutuam conforme a liquidez global. O valor final é acordado no chat P2P.</p>
                  </div>
               </div>
            </div>

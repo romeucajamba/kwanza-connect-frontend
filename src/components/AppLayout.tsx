@@ -14,6 +14,7 @@ import {
   RefreshCcw,
   Plus,
   X,
+  Menu,
 } from 'lucide-react';
 import { useAuthStore, useSettingsStore } from '@store/authStore';
 import { useLogout } from '@services/auth.hooks';
@@ -97,6 +98,8 @@ const AppLayout: React.FC = () => {
   const { theme, toggleTheme } = useSettingsStore();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { mutate: logout } = useLogout();
   const { data: unreadData } = useNotificationUnreadCount();
   const { data: chatRooms } = useChatRooms();
@@ -121,15 +124,26 @@ const AppLayout: React.FC = () => {
 
   return (
     <div className="flex h-[100dvh] md:h-screen w-full overflow-hidden bg-background-light dark:bg-background-dark font-display transition-colors duration-300 selection:bg-primary selection:text-white">
-      <Sidebar />
+      <Sidebar 
+        isOpenMobile={isSidebarOpenMobile} 
+        onCloseMobile={() => setIsSidebarOpenMobile(false)} 
+        isCollapsed={isSidebarCollapsed}
+        toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0 relative overflow-y-auto custom-scrollbar pb-24 lg:pb-0">
         <header className="sticky top-0 z-[55] h-14 w-full border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#101922]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-center">
           
           <div className="w-full max-w-6xl flex items-center justify-between">
             <div className="flex items-center gap-3 lg:hidden">
+              <button 
+                onClick={() => setIsSidebarOpenMobile(true)}
+                className="p-1 text-slate-400 hover:text-primary transition-colors"
+              >
+                <Menu className="size-6" />
+              </button>
               <Link to="/" className="flex items-center gap-2">
-                <div className="size-7 bg-primary rounded-lg flex items-center justify-center text-white">
+                <div className="size-7 bg-primary rounded-lg flex items-center justify-center text-white hidden sm:flex">
                   <RefreshCcw className="size-4" />
                 </div>
                 <h1 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">KwanzaConnect</h1>

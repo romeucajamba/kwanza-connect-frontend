@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Activity, Coins, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { useAdminCurrencies, useAdminSeedCurrencies } from '@/services/admin.hooks';
+import { Pagination } from '@components/ui/Pagination';
 
 const AdminCurrenciesPage: React.FC = () => {
   const { data: currencies, isLoading, isFetching, refetch } = useAdminCurrencies();
   const { mutate: seedCurrencies, isPending } = useAdminSeedCurrencies();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil((currencies?.length || 0) / itemsPerPage);
+  const paginatedCurrencies = currencies?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6">
@@ -72,7 +81,7 @@ const AdminCurrenciesPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                currencies.map((currency: any) => (
+                paginatedCurrencies?.map((currency: any) => (
                   <tr key={currency.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="p-4 text-center">
                       <span className="text-xs font-bold text-slate-500">{currency.sort_order}</span>
@@ -104,6 +113,11 @@ const AdminCurrenciesPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+           <div className="border-t border-white/5 px-4 bg-black/20">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+           </div>
+        )}
       </div>
     </div>
   );

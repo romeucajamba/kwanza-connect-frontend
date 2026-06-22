@@ -4,6 +4,7 @@ import { Activity, ShieldAlert, Clock, User, FileText, ArrowLeft, ArrowRight, Re
 import { useAuthStore } from '@/store/authStore';
 import { adminService } from '@/services/admin.service';
 import { adminKeys } from '@/services/admin.hooks';
+import { Pagination } from '@components/ui/Pagination';
 
 const AdminLogsPage: React.FC = () => {
   const [page, setPage] = React.useState(1);
@@ -117,24 +118,8 @@ const AdminLogsPage: React.FC = () => {
         </div>
 
         {totalPages > 1 && (
-          <div className="p-4 border-t border-white/5 flex items-center justify-between bg-black/20">
-            <span className="text-sm text-slate-400">Página {page} de {totalPages}</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="p-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ArrowLeft className="size-4" />
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="p-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-              >
-                <ArrowRight className="size-4" />
-              </button>
-            </div>
+          <div className="border-t border-white/5 px-4 bg-black/20">
+             <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}
       </div>

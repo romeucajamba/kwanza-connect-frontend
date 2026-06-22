@@ -147,26 +147,26 @@ const DashboardPage: React.FC = () => {
         {/* Sidebar (1/3 width) */}
         <div className="lg:col-span-1 flex flex-col gap-8">
           {/* Market Rates Card */}
-          <div className="bg-slate-900 font-bold dark:text-white rounded-2xl p-6 text-white space-y-4 shadow-xl border border-white/5 relative overflow-hidden">
-             <TrendingUp className="absolute -bottom-4 -right-4 size-24 text-white/[0.03] -rotate-12" />
+          <div className="bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-white rounded-2xl p-6 space-y-4 shadow-xl border border-slate-100 dark:border-white/5 relative overflow-hidden">
+             <TrendingUp className="absolute -bottom-4 -right-4 size-24 text-slate-900/[0.03] dark:text-white/[0.03] -rotate-12" />
              <div className="flex flex-col gap-1 relative z-10">
                 <h3 className="text-sm font-black uppercase tracking-tight">Câmbio <span className="text-primary italic text-[11px]">Mercado Global</span></h3>
-                <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Sincronizado: Frankfurt (Live)</span>
+                <span className="text-[8px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-widest">Sincronizado: Frankfurt (Live)</span>
              </div>
              <div className="space-y-3 relative z-10">
-                <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                <div className="flex justify-between items-center bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5">
                    <div className="flex items-center gap-2">
                       <span className="text-xs">🇺🇸</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">USD/AOA</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/60">USD/AOA</span>
                    </div>
-                   <span className="text-sm font-black text-primary">{kwanzaToUsd > 0 ? (1/kwanzaToUsd).toFixed(2) : '-'} <span className="text-[10px] text-white/40">Kz</span></span>
+                   <span className="text-sm font-black text-primary">{kwanzaToUsd > 0 ? (1/kwanzaToUsd).toFixed(2) : '-'} <span className="text-[10px] text-slate-400 dark:text-white/40">Kz</span></span>
                 </div>
-                <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                <div className="flex justify-between items-center bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/5">
                    <div className="flex items-center gap-2">
                       <span className="text-xs">🇪🇺</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">EUR/AOA</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/60">EUR/AOA</span>
                    </div>
-                   <span className="text-sm font-black text-primary">{kwanzaToEur > 0 ? (1/kwanzaToEur).toFixed(2) : '-'} <span className="text-[10px] text-white/40">Kz</span></span>
+                   <span className="text-sm font-black text-primary">{kwanzaToEur > 0 ? (1/kwanzaToEur).toFixed(2) : '-'} <span className="text-[10px] text-slate-400 dark:text-white/40">Kz</span></span>
                 </div>
              </div>
           </div>

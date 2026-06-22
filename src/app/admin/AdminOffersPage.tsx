@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
 import { useAdminOffers, useAdminUpdateOfferStatus } from '@/services/admin.hooks';
 import { Search, Ban, CheckCircle2, PauseCircle } from 'lucide-react';
+import { Pagination } from '@components/ui/Pagination';
 
 const AdminOffersPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const { data: offersData, isLoading } = useAdminOffers({
     search,
     status: statusFilter,
   });
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  const totalPages = Math.ceil((offersData?.data?.length || 0) / itemsPerPage);
+  const paginatedOffers = offersData?.data?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const { mutate: updateOfferStatus, isPending } = useAdminUpdateOfferStatus();
 
@@ -68,7 +81,7 @@ const AdminOffersPage: React.FC = () => {
                   <td colSpan={6} className="text-center py-8 text-sm text-slate-500"><span>Nenhuma oferta encontrada.</span></td>
                 </tr>
               ) : (
-                offersData?.data?.map((offer: any) => (
+                paginatedOffers?.map((offer: any) => (
                   <tr key={offer.id} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">
                       {offer.id.split('-')[0]}
@@ -117,6 +130,11 @@ const AdminOffersPage: React.FC = () => {
               )}
             </tbody>
           </table>
+          {totalPages > 1 && (
+             <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-white dark:bg-[#111922]">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+             </div>
+          )}
         </div>
       </div>
     </div>
