@@ -21,6 +21,7 @@ import ForgotPasswordPage from '@/app/public/ForgotPasswordPage';
 import VerifyEmailPage from '@/app/public/VerifyEmailPage';
 import NotificationsPage from '@/app/notifications/NotificationsPage';
 import { LandingPage } from '@/app/public/LeadingPage';
+import { DocsPage } from '@/app/public/DocsPage';
 import { useMe } from '@/services/auth.hooks';
 
 // Admin Pages
@@ -88,6 +89,10 @@ const App: React.FC = () => {
         {/* Admin Auth Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/cadastro" element={<AdminRegisterPage />} />
+
+        {/* Public Guide/Docs Routes */}
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/docs/:slug" element={<DocsPage />} />
         
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>

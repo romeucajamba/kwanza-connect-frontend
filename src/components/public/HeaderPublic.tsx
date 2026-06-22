@@ -18,6 +18,7 @@ export const HeaderPublic = () => {
   const navLinks = [
     { name: 'Sobre', href: '/#sobre' },
     { name: 'Parceiros', href: '/#parceiros' },
+    { name: 'Guia', href: '/docs' },
     { name: 'Contacto', href: '/#contacto' },
   ];
 
