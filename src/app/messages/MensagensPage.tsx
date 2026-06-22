@@ -272,7 +272,7 @@ const MensagensPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                     {offerId && fullOffer?.owner?.id === user_id && (
+                     {selectedRoom?.status === 'active' && offerId && fullOffer?.owner?.id === user_id && (
                         <div className="flex items-center gap-2">
                            <button 
                              onClick={() => setShowAbortModal(true)}
@@ -290,7 +290,7 @@ const MensagensPage: React.FC = () => {
                            </button>
                         </div>
                      )}
-                     {!isConfirming && offerId && fullOffer?.owner?.id !== user_id && (
+                     {selectedRoom?.status === 'active' && !isConfirming && offerId && fullOffer?.owner?.id !== user_id && (
                         <div className="flex items-center gap-2">
                            <button 
                              onClick={() => setShowAbortModal(true)}
