@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore, useSettingsStore } from '@/store/authStore';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -61,6 +62,17 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <AppRoutes theme={theme} />
+    </BrowserRouter>
+  );
+};
+
+// Inner component that can access useLocation (must be inside BrowserRouter)
+const AppRoutes: React.FC<{ theme: string }> = ({ theme }) => {
+  const location = useLocation();
+
+  return (
+    <>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -90,9 +102,23 @@ const App: React.FC = () => {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/cadastro" element={<AdminRegisterPage />} />
 
-        {/* Public Guide/Docs Routes */}
-        <Route path="/docs" element={<DocsPage />} />
-        <Route path="/docs/:slug" element={<DocsPage />} />
+        {/* Public Guide/Docs Routes — with page transitions */}
+        <Route
+          path="/docs"
+          element={
+            <AnimatePresence mode="wait">
+              <DocsPage key={location.pathname} />
+            </AnimatePresence>
+          }
+        />
+        <Route
+          path="/docs/:slug"
+          element={
+            <AnimatePresence mode="wait">
+              <DocsPage key={location.pathname} />
+            </AnimatePresence>
+          }
+        />
         
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
@@ -123,10 +149,17 @@ const App: React.FC = () => {
             <Route path="profile" element={<PerfilPage />} />
           </Route>
         </Route>
-        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/"
+          element={
+            <AnimatePresence mode="wait">
+              <LandingPage key="/" />
+            </AnimatePresence>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 };
 

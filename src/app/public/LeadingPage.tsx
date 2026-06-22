@@ -4,6 +4,7 @@ import { ClientsSection } from '@/components/public/ClientsSection';
 import { AboutSection } from '@/components/public/AboutSection';
 import { NewsletterSection } from '@/components/public/NewsletterSection';
 import { FooterPublic } from '@/components/public/FooterPublic';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -23,7 +24,8 @@ export const LandingPage = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background text-text-primary selection:bg-primary/30 font-sans">
+    <PageTransition>
+      <div className="min-h-screen bg-background text-text-primary selection:bg-primary/30 font-sans">
       <HeaderPublic />
 
       <main>
@@ -37,6 +39,7 @@ export const LandingPage = () => {
       </main>
 
       <FooterPublic />
-    </div>
+      </div>
+    </PageTransition>
   );
 };

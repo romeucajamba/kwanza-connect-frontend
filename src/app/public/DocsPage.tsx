@@ -5,6 +5,7 @@ import { Menu, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HeaderPublic } from '@/components/public/HeaderPublic';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 export const DocsPage = () => {
   const { slug } = useParams();
@@ -21,8 +22,9 @@ export const DocsPage = () => {
   }, [slug, navigate]);
 
   return (
-    <div className="min-h-screen bg-background text-text-primary font-sans">
-      <HeaderPublic />
+    <PageTransition>
+      <div className="min-h-screen bg-background text-text-primary font-sans">
+        <HeaderPublic />
       <div className="container mx-auto px-4 md:px-6 pt-28 pb-16">
         <div className="flex flex-col lg:flex-row h-full min-h-[80vh] gap-8">
       {/* Mobile Sidebar Toggle */}
@@ -112,6 +114,7 @@ export const DocsPage = () => {
       </section>
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   );
 };
