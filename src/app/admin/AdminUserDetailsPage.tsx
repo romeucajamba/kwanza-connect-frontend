@@ -12,8 +12,8 @@ const AdminUserDetailsPage: React.FC = () => {
 
   const [rejectReason, setRejectReason] = useState('');
 
-  if (isLoading) return <div className="flex justify-center p-12">Carregando detalhes...</div>;
-  if (!user) return <div className="p-12 text-center">Utilizador não encontrado.</div>;
+  if (isLoading) return <div className="flex justify-center p-12"><span>Carregando detalhes...</span></div>;
+  if (!user) return <div className="p-12 text-center"><span>Utilizador não encontrado.</span></div>;
 
   const doc = user.identity_document;
 

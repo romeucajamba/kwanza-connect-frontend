@@ -13,12 +13,15 @@ import {
 import { useExchangeRates } from '@services/rates.hooks';
 import { APP_ROUTES } from '@constants';
 import { Link } from 'react-router-dom';
+import { Pagination } from '@components/ui/Pagination';
 
 const CambioMercadoPage: React.FC = () => {
   const { data: rates, isLoading } = useExchangeRates();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const toggleFavorite = (id: string) => {
     setFavorites(prev => 
@@ -32,6 +35,16 @@ const CambioMercadoPage: React.FC = () => {
     const matchesFilter = filter === 'all' || favorites.includes(rate.id.toString());
     return matchesSearch && matchesFilter;
   });
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filter]);
+
+  const totalPages = Math.ceil((filteredRates?.length || 0) / itemsPerPage);
+  const paginatedRates = filteredRates?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -131,7 +144,7 @@ const CambioMercadoPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-50 dark:divide-white/5">
               <AnimatePresence>
-                {filteredRates?.map((rate: any) => (
+                {paginatedRates?.map((rate: any) => (
                   <motion.tr 
                     key={rate.to_currency.code}
                     layout
@@ -172,7 +185,7 @@ const CambioMercadoPage: React.FC = () => {
                     <td className="p-4 text-right">
                       <Link 
                         to={`${APP_ROUTES.P2P_BROWSE}?currency=${rate.to_currency.code}`}
-                        className="inline-flex items-center justify-center h-8 px-4 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[9px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm"
+                        className="inline-flex items-center justify-center h-8 px-4 rounded-lg bg-primary text-white text-[9px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-sm"
                       >
                         Trocar
                       </Link>
@@ -182,11 +195,16 @@ const CambioMercadoPage: React.FC = () => {
               </AnimatePresence>
             </tbody>
           </table>
+          {totalPages > 1 && (
+            <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-white dark:bg-[#192633]">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          )}
         </div>
 
         {/* Mobile Filter View */}
         <div className="md:hidden p-4 space-y-3">
-           {filteredRates?.map((rate: any) => (
+           {paginatedRates?.map((rate: any) => (
              <div key={rate.to_currency.code} className="p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/5">
                 <div className="flex justify-between items-center mb-3">
                    <div className="flex items-center gap-3">
@@ -210,6 +228,11 @@ const CambioMercadoPage: React.FC = () => {
                 <Link to={`${APP_ROUTES.P2P_BROWSE}?currency=${rate.to_currency.code}`} className="mt-4 w-full h-10 bg-primary text-white rounded-lg text-[9px] font-bold uppercase flex items-center justify-center">Negociar</Link>
              </div>
            ))}
+           {totalPages > 1 && (
+             <div className="pt-2">
+               <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+             </div>
+           )}
         </div>
       </div>
       

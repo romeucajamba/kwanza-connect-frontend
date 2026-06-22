@@ -183,29 +183,13 @@ const PerfilPage: React.FC = () => {
                       <Loader2 className="size-6 text-primary animate-spin" />
                    </div>
                 )}
-                <input 
-                  type="file" ref={fileInputRef} onChange={onAvatarChange} 
-                  accept="image/*" className="hidden" 
-                />
-                <button 
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-1 right-1 bg-primary hover:bg-primary/90 text-white rounded-full p-2.5 shadow-lg transition-transform hover:scale-110 border-2 border-white dark:border-[#192633]"
-                >
-                  <Camera className="size-5" />
-                </button>
+                {/* Avatar upload removed per request */}
               </div>
 
               <div className="flex flex-col justify-center items-center gap-1 mt-2">
                 <p className="text-gray-900 dark:text-white text-xl font-bold tracking-tight">{user?.full_name}</p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{user?.email}</p>
-                <button 
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-black uppercase tracking-widest text-primary hover:text-primary/80 mt-3 transition-colors"
-                >
-                  Alterar Foto
-                </button>
+                {/* "Alterar Foto" button removed per request */}
               </div>
             </div>
 

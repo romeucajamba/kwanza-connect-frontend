@@ -111,7 +111,7 @@ const LoginPage: React.FC = () => {
 
             <div className="space-y-1 mb-6">
               <h2 className="text-black dark:text-white text-2xl font-black leading-tight tracking-tight">
-                {authMode === 'signin' ? 'Bem-vindo de volta!' : (signUpStep === 1 ? 'Comece sua jornada' : 'Verificação Segura')}
+                {authMode === 'signin' ? 'Bem-vindo de volta!' : (signUpStep === 1 ? 'Criar Conta' : 'Verificação Segura')}
               </h2>
               <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">
                 {authMode === 'signin' ? 'Aceda à sua conta digital' : (signUpStep === 1 ? 'Crie sua conta em segundos' : 'Proteja seu património')}
@@ -439,18 +439,6 @@ const LoginPage: React.FC = () => {
               )}
             </AnimatePresence>
 
-            <div className="relative flex items-center py-8">
-              <div className="flex-grow border-t border-slate-100 dark:border-white/10"></div>
-              <span className="flex-shrink mx-4 text-slate-300 dark:text-slate-600 text-[9px] font-black uppercase tracking-widest">Acesso Rápido</span>
-              <div className="flex-grow border-t border-slate-100 dark:border-white/10"></div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="flex-1 flex items-center justify-center gap-3 h-12 bg-white dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="size-4" alt="Google" />
-                <span>Google</span>
-              </button>
-            </div>
           </div>
         </div>
 

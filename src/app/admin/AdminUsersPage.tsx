@@ -2,17 +2,30 @@ import React, { useState } from 'react';
 import { useAdminUsers } from '@/services/admin.hooks';
 import { Link } from 'react-router-dom';
 import { Search, ShieldAlert, CheckCircle2, Ban, ChevronRight } from 'lucide-react';
+import { Pagination } from '@components/ui/Pagination';
 
 const AdminUsersPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [kycFilter, setKycFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const { data: usersData, isLoading } = useAdminUsers({
     search,
     status: statusFilter,
     kyc: kycFilter
   });
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, kycFilter]);
+
+  const totalPages = Math.ceil((usersData?.data?.length || 0) / itemsPerPage);
+  const paginatedUsers = usersData?.data?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6">
@@ -71,14 +84,14 @@ const AdminUsersPage: React.FC = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500">Carregando utilizadores...</td>
+                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500"><span>Carregando utilizadores...</span></td>
                 </tr>
               ) : usersData?.data?.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500">Nenhum utilizador encontrado.</td>
+                  <td colSpan={5} className="text-center py-8 text-sm text-slate-500"><span>Nenhum utilizador encontrado.</span></td>
                 </tr>
               ) : (
-                usersData?.data?.map((u: any) => (
+                paginatedUsers?.map((u: any) => (
                   <tr key={u.id} className="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -124,6 +137,11 @@ const AdminUsersPage: React.FC = () => {
               )}
             </tbody>
           </table>
+          {totalPages > 1 && (
+             <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-white dark:bg-[#111922]">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+             </div>
+          )}
         </div>
       </div>
     </div>

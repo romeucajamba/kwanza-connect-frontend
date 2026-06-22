@@ -6,7 +6,6 @@ import {
   Lock, 
   Bell, 
   Globe, 
-  ShieldCheck, 
   ChevronRight, 
   LogOut, 
   Moon, 
@@ -21,10 +20,11 @@ import {
   Trophy,
   ChevronLeft
 } from 'lucide-react';
-import { useAuthStore, useSettingsStore } from '@store/authStore';
+import { useSettingsStore } from '@store/authStore';
 import { useLogout, useChangePassword } from '@services/auth.hooks';
 import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const SettingItem: React.FC<{ icon: React.ElementType; label: string; desc: string; action?: () => void; toggle?: boolean; checked?: boolean }> = ({ icon: Icon, label, desc, action, toggle, checked }) => (
   <button 
@@ -124,10 +124,10 @@ const SettingsPage: React.FC = () => {
              </button>
            ))}
 
-           <div className="mt-6 p-6 bg-zinc-900 dark:bg-black rounded-xl text-white overflow-hidden relative shadow-lg group">
-              <LogOut className="absolute -bottom-6 -right-6 size-24 text-white/[0.02] -rotate-12 pointer-events-none" />
+           <div className="mt-6 p-6 bg-white dark:bg-black rounded-xl text-slate-900 dark:text-white overflow-hidden relative shadow-lg group border border-slate-100 dark:border-white/5">
+              <LogOut className="absolute -bottom-6 -right-6 size-24 text-slate-900/[0.02] dark:text-white/[0.02] -rotate-12 pointer-events-none" />
               <div className="relative z-10">
-                 <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest mb-6 text-center">Gestão de Sessão</p>
+                 <p className="text-[8px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-widest mb-6 text-center">Gestão de Sessão</p>
                  <button 
                    onClick={() => logout()}
                    className="w-full h-10 bg-rose-600 text-white rounded-lg font-bold uppercase text-[9px] tracking-widest hover:bg-rose-700 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-rose-600/10"

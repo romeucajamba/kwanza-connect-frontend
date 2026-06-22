@@ -11,6 +11,9 @@ export interface User {
   country_code?: string;
   address?: string;
   city?: string;
+  province?: string;
+  municipality?: string;
+  neighborhood?: string;
   occupation?: string;
   bio?: string;
   balance?: number;

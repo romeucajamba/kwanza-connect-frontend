@@ -23,12 +23,15 @@ import { useAuthStore } from '@store/authStore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Transaction } from '@/types';
+import { Pagination } from '@components/ui/Pagination';
 
 const HistoricoTransacoesPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const { data: transactions, isLoading } = useTransactions();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   // Estados para Modais
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -46,6 +49,16 @@ const HistoricoTransacoesPage: React.FC = () => {
     const matchesFilter = statusFilter === 'all' || tx.status === statusFilter;
     return matchesSearch && matchesFilter;
   });
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  const totalPages = Math.ceil((filteredTransactions?.length || 0) / itemsPerPage);
+  const paginatedTransactions = filteredTransactions?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleReview = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -144,7 +157,7 @@ const HistoricoTransacoesPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-white/5">
                 <AnimatePresence mode="popLayout">
-                  {filteredTransactions.map((tx: any) => {
+                  {paginatedTransactions?.map((tx: any) => {
                     const isSeller = tx.seller?.id === user?.id;
                     const counterparty = isSeller ? tx.buyer : tx.seller;
                     return (
@@ -224,12 +237,17 @@ const HistoricoTransacoesPage: React.FC = () => {
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Nenhuma transação encontrada</p>
             </div>
           )}
+          {totalPages > 1 && (
+             <div className="border-t border-slate-100 dark:border-white/5 px-4">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+             </div>
+          )}
         </div>
 
         {/* Mobile View */}
         <div className="md:hidden divide-y divide-slate-50 dark:divide-white/5">
-          {filteredTransactions && filteredTransactions.length > 0 ? (
-            filteredTransactions.map((tx: any) => {
+          {paginatedTransactions && paginatedTransactions.length > 0 ? (
+            paginatedTransactions.map((tx: any) => {
               const isSeller = tx.seller?.id === user?.id;
               const counterparty = isSeller ? tx.buyer : tx.seller;
               return (
@@ -266,6 +284,11 @@ const HistoricoTransacoesPage: React.FC = () => {
             <div className="p-10 text-center">
               <p className="text-[9px] font-bold uppercase tracking-widest text-slate-300">Sem resultados</p>
             </div>
+          )}
+          {totalPages > 1 && (
+             <div className="border-t border-slate-100 dark:border-white/5 px-4 mt-auto">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+             </div>
           )}
         </div>
       </div>

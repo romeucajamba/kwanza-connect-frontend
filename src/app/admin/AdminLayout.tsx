@@ -8,22 +8,31 @@ import {
   ShieldCheck, 
   ArrowRightLeft, 
   LogOut,
-  Bell
+  FileText,
+  Coins
 } from 'lucide-react';
 import { APP_ROUTES } from '@/constants';
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
 
+  // Se o utilizador ainda não carregou, aguarda
+  if (!user) {
+    return <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-[#0b1117]"><span>Carregando painel admin...</span></div>;
+  }
+
   // Guard: Somente admins (staff)
-  if (!user?.is_staff) {
-    return <Navigate to={APP_ROUTES.DASHBOARD} replace />;
+  if (!user.is_staff) {
+    return <Navigate to={APP_ROUTES.ADMIN_LOGIN} replace />;
   }
 
   const navLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { to: '/admin/users', icon: Users, label: 'Utilizadores' },
     { to: '/admin/offers', icon: ArrowRightLeft, label: 'Ofertas' },
+    { to: '/admin/currencies', icon: Coins, label: 'Moedas' },
+    { to: '/admin/logs', icon: FileText, label: 'Logs de Auditoria' },
+    { to: '/admin/profile', icon: Settings, label: 'O Meu Perfil' },
   ];
 
   return (
@@ -73,11 +82,7 @@ const AdminLayout: React.FC = () => {
         <header className="h-16 bg-white/80 dark:bg-[#111922]/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 flex items-center justify-between px-8 z-10">
           <h2 className="text-sm font-black uppercase tracking-widest opacity-80">Gestão do Sistema</h2>
           <div className="flex items-center gap-4">
-            <button className="relative size-9 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-white/5 text-slate-500 hover:text-primary transition-colors">
-              <Bell className="size-4.5" />
-              <span className="absolute top-2 right-2 size-2 bg-primary rounded-full animate-ping" />
-              <span className="absolute top-2 right-2 size-2 bg-primary rounded-full" />
-            </button>
+
             <div className="flex items-center gap-3 pl-4 border-l border-slate-100 dark:border-white/10">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold leading-none">{user.full_name}</p>

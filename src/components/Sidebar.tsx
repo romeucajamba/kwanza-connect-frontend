@@ -13,7 +13,10 @@ import {
   LogOut, 
   Repeat,
   Tag,
-  Heart
+  Heart,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from 'lucide-react';
 import { APP_ROUTES } from '@constants';
 import { useLogout } from '@services/auth.hooks';
@@ -25,9 +28,10 @@ interface SidebarItemProps {
   icon: React.ElementType;
   label: string;
   badge?: number;
+  isCollapsed?: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge, isCollapsed }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
@@ -41,14 +45,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge 
     {({ isActive }) => (
       <>
         <Icon 
-          className={`size-4.5 transition-transform group-hover:scale-110 ${isActive ? 'fill-primary/10' : ''}`} 
+          className={`size-5 transition-transform group-hover:scale-110 ${isActive ? 'fill-primary/10 text-primary' : ''} ${isCollapsed ? 'mx-auto' : ''}`} 
         />
-        <span className="text-[11px] font-bold tracking-tight uppercase flex-1">{label}</span>
+        {!isCollapsed && (
+          <span className="text-[11px] font-bold tracking-tight uppercase flex-1 whitespace-nowrap">{label}</span>
+        )}
         
-        {badge ? (
-           <span className="bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-primary/20 animate-pulse">
+        {badge && !isCollapsed ? (
+           <span className="bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-lg shadow-primary/20 animate-pulse whitespace-nowrap">
               {badge}
            </span>
+        ) : badge && isCollapsed ? (
+           <span className="absolute top-1 right-2 w-2 h-2 bg-primary rounded-full animate-pulse" />
         ) : null}
 
         {isActive && (
@@ -59,7 +67,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge 
   </NavLink>
 );
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpenMobile: boolean;
+  onCloseMobile: () => void;
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile, isCollapsed, toggleCollapse }) => {
   const { mutate: logout } = useLogout();
   const { data: rooms } = useChatRooms();
 
@@ -79,30 +94,73 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-[#111922] border-r border-slate-200 dark:border-white/10 sticky top-0 overflow-y-auto custom-scrollbar z-50">
-      <div className="p-6 flex items-center gap-3 mb-2">
-        <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-md">
-          <RefreshCcw className="size-5" />
+    <>
+      {/* Mobile Backdrop */}
+      {isOpenMobile && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[60] lg:hidden backdrop-blur-sm transition-opacity"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 z-[70] flex flex-col h-[100dvh] bg-white dark:bg-[#111922] border-r border-slate-200 dark:border-white/10 overflow-y-auto custom-scrollbar transition-all duration-300 ease-in-out
+          ${isOpenMobile ? 'translate-x-0' : '-translate-x-full'} 
+          lg:translate-x-0 lg:static lg:h-screen
+          ${isCollapsed ? 'lg:w-20' : 'w-64'}
+        `}
+      >
+        <div className={`p-6 flex items-center mb-2 relative ${isCollapsed ? 'justify-center px-0' : 'gap-3'}`}>
+          <div className="size-8 flex-shrink-0 bg-primary rounded-lg flex items-center justify-center text-white shadow-md">
+            <RefreshCcw className="size-5" />
+          </div>
+          {!isCollapsed && (
+            <h1 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter truncate">Kwanza<span className="text-primary">Connect</span></h1>
+          )}
+          
+          
+          <button 
+            onClick={onCloseMobile}
+            className="lg:hidden ml-auto p-1 text-slate-400 hover:text-rose-500 transition-colors"
+          >
+            <X className="size-5" />
+          </button>
         </div>
-        <h1 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Kwanza<span className="text-primary">Connect</span></h1>
-      </div>
 
-      <nav className="flex-1 flex flex-col pt-2">
-        {menuItems.map((item) => (
-          <SidebarItem key={item.to} {...item} />
-        ))}
-      </nav>
+        <nav className="flex-1 flex flex-col pt-2">
+          {menuItems.map((item) => (
+            <SidebarItem key={item.to} {...item} isCollapsed={isCollapsed} />
+          ))}
+        </nav>
 
-      <div className="p-4 mt-auto">
-        <button 
-          onClick={() => logout()}
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-rose-500 transition-colors duration-200 group"
-        >
-          <LogOut className="size-4.5 transition-transform group-hover:-translate-x-1" />
-          <span className="text-xs font-bold uppercase tracking-tight">Sair</span>
-        </button>
-      </div>
-    </aside>
+        <div className="p-4 mt-auto flex flex-col gap-2">
+          {/* Toggle Sidebar Button (Desktop only) */}
+          <button 
+            onClick={toggleCollapse}
+            className={`hidden lg:flex w-full items-center px-3 py-2.5 text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors duration-200 group ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+            title={isCollapsed ? "Expandir" : "Recolher"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="size-5 transition-transform group-hover:scale-110" />
+            ) : (
+              <ChevronLeft className="size-5 transition-transform group-hover:-translate-x-1" />
+            )}
+            {!isCollapsed && <span className="text-xs font-bold uppercase tracking-tight">Recolher</span>}
+          </button>
+
+          <button 
+            onClick={() => logout()}
+            className={`w-full flex items-center px-3 py-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-colors duration-200 group ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+            title={isCollapsed ? "Sair" : undefined}
+          >
+            <LogOut className={`size-5 transition-transform ${isCollapsed ? '' : 'group-hover:-translate-x-1'}`} />
+            {!isCollapsed && <span className="text-xs font-bold uppercase tracking-tight">Sair</span>}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
