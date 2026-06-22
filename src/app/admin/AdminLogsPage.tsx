@@ -42,24 +42,24 @@ const AdminLogsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight"><span>Logs de Auditoria</span></h1>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight"><span>Logs de Auditoria</span></h1>
           <p className="text-slate-400 text-sm mt-1"><span>Acompanhe todas as atividades e alterações no sistema.</span></p>
         </div>
         <button 
           onClick={() => refetch()}
           disabled={isFetching}
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-sm font-medium transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-sm font-medium transition-all"
         >
           <RefreshCw className={`size-4 ${isFetching ? 'animate-spin text-primary' : 'text-slate-400'}`} />
           <span>Atualizar</span>
         </button>
       </div>
 
-      <div className="bg-[#111922] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-black/20">
+              <tr className="border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20">
                 <th className="p-4 text-xs font-black uppercase tracking-widest text-slate-500"><span>Ação</span></th>
                 <th className="p-4 text-xs font-black uppercase tracking-widest text-slate-500"><span>Recurso</span></th>
                 <th className="p-4 text-xs font-black uppercase tracking-widest text-slate-500"><span>ID</span></th>
@@ -68,7 +68,7 @@ const AdminLogsPage: React.FC = () => {
                 <th className="p-4 text-xs font-black uppercase tracking-widest text-slate-500"><span>Data/Hora</span></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-400">
@@ -85,7 +85,7 @@ const AdminLogsPage: React.FC = () => {
                 </tr>
               ) : (
                 logs.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                     <td className="p-4">
                       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-bold uppercase tracking-wider ${getActionColor(log.action)}`}>
                         {getActionIcon(log.action)}
@@ -93,7 +93,7 @@ const AdminLogsPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm font-medium text-white">{log.resource}</span>
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{log.resource}</span>
                     </td>
                     <td className="p-4">
                       <span className="text-xs font-mono text-slate-400">{log.resource_id}</span>
@@ -118,7 +118,7 @@ const AdminLogsPage: React.FC = () => {
         </div>
 
         {totalPages > 1 && (
-          <div className="border-t border-white/5 px-4 bg-black/20">
+          <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-slate-50 dark:bg-black/20">
              <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}

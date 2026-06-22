@@ -194,13 +194,14 @@ const PerfilPage: React.FC = () => {
             </div>
 
             {/* KYC Status Card */}
-            <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${
-              user?.verification_status === 'approved' 
-              ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20' 
-              : user?.verification_status === 'submitted'
-              ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
-              : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
-            }`}>
+            {user?.is_staff !== true && (
+              <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${
+                user?.verification_status === 'approved' 
+                ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20' 
+                : user?.verification_status === 'submitted'
+                ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
+                : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
+              }`}>
               <div className={`absolute top-0 left-0 w-1.5 h-full ${
                 user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
               }`} />
@@ -270,9 +271,10 @@ const PerfilPage: React.FC = () => {
                      <Settings className="size-3.5" />
                      Gerir Segurança
                    </button>
-                </div>
+                 </div>
               </div>
             </div>
+            )}
           </div>
 
           {/* Right Column: Forms */}
@@ -427,8 +429,10 @@ const PerfilPage: React.FC = () => {
                     </select>
                   </div>
 
-                  <div className="sm:col-span-2 flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Sobre Mim (Biografia)</label>
+                  {user?.is_staff !== true && (
+                    <>
+                      <div className="sm:col-span-2 flex flex-col">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Sobre Mim (Biografia)</label>
                     <textarea 
                       {...register('bio')}
                       rows={4}
@@ -517,6 +521,8 @@ const PerfilPage: React.FC = () => {
                         </div>
                      )}
                   </div>
+                  </>
+                  )}
 
                   <div className="sm:col-span-2 flex justify-end gap-4 mt-4">
                     <button 

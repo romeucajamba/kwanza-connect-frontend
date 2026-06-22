@@ -5,6 +5,8 @@ export interface User {
   avatar?: string;   // API: avatar instead of profilePicture
   is_verified?: boolean; // API field
   verification_status?: 'pending' | 'submitted' | 'approved' | 'rejected';
+  is_staff?: boolean;
+  role?: string;
   date_joined?: string;
   last_seen?: string;
   phone?: string;
