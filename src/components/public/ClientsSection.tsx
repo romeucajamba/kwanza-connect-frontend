@@ -1,21 +1,21 @@
 import { motion } from 'framer-motion';
 import {
-  Building2,
-  Bitcoin,
   CircleDollarSign,
   Globe,
   Wallet,
   Landmark,
+  CreditCard,
+  Banknote,
 } from 'lucide-react';
 
 export const ClientsSection = () => {
   const clients = [
-    { name: 'Bitcoin', icon: Bitcoin, suffix: 'BTC' },
-    { name: 'Tether', icon: CircleDollarSign, suffix: 'USDT' },
-    { name: 'Banco BAI', icon: Landmark, suffix: 'AOA' },
-    { name: 'Wise', icon: Globe, suffix: 'USD/EUR' },
-    { name: 'Banco Atlântico', icon: Building2, suffix: 'AOA' },
-    { name: 'Ethereum', icon: Wallet, suffix: 'ETH' },
+   { name: 'Transferência Bancária', icon: Landmark, suffix: 'AOA' },
+  { name: 'Carteira Digital', icon: Wallet, suffix: 'Cripto' },
+  { name: 'Dinheiro Físico', icon: Banknote, suffix: 'Cash' },
+  { name: 'Multicaixa Express', icon: CreditCard, suffix: 'AOA' },
+  { name: 'Câmbio Internacional', icon: Globe, suffix: 'USD/EUR' },
+  { name: 'Stablecoins', icon: CircleDollarSign, suffix: 'USDT/USDC' },
   ];
 
   // We duplicate the array to allow for a seamless infinite loop
@@ -28,11 +28,12 @@ export const ClientsSection = () => {
     >
       <div className="container mx-auto px-4 md:px-6 mb-12 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4 tracking-tight">
-          Ativos e Métodos de Pagamento
+          Você escolhe com quem. Você escolhe como.
         </h2>
         <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-          A nossa plataforma suporta as principais criptomoedas e integra-se com
-          os maiores bancos angolanos para facilitar as suas operações.
+          Encontre pessoas prontas para trocar dinheiro consigo. Escolha a
+          tecnologia que preferir para concluir a troca — transferência bancária,
+          carteira digital, ou o método que combinarem entre si.
         </p>
       </div>
 

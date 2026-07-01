@@ -49,10 +49,17 @@ export const HeroSection = () => {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-text-secondary max-w-[600px] leading-relaxed">
-              O KwanzaConnect é a principal plataforma P2P em Angola. Compre e venda
-              ativos diretamente com outros usuários de forma rápida, com total segurança
-              garantida pelo nosso sistema de Escrow inteligente.
+            <p className="text-lg md:text-xl text-text-secondary text-justify max-w-[600px] leading-relaxed">
+              KwanzaConnect nasceu para resolver um problema real: encontrar
+              alguém de confiança para trocar USD, AOA e outras moedas deixou de
+              ser complicado.
+
+              Chega de depender de grupos de WhatsApp, redes sociais ou
+              intermediários desconhecidos. Aqui, você encontra diretamente quem
+              está disponível para trocar consigo — e escolhe o método que preferir
+              para concluir o negócio.
+
+              Simples, direto, sem voltas.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">

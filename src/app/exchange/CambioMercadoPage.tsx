@@ -4,10 +4,7 @@ import {
   TrendingUp, 
   Search, 
   Star, 
-  Filter, 
   ChevronUp, 
-  Activity,
-  ArrowRightLeft,
   Calendar,
 } from 'lucide-react';
 import { useExchangeRates } from '@services/rates.hooks';
@@ -75,29 +72,6 @@ const CambioMercadoPage: React.FC = () => {
           <TrendingUp className="size-3.5" />
           <span>Converter moeda</span>
         </Link>
-      </div>
-
-      {/* Market Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Volume (24h)', value: 'Kz 1.2B', change: '+12%', icon: Activity, color: 'text-emerald-500' },
-          { label: 'Taxa USD', value: 'Kz 850.00', change: '-0.5%', icon: TrendingUp, color: 'text-primary' },
-          { label: 'Pares', value: '24 Ativos', change: 'Estável', icon: Star, color: 'text-amber-500' },
-          { label: 'Spread', value: '0.2%', change: '+0.01%', icon: Filter, color: 'text-slate-500' },
-        ].map((stat, i) => (
-          <div key={i} className="p-4 bg-white dark:bg-[#192633] rounded-xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group">
-            <div className="flex items-center justify-between mb-3">
-              <div className={`p-2 rounded-lg bg-slate-50 dark:bg-white/5 ${stat.color} group-hover:scale-110 transition-transform`}>
-                <stat.icon className="size-3.5" />
-              </div>
-              <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md ${stat.change.startsWith('+') ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                {stat.change}
-              </span>
-            </div>
-            <p className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">{stat.value}</p>
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-70">{stat.label}</p>
-          </div>
-        ))}
       </div>
 
       {/* Main Container */}
@@ -234,18 +208,6 @@ const CambioMercadoPage: React.FC = () => {
              </div>
            )}
         </div>
-      </div>
-      
-      {/* Banner Section */}
-      <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-4">
-         <div className="size-10 rounded-lg bg-primary text-white flex items-center justify-center shadow-md flex-shrink-0">
-            <ArrowRightLeft className="size-4.5" />
-         </div>
-         <div className="flex-1">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-tight">Taxas Médias de Mercado</h3>
-            <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed opacity-70">Valores referenciais. Use o Mercado P2P para as melhores taxas directas.</p>
-         </div>
-         <button className="hidden sm:block px-6 py-2 bg-white dark:bg-[#192633] text-primary font-bold uppercase text-[9px] tracking-widest rounded-lg shadow-sm">Detalhes</button>
       </div>
     </div>
   );
