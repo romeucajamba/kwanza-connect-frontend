@@ -4,10 +4,7 @@ import {
   TrendingUp, 
   Search, 
   Star, 
-  Filter, 
   ChevronUp, 
-  Activity,
-  ArrowRightLeft,
   Calendar,
 } from 'lucide-react';
 import { useExchangeRates } from '@services/rates.hooks';
