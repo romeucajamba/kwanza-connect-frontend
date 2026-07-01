@@ -57,8 +57,8 @@ export const HeroSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link to="/register">
-                <Button className="h-14 px-8 text-base bg-primary hover:bg-primary-hover text-black font-bold shadow-[0_0_20px_rgba(253,185,19,0.2)] hover:shadow-[0_0_30px_rgba(253,185,19,0.4)] transition-all flex items-center gap-2 w-full sm:w-auto">
-                  Criar Conta Grátis
+                <Button className="h-14 px-8 text-base bg-primary hover:bg-primary-hover text-white font-bold shadow-[0_0_20px_rgba(253,185,19,0.2)] hover:shadow-[0_0_30px_rgba(253,185,19,0.4)] transition-all flex items-center gap-2 w-full sm:w-auto">
+                  Criar Conta
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
