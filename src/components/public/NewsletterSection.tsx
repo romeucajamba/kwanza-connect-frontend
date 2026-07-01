@@ -79,7 +79,7 @@ export const NewsletterSection = () => {
                     type="submit"
                     disabled={status === 'sending'}
                     whileTap={{ scale: 0.97 }}
-                    className="h-14 px-8 bg-primary hover:bg-primary-hover disabled:opacity-70 text-black font-bold rounded-xl shadow-[0_0_15px_rgba(253,185,19,0.15)] hover:shadow-[0_0_25px_rgba(253,185,19,0.3)] transition-all flex items-center justify-center gap-2"
+                    className="h-14 px-8 bg-primary hover:bg-primary-hover disabled:opacity-70 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(253,185,19,0.15)] hover:shadow-[0_0_25px_rgba(253,185,19,0.3)] transition-all flex items-center justify-center gap-2"
                   >
                     {status === 'sending' ? (
                       <>
