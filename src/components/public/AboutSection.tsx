@@ -1,10 +1,7 @@
-import { motion } from 'framer-motion';
 import {
   Target,
   Zap,
-  Building,
   UserCheck,
-  ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -28,13 +25,15 @@ export const AboutSection = () => {
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-6 tracking-tight">
             A ponte segura para a sua{' '}
-            <span className="text-primary text-glow-gold">liberdade financeira.</span>
+            <span className="text-primary text-glow-gold">Encontre. Combine. Troque.</span>
           </h2>
           <p className="text-lg md:text-xl text-text-secondary leading-relaxed">
-            A KwanzaConnect nasceu para revolucionar a forma como os angolanos
-            negociam moedas e criptoativos. O nosso sistema avançado de Escrow
-            garante que cada transação P2P seja rápida, justa e completamente
-            segura, eliminando os riscos de fraude do mercado tradicional.
+            A KwanzaConnect nasceu para simplificar a forma como os angolanos
+            negociam moedas e criptoativos. Ligamos diretamente quem quer
+            comprar a quem quer vender — sem grupos de WhatsApp, sem
+            intermediários desconhecidos, sem complicação. Você negoceia
+            diretamente, escolhe o método que preferir e mantém o controlo total
+            da sua transação.
           </p>
         </div>
 
@@ -61,31 +60,31 @@ export const AboutSection = () => {
                 Para Compradores e Iniciantes
               </h4>
               <p className="text-text-secondary mb-6 leading-relaxed">
-                Dê o primeiro passo no mundo das criptomoedas sem complicações.
-                A nossa interface simplificada permite-lhe encontrar as melhores
-                ofertas e pagar usando o seu banco local de forma intuitiva.
+                Encontre facilmente as melhores ofertas disponíveis e combine o
+                pagamento com o vendedor da forma que preferir — incluindo
+                transferência bancária local.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-success-text shrink-0 mt-0.5" />
                   <span className="text-sm text-text-secondary">
-                    Taxas transparentes e altamente competitivas.
+                     Taxas transparentes, sem custos escondidos.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-success-text shrink-0 mt-0.5" />
                   <span className="text-sm text-text-secondary">
-                    Proteção total com o sistema de Escrow.
+                    Perfis verificados para negociar com mais confiança.
                   </span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success-text shrink-0 mt-0.5" />
-                  <span className="text-sm text-text-secondary">
-                    Suporte dedicado e guias para iniciantes.
-                  </span>
-                </li>
-              </ul>
-            </div>
+              <li className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-success-text shrink-0 mt-0.5" />
+                <span className="text-sm text-text-secondary">
+                  Suporte dedicado e guias para iniciantes.
+                </span>
+              </li>
+            </ul>
+          </div>
 
             {/* Vendedores */}
             <div className="glass-card p-8 md:p-10 rounded-3xl border border-border-subtle relative overflow-hidden group hover:border-primary/50 transition-colors">
@@ -96,27 +95,27 @@ export const AboutSection = () => {
                 Para Vendedores e P2P Traders
               </h4>
               <p className="text-text-secondary mb-6 leading-relaxed">
-                Maximize os seus lucros com ferramentas avançadas de gestão de
-                anúncios e liquidez. O nosso painel de controlo permite gerir
-                múltiplas ordens em simultâneo com total segurança e rapidez.
+                Publique a sua proposta de troca em poucos minutos e seja contactado
+                por quem tem exatamente o que procura. Seja para comprar ou vender,
+                o processo é igual, simples e direto.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm text-text-secondary">
-                    Gestão avançada de ordens e anúncios em tempo real.
+                    Publique propostas de compra ou venda com a mesma facilidade.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm text-text-secondary">
-                    Notificações instantâneas de novos pedidos de compra.
+                    Seja contactado diretamente por quem procura trocar consigo.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                   <span className="text-sm text-text-secondary">
-                    Acesso à maior base de clientes qualificados em Angola.
+                    Alcance uma comunidade crescente de utilizadores em Angola.
                   </span>
                 </li>
               </ul>
@@ -163,7 +162,7 @@ export const AboutSection = () => {
               </h4>
               <p className="text-sm text-text-secondary">
                 Navegue pelo nosso mercado P2P e escolha a oferta com a melhor
-                taxa de câmbio e que suporte o seu método de pagamento preferido.
+                taxa de câmbio.
               </p>
             </div>
 
@@ -173,11 +172,11 @@ export const AboutSection = () => {
                 <Zap className="w-10 h-10 text-white" />
               </div>
               <h4 className="text-lg font-bold text-text-primary mb-2">
-                Troca Segura (Escrow)
+                Combine e Conclua a Troca
               </h4>
               <p className="text-sm text-text-secondary">
-                O vendedor bloqueia os fundos no nosso cofre inteligente. Assim
-                que o pagamento for confirmado mutuamente, os ativos são libertados.
+                Falem diretamente, escolham o método que preferirem e concluam a
+                troca ao seu ritmo — com total liberdade para decidir como.
               </p>
             </div>
           </div>

@@ -49,8 +49,8 @@ export const NewsletterSection = () => {
                   Fique a par das novidades
                 </h2>
                 <p className="text-text-secondary text-lg mb-8 max-w-xl mx-auto">
-                  Subscreva a nossa newsletter e receba atualizações sobre novas
-                  listagens de moedas, taxas de câmbio e dicas de trading P2P.
+                  Receba em primeira mão tendências de
+                  câmbio e dicas para negociar P2P com confiança.
                 </p>
 
                 <form className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onSubmit={handleSubmit}>
