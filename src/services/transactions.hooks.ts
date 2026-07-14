@@ -59,3 +59,19 @@ export const useUserReviews = (userId: string) => {
     enabled: !!userId,
   });
 };
+
+export const useTopLocations = () => {
+  return useQuery({
+    queryKey: ['top-locations'],
+    queryFn: () => transactionsService.getTopLocations(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+export const useTopPaymentMethods = () => {
+  return useQuery({
+    queryKey: ['top-payment-methods'],
+    queryFn: () => transactionsService.getTopPaymentMethods(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};

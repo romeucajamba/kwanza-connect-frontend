@@ -152,7 +152,7 @@ const AppLayout: React.FC = () => {
             </div>
 
             <div className="hidden lg:block">
-              <h2 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Plataforma Digital de Verificação</h2>
+              {/* Espaço reservado se necessário */}
             </div>
 
             <div className="flex items-center gap-3 sm:gap-5">

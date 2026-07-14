@@ -10,7 +10,7 @@ export const createOfferSchema = z.object({
     .min(1, 'Valor a receber é obrigatório')
     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Valor deve ser superior a 0'),
   offer_type: z.enum(['buy', 'sell']),
-  notes: z.string().optional(),
+  notes: z.string().min(5, 'As instruções de pagamento são obrigatórias (mín. 5 letras)'),
   city: z.string().optional(),
 });
 

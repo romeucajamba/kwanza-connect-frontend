@@ -5,6 +5,8 @@ import { Users, Activity, ShieldAlert, CheckCircle2, TrendingUp } from 'lucide-r
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { TopLocationsChart } from '@/components/charts/TopLocationsChart';
+import { TopPaymentMethodsChart } from '@/components/charts/TopPaymentMethodsChart';
 
 const AdminDashboardPage: React.FC = () => {
   const { data: adminStats, isLoading: loadingAdmin } = useAdminStats();
@@ -95,6 +97,11 @@ const AdminDashboardPage: React.FC = () => {
       {/* Market Stats Section */}
       <div className="pt-6 border-t border-slate-200 dark:border-white/10">
         <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-6">Visão Global do Mercado</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <TopLocationsChart />
+          <TopPaymentMethodsChart />
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="flex flex-col gap-2 p-6 rounded-2xl bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 shadow-sm">

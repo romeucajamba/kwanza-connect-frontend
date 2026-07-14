@@ -22,6 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
 import { User as UserIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import toast from 'react-hot-toast';
+import { TopPaymentMethodsChart } from '@components/charts/TopPaymentMethodsChart';
 
 const DashboardPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
@@ -226,8 +227,10 @@ const DashboardPage: React.FC = () => {
 
       </div>
 
-      {/* Recent Activity Table */}
-      <div className="bg-white dark:bg-[#192633] rounded-2xl p-6 border border-slate-100 dark:border-white/5 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          {/* Recent Activity Table */}
+          <div className="bg-white dark:bg-[#192633] rounded-2xl p-6 border border-slate-100 dark:border-white/5 shadow-sm h-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-black dark:text-white text-xl font-bold leading-tight tracking-tight">A sua Atividade Recente</h2>
           <button 
@@ -300,6 +303,12 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+      
+      </div>
+      <div className="lg:col-span-1">
+        <TopPaymentMethodsChart />
+      </div>
       </div>
     </motion.div>
   );

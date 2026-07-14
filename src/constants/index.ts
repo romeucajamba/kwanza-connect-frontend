@@ -63,6 +63,8 @@ export const API_ROUTES = {
     CONFIRM: '/transactions/confirm/',
     REVIEW: (id: string) => `/transactions/${id}/review/`,
     REVIEWS: (userId: string) => `/transactions/reviews/${userId}/`,
+    TOP_LOCATIONS: '/transactions/metrics/top-locations/',
+    TOP_PAYMENT_METHODS: '/transactions/metrics/top-payment-methods/',
   },
   CHAT: {
     ROOMS: '/chat/rooms/',

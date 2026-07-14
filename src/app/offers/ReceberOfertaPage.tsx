@@ -22,6 +22,8 @@ import { APP_ROUTES } from '@/constants';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Offer } from '@/types';
+import { TopLocationsChart } from '@/components/charts/TopLocationsChart';
+import { TopPaymentMethodsChart } from '@/components/charts/TopPaymentMethodsChart';
 
 const ReceberOfertaPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
@@ -88,6 +90,12 @@ const ReceberOfertaPage: React.FC = () => {
           <PlusCircle className="size-3.5" />
           <span>Criar Oferta</span>
         </button>
+      </div>
+
+      {/* Gráficos de Inteligência de Mercado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-2">
+        <TopLocationsChart />
+        <TopPaymentMethodsChart />
       </div>
 
       {/* Filtros e Pesquisa */}
@@ -163,6 +171,16 @@ const ReceberOfertaPage: React.FC = () => {
                   />
                 </div>
 
+                <div className="flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => handleSearch()}
+                    className="w-full h-[34px] bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors font-bold uppercase text-[9px] tracking-widest rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Search className="size-3.5" /> Aplicar Filtros
+                  </button>
+                </div>
+
               </div>
             </motion.div>
           )}
@@ -213,12 +231,6 @@ const ReceberOfertaPage: React.FC = () => {
                             <CheckCircle2 className="size-2.5 text-emerald-500" />
                           )}
                         </div>
-                        <p className="text-[7px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover/profile:hidden">
-                          ID: #{offer.id.slice(0, 8)}
-                        </p>
-                        <p className="text-[7px] font-bold text-primary mt-1 uppercase tracking-widest hidden group-hover/profile:flex items-center gap-0.5">
-                          Ver Perfil <ChevronRight className="size-2" />
-                        </p>
                       </div>
                     </button>
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${offer.offer_type === 'sell' ? 'bg-primary/5 text-primary' : 'bg-emerald-500/5 text-emerald-500'}`}>
