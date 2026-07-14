@@ -11,18 +11,93 @@ import {
   FileText,
   Coins,
   Menu,
-  X,
   Sun,
   Moon,
   ChevronLeft,
-  ChevronRight
+  Bell,
+  X,
+  RefreshCcw
 } from 'lucide-react';
 import { APP_ROUTES } from '@/constants';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNotifications, useNotificationUnreadCount, useMarkAllNotificationsRead } from '@services/notifications.hooks';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+const NotificationsDropdown: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { data: notifications, isLoading } = useNotifications();
+  const { mutate: markAllRead } = useMarkAllNotificationsRead();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.98 }}
+      className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-[#192633] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden z-[70]"
+    >
+      <div className="p-4 border-b border-slate-100 dark:border-white/5 flex justify-between items-center">
+        <h3 className="text-xs font-black uppercase tracking-tight">Notificações</h3>
+        <div className="flex items-center gap-3">
+          <span 
+            onClick={() => markAllRead()}
+            className="text-[10px] font-black text-primary uppercase cursor-pointer hover:underline"
+          >
+            Limpar
+          </span>
+          <button onClick={onClose} className="p-1 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+            <X className="size-3.5 text-slate-400" />
+          </button>
+        </div>
+      </div>
+      <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
+        {isLoading ? (
+          <div className="p-10 flex justify-center"><RefreshCcw className="size-5 text-primary animate-spin" /></div>
+        ) : notifications && notifications.length > 0 ? (
+          <div className="flex flex-col">
+            {notifications.slice(0, 5).map((notif) => (
+              <div key={notif.id} className={`p-4 border-b border-slate-50 dark:border-white/5 last:border-0 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer ${!notif.is_read ? 'bg-primary/5' : ''}`}>
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate pr-4">{notif.title}</h4>
+                  <span className="text-[8px] font-medium text-slate-400 whitespace-nowrap">
+                    {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: ptBR })}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{notif.message}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-10 flex flex-col items-center justify-center text-center gap-3">
+            <div className="size-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
+              <Bell className="size-6" />
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Sem notificações agora
+            </p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 const AdminLayout: React.FC = () => {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useSettingsStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { data: unreadData } = useNotificationUnreadCount();
+  const notifRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Se o utilizador ainda não carregou, aguarda
   if (!user) {
@@ -114,6 +189,26 @@ const AdminLayout: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             
+            <div className="relative" ref={notifRef}>
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`size-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-slate-100 dark:border-white/10 shadow-sm ${showNotifications ? 'text-primary' : ''}`}
+              >
+                <div className="relative">
+                  <Bell className="size-4" />
+                  {unreadData && unreadData.unread_count > 0 && (
+                    <div className="absolute -top-1 -right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 border border-white dark:border-[#101922]"></span>
+                    </div>
+                  )}
+                </div>
+              </button>
+              <AnimatePresence>
+                {showNotifications && <NotificationsDropdown onClose={() => setShowNotifications(false)} />}
+              </AnimatePresence>
+            </div>
+
             <button 
               onClick={toggleTheme}
               className="size-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-slate-100 dark:border-white/10 shadow-sm"

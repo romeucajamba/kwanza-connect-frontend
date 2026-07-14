@@ -105,6 +105,7 @@ const AppLayout: React.FC = () => {
   const { data: chatRooms } = useChatRooms();
 
   const totalUnreadMessages = (chatRooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
+  const isApproved = user?.verification_status === 'approved';
 
   const notifRef = React.useRef<HTMLDivElement>(null);
   const profileRef = React.useRef<HTMLDivElement>(null);
@@ -191,7 +192,11 @@ const AppLayout: React.FC = () => {
                 >
                   <div className="hidden sm:flex flex-col items-end">
                     <span className="text-[10px] font-bold text-slate-900 dark:text-white uppercase leading-none">{user?.full_name ? user.full_name.split(' ')[0] : 'Usuário'}</span>
-                    <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
+                    {user?.verification_status === 'approved' ? (
+                      <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest mt-1 opacity-80">Verificado</span>
+                    ) : (
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 opacity-80">Não Verificado</span>
+                    )}
                   </div>
                   <Avatar className="size-8 rounded-lg border border-slate-100 dark:border-white/10 group-hover:border-primary transition-all shadow-sm overflow-hidden bg-slate-200 dark:bg-[#192633]">
                     <AvatarImage src={getAvatarUrl(user?.avatar, user?.full_name)} />
@@ -252,13 +257,25 @@ const AppLayout: React.FC = () => {
         <Link to="/" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90">
           <LayoutDashboard className="size-6 sm:size-7" />
         </Link>
-        <Link to="/p2p/browse" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90">
+        <Link 
+          to={!isApproved ? '#' : "/p2p/browse"} 
+          onClick={(e) => !isApproved && e.preventDefault()}
+          className={`transition-all flex flex-col items-center gap-1 active:scale-90 ${!isApproved ? 'text-rose-500 cursor-not-allowed' : 'text-slate-400 hover:text-primary'}`}
+        >
           <Users className="size-6 sm:size-7" />
         </Link>
-        <Link to="/conversao" className="size-14 sm:size-16 bg-primary rounded-2xl flex items-center justify-center text-white -mt-12 sm:-mt-14 shadow-2xl shadow-primary/40 active:scale-90 ring-4 ring-white dark:ring-background-dark transition-all">
+        <Link 
+          to={!isApproved ? '#' : "/conversao"} 
+          onClick={(e) => !isApproved && e.preventDefault()}
+          className={`size-14 sm:size-16 rounded-2xl flex items-center justify-center text-white -mt-12 sm:-mt-14 shadow-2xl shadow-primary/40 active:scale-90 ring-4 ring-white dark:ring-background-dark transition-all ${!isApproved ? 'bg-rose-500 cursor-not-allowed shadow-rose-500/40' : 'bg-primary'}`}
+        >
           <Plus className="size-8 sm:size-9" />
         </Link>
-        <Link to="/mensagens" className="text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-1 active:scale-90 relative">
+        <Link 
+          to={!isApproved ? '#' : "/mensagens"} 
+          onClick={(e) => !isApproved && e.preventDefault()}
+          className={`transition-all flex flex-col items-center gap-1 active:scale-90 relative ${!isApproved ? 'text-rose-500 cursor-not-allowed' : 'text-slate-400 hover:text-primary'}`}
+        >
           <MessageCircle className="size-6 sm:size-7" />
           {totalUnreadMessages > 0 && (
             <div className="absolute -top-1 -right-1 flex h-2.5 w-2.5">

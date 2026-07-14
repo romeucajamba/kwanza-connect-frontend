@@ -52,6 +52,30 @@ const AdminUserDetailsPage: React.FC = () => {
               <span className="text-slate-900 dark:text-white font-medium">{user.phone || '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Província</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.province || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Município</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.municipality || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Bairro/Rua</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.neighborhood || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Ocupação</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.occupation || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Moeda (Oferece)</span>
+              <span className="text-slate-900 dark:text-white font-medium uppercase">{user.preferred_give_currency || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Moeda (Precisa)</span>
+              <span className="text-slate-900 dark:text-white font-medium uppercase">{user.preferred_want_currency || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
               <span className="text-slate-500 font-bold">Data de Registo</span>
               <span className="text-slate-900 dark:text-white font-medium">{new Date(user.date_joined).toLocaleDateString('pt-AO')}</span>
             </div>
@@ -63,6 +87,11 @@ const AdminUserDetailsPage: React.FC = () => {
                 <span className="text-red-500 font-black uppercase text-[10px] tracking-widest bg-red-500/10 px-2 py-0.5 rounded">Bloqueado</span>
               )}
             </div>
+          </div>
+
+          <div className="pt-6 border-t border-slate-100 dark:border-white/5">
+            <span className="text-slate-500 font-bold text-sm block mb-2">Biografia</span>
+            <p className="text-sm text-slate-900 dark:text-white font-medium">{user.bio || 'Sem biografia informada.'}</p>
           </div>
 
           <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-3">
@@ -121,8 +150,8 @@ const AdminUserDetailsPage: React.FC = () => {
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Parte Frontal</span>
                   <div className="aspect-[1.58] bg-slate-100 dark:bg-[#0b1117] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative group">
-                    {doc.front_image ? (
-                      <img src={`http://localhost:8000${doc.front_image}`} alt="Frente BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {doc.front_image || doc.front_image_url ? (
+                      <img src={doc.front_image_url || (doc.front_image.startsWith('http') ? doc.front_image : `http://localhost:8000${doc.front_image}`)} alt="Frente BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-xs text-slate-400">Não disponível</div>
                     )}
@@ -131,8 +160,8 @@ const AdminUserDetailsPage: React.FC = () => {
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Parte Traseira</span>
                   <div className="aspect-[1.58] bg-slate-100 dark:bg-[#0b1117] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative group">
-                    {doc.back_image ? (
-                      <img src={`http://localhost:8000${doc.back_image}`} alt="Trás BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {doc.back_image || doc.back_image_url ? (
+                      <img src={doc.back_image_url || (doc.back_image.startsWith('http') ? doc.back_image : `http://localhost:8000${doc.back_image}`)} alt="Trás BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-xs text-slate-400">Não disponível</div>
                     )}

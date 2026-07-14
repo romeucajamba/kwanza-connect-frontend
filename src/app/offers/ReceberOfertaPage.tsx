@@ -10,34 +10,52 @@ import {
   PlusCircle,
   ArrowRightLeft,
   RefreshCcw,
-  User as UserIcon
+  User as UserIcon,
+  ChevronRight
 } from 'lucide-react';
+import PublisherDetailsModal from './components/PublisherDetailsModal';
 import { useOffers, useExpressInterest, useMyInterests } from '@/services/offers.hooks';
 import { useAuthStore } from '@/store/authStore';
 import { getAvatarUrl } from '@/lib/media';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { APP_ROUTES } from '@/constants';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { Offer } from '@/types';
 
 const ReceberOfertaPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   
-  // Estados para pesquisa
+  // Estados para pesquisa e filtros
   const [searchInput, setSearchInput] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  const [orderFilter, setOrderFilter] = useState('-created_at');
+  const [showFilters, setShowFilters] = useState(false);
   const [queryParams, setQueryParams] = useState<Record<string, string>>({});
   
   const { data: offers, isLoading } = useOffers(queryParams);
   const { mutate: expressInterest, isPending: isInteresting } = useExpressInterest();
   const { data: myInterests } = useMyInterests();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  
+  // Estado para o modal do publicador
+  const [selectedPublisher, setSelectedPublisher] = useState<any | null>(null);
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    setQueryParams(searchInput.trim() ? { search: searchInput.trim() } : {});
+    const params: Record<string, string> = {};
+    if (searchInput.trim()) params.search = searchInput.trim();
+    if (cityFilter.trim()) params.city = cityFilter.trim();
+    if (orderFilter) params.order = orderFilter;
+    setQueryParams(params);
   };
 
   const handleInterest = (offerId: string) => {
+    if (user?.verification_status !== 'approved') {
+      toast.error('A sua conta precisa ser aprovada pelo administrador para fazer propostas.');
+      return;
+    }
     setPendingId(offerId);
     expressInterest(
       { offerId, payload: { message: 'Estou interessado nesta oferta.' } },
@@ -57,48 +75,99 @@ const ReceberOfertaPage: React.FC = () => {
             Troque ativos diretamente com utilizadores verificados.
           </p>
         </div>
-        <Link
-          to={APP_ROUTES.P2P_POST}
+        <button
+          onClick={() => {
+            if (user?.verification_status !== 'approved') {
+              toast.error('A sua conta precisa ser aprovada pelo administrador para publicar ofertas.');
+              return;
+            }
+            navigate(APP_ROUTES.P2P_POST);
+          }}
           className="flex items-center justify-center gap-2 bg-primary text-white font-bold uppercase text-[10px] tracking-widest px-6 h-10 rounded-lg hover:bg-primary/95 transition-all shadow-md shadow-primary/20"
         >
           <PlusCircle className="size-3.5" />
           <span>Criar Oferta</span>
-        </Link>
+        </button>
       </div>
 
       {/* Filtros e Pesquisa */}
-      <form 
-        onSubmit={handleSearch}
-        className="bg-white dark:bg-[#192633] p-4 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm flex flex-col sm:flex-row items-center gap-4"
-      >
-        <div className="flex-1 relative group w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
-          <input
-            type="text"
-            placeholder="Pesquisar moedas ou utilizadores..."
-            className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg pl-10 pr-4 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </div>
+      <div className="bg-white dark:bg-[#192633] p-4 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm flex flex-col gap-4">
+        <form 
+          onSubmit={handleSearch}
+          className="flex flex-col sm:flex-row items-center gap-4 w-full"
+        >
+          <div className="flex-1 relative group w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-slate-300 group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              placeholder="Pesquisar por moedas, valores ou nome do utilizador..."
+              className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg pl-10 pr-4 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-300"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button 
-            type="submit"
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-6 bg-primary text-white font-bold uppercase text-[9px] tracking-widest rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/10"
-          >
-            {isLoading ? <RefreshCcw className="size-3 animate-spin" /> : <Search className="size-3.5" />}
-            <span>Pesquisar</span>
-          </button>
-          
-          <button 
-            type="button"
-            className="flex items-center justify-center size-9 bg-slate-50 dark:bg-white/5 text-slate-400 rounded-lg hover:text-primary transition-colors"
-          >
-            <Filter className="size-3.5" />
-          </button>
-        </div>
-      </form>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button 
+              type="submit"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-9 px-6 bg-primary text-white font-bold uppercase text-[9px] tracking-widest rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/10"
+            >
+              {isLoading ? <RefreshCcw className="size-3 animate-spin" /> : <Search className="size-3.5" />}
+              <span>Pesquisar</span>
+            </button>
+            
+            <button 
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center justify-center size-9 rounded-lg transition-colors border ${showFilters ? 'bg-primary/10 text-primary border-primary/20' : 'bg-slate-50 dark:bg-white/5 text-slate-400 border-transparent hover:text-primary'}`}
+            >
+              <Filter className="size-3.5" />
+            </button>
+          </div>
+        </form>
+
+        {/* Painel de Filtros Avançados */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-4 border-t border-slate-100 dark:border-white/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Ordenar por</label>
+                  <select
+                    value={orderFilter}
+                    onChange={(e) => { setOrderFilter(e.target.value); setTimeout(() => handleSearch(), 0); }}
+                    className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-lg px-3 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 text-slate-900 dark:text-white outline-none"
+                  >
+                    <option value="-created_at" className="bg-white dark:bg-[#192633] text-slate-900 dark:text-white">Mais Recentes</option>
+                    <option value="created_at" className="bg-white dark:bg-[#192633] text-slate-900 dark:text-white">Mais Antigas</option>
+                    <option value="-give_amount" className="bg-white dark:bg-[#192633] text-slate-900 dark:text-white">Maior Valor</option>
+                    <option value="give_amount" className="bg-white dark:bg-[#192633] text-slate-900 dark:text-white">Menor Valor</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Localização (Cidade)</label>
+                  <input
+                    type="text"
+                    value={cityFilter}
+                    onChange={(e) => setCityFilter(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Ex: Luanda, Benguela..."
+                    className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg px-3 py-2 text-[11px] font-medium focus:ring-2 focus:ring-primary/10 placeholder:text-slate-300 outline-none"
+                  />
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Grid de Ofertas */}
       {isLoading ? (
@@ -125,8 +194,11 @@ const ReceberOfertaPage: React.FC = () => {
                 >
                   {/* Card Header */}
                   <div className="p-4 border-b border-slate-50 dark:border-white/5 flex justify-between items-center bg-slate-50/20 dark:bg-white/5">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar className="size-8 rounded-lg border-2 border-slate-50 dark:border-[#111922] group-hover:border-primary/20 transition-all shadow-sm overflow-hidden bg-white dark:bg-[#111922]">
+                    <button 
+                      onClick={() => setSelectedPublisher(offer.owner)}
+                      className="flex items-center gap-2.5 text-left group/profile hover:opacity-80 transition-opacity"
+                    >
+                      <Avatar className="size-8 rounded-lg border-2 border-slate-50 dark:border-[#111922] group-hover/profile:border-primary/20 transition-all shadow-sm overflow-hidden bg-white dark:bg-[#111922]">
                         <AvatarImage src={getAvatarUrl(offer.owner?.avatar, offer.owner?.full_name)} />
                         <AvatarFallback className="rounded-lg">
                           <UserIcon className="size-4 text-slate-400" />
@@ -134,16 +206,21 @@ const ReceberOfertaPage: React.FC = () => {
                       </Avatar>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1">
-                          <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate max-w-[80px] leading-none">
+                          <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate max-w-[80px] leading-none group-hover/profile:text-primary transition-colors">
                             {offer.owner?.full_name || offer.owner?.email?.split('@')[0] || 'Utilizador'}
                           </p>
-                          <CheckCircle2 className="size-2.5 text-emerald-500" />
+                          {(offer.owner?.verification_status === 'approved' || offer.owner?.is_verified) && (
+                            <CheckCircle2 className="size-2.5 text-emerald-500" />
+                          )}
                         </div>
-                        <p className="text-[7px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
+                        <p className="text-[7px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover/profile:hidden">
                           ID: #{offer.id.slice(0, 8)}
                         </p>
+                        <p className="text-[7px] font-bold text-primary mt-1 uppercase tracking-widest hidden group-hover/profile:flex items-center gap-0.5">
+                          Ver Perfil <ChevronRight className="size-2" />
+                        </p>
                       </div>
-                    </div>
+                    </button>
                     <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${offer.offer_type === 'sell' ? 'bg-primary/5 text-primary' : 'bg-emerald-500/5 text-emerald-500'}`}>
                       {offer.offer_type === 'sell' ? 'Vende' : 'Compra'}
                     </div>
@@ -179,35 +256,46 @@ const ReceberOfertaPage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded border border-slate-100 dark:border-white/5 text-[7px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/5">
-                        <ShieldCheck className="size-2.5" /> KYC Verificado
-                      </span>
+                      {(offer.owner?.verification_status === 'approved' || offer.owner?.is_verified) && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded border border-slate-100 dark:border-white/5 text-[7px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/5">
+                          <ShieldCheck className="size-2.5" /> KYC Verificado
+                        </span>
+                      )}
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded border border-slate-100 dark:border-white/5 text-[7px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50/50 dark:bg-white/5">
-                        <Star className="size-2.5 fill-amber-400 text-amber-400" /> 4.9
+                        <Star className="size-2.5 fill-amber-400 text-amber-400" /> {offer.owner?.average_rating > 0 ? offer.owner?.average_rating : 'Novo'}
                       </span>
                     </div>
 
-                    <div className="mt-auto pt-4 flex gap-2">
+                    <div className="mt-auto pt-4 flex flex-col gap-2">
                       <button
-                        disabled={isOwner || isLoadingThis || hasInterest}
-                        onClick={() => handleInterest(offer.id)}
-                        className="flex-1 h-9 bg-primary text-white rounded-lg font-bold uppercase text-[9px] tracking-widest shadow-md shadow-primary/10 hover:bg-primary/95 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        onClick={() => setSelectedPublisher(offer.owner)}
+                        className="w-full h-8 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-lg font-bold uppercase text-[8px] tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5"
                       >
-                        {isLoadingThis ? (
-                          <RefreshCcw className="size-3 animate-spin" />
-                        ) : hasInterest ? (
-                          'Interesse Enviado'
-                        ) : (
-                          'Manifestar Interesse'
-                        )}
+                        <UserIcon className="size-3" /> Ver Detalhes do {offer.offer_type === 'sell' ? 'Vendedor' : 'Comprador'}
                       </button>
-                      <button 
-                        disabled={isOwner || isLoadingThis || hasInterest}
-                        onClick={() => handleInterest(offer.id)}
-                        className="h-9 w-9 bg-slate-50 dark:bg-[#111922] text-slate-300 hover:text-primary rounded-lg flex items-center justify-center transition-all border border-slate-100 dark:border-white/5 hover:border-primary/10 disabled:opacity-30"
-                      >
-                        <MessageCircle className="size-4" />
-                      </button>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          disabled={isOwner || isLoadingThis || hasInterest}
+                          onClick={() => handleInterest(offer.id)}
+                          className="flex-1 h-9 bg-primary text-white rounded-lg font-bold uppercase text-[9px] tracking-widest shadow-md shadow-primary/10 hover:bg-primary/95 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        >
+                          {isLoadingThis ? (
+                            <RefreshCcw className="size-3 animate-spin" />
+                          ) : hasInterest ? (
+                            'Interesse Enviado'
+                          ) : (
+                            'Manifestar Interesse'
+                          )}
+                        </button>
+                        <button 
+                          disabled={isOwner || isLoadingThis || hasInterest}
+                          onClick={() => handleInterest(offer.id)}
+                          className="h-9 w-9 bg-slate-50 dark:bg-[#111922] text-slate-300 hover:text-primary rounded-lg flex items-center justify-center transition-all border border-slate-100 dark:border-white/5 hover:border-primary/10 disabled:opacity-30"
+                        >
+                          <MessageCircle className="size-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -228,6 +316,13 @@ const ReceberOfertaPage: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Modal de Detalhes do Publicador */}
+      <PublisherDetailsModal 
+        isOpen={!!selectedPublisher}
+        onClose={() => setSelectedPublisher(null)}
+        publisher={selectedPublisher}
+      />
     </div>
   );
 };

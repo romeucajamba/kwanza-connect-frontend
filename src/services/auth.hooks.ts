@@ -48,9 +48,6 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const queryClient = useQueryClient();
-  const login = useAuthStore((s) => s.login);
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (data: RegisterFormData) => authService.register(data),

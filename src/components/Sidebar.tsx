@@ -22,6 +22,7 @@ import { APP_ROUTES } from '@constants';
 import { useLogout } from '@services/auth.hooks';
 import { useChatRooms } from '@services/chat.hooks';
 import type { Room } from '@types';
+import { useAuthStore } from '@store/authStore';
 
 interface SidebarItemProps {
   to: string;
@@ -29,16 +30,24 @@ interface SidebarItemProps {
   label: string;
   badge?: number;
   isCollapsed?: boolean;
+  isRestricted?: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge, isCollapsed }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon: Icon, label, badge, isCollapsed, isRestricted }) => (
   <NavLink
-    to={to}
+    to={isRestricted ? '#' : to}
+    onClick={(e) => {
+      if (isRestricted) {
+        e.preventDefault();
+      }
+    }}
     className={({ isActive }) =>
       `flex items-center gap-3 px-6 py-2.5 transition-all duration-200 group relative ${
-        isActive 
-          ? 'text-primary bg-primary/5' 
-          : 'text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5'
+        isRestricted 
+          ? 'cursor-not-allowed text-slate-400 max-lg:text-rose-500' 
+          : isActive 
+            ? 'text-primary bg-primary/5' 
+            : 'text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-white/5'
       }`
     }
   >
@@ -77,18 +86,21 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile, isCollapsed, toggleCollapse }) => {
   const { mutate: logout } = useLogout();
   const { data: rooms } = useChatRooms();
+  const user = useAuthStore((s) => s.user);
 
   const totalUnreadMessages = (rooms as Room[])?.reduce((acc: number, room: Room) => acc + (room.unread_count || 0), 0) || 0;
+  
+  const isApproved = user?.verification_status === 'approved';
 
   const menuItems = [
     { to: APP_ROUTES.DASHBOARD, icon: LayoutDashboard, label: 'Dashboard' },
-    { to: APP_ROUTES.P2P_BROWSE, icon: Users, label: 'Trocas P2P' },
-    { to: APP_ROUTES.P2P_MY_OFFERS, icon: Tag, label: 'Minhas Ofertas' },
-    { to: APP_ROUTES.P2P_INTERESTS, icon: Heart, label: 'Meus Interesses' },
-    { to: APP_ROUTES.CONVERSAO, icon: Repeat, label: 'Conversão' },
+    { to: APP_ROUTES.P2P_BROWSE, icon: Users, label: 'Trocas P2P', isRestricted: !isApproved },
+    { to: APP_ROUTES.P2P_MY_OFFERS, icon: Tag, label: 'Minhas Ofertas', isRestricted: !isApproved },
+    { to: APP_ROUTES.P2P_INTERESTS, icon: Heart, label: 'Meus Interesses', isRestricted: !isApproved },
+    { to: APP_ROUTES.CONVERSAO, icon: Repeat, label: 'Conversão', isRestricted: !isApproved },
     { to: APP_ROUTES.CAMBIO_MERCADO, icon: TrendingUp, label: 'Câmbio' },
     { to: APP_ROUTES.HISTORICO, icon: History, label: 'Histórico' },
-    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens', badge: totalUnreadMessages },
+    { to: APP_ROUTES.MENSAGENS, icon: MessageSquare, label: 'Mensagens', badge: totalUnreadMessages, isRestricted: !isApproved },
     { to: APP_ROUTES.PERFIL, icon: User, label: 'Perfil' },
     { to: '/settings', icon: Settings, label: 'Definições' },
   ];

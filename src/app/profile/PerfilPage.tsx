@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   ShieldCheck,
   Settings,
@@ -16,6 +16,8 @@ import {
   MapPin,
   Map,
   Home,
+  Phone,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { ANGOLAN_PROVINCES } from '@/constants/geography';
 import toast from 'react-hot-toast';
@@ -23,7 +25,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactions, useUserReviews } from '@services/transactions.hooks';
-import { useUpdateProfile, useUpdateAvatar, useSubmitKYC, useUserProfile } from '@services/auth.hooks';
+import { useUpdateProfile , useSubmitKYC, useUserProfile } from '@services/auth.hooks';
 import { useCurrencies } from '@services/rates.hooks';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { useForm } from 'react-hook-form';
@@ -43,11 +45,12 @@ const PerfilPage: React.FC = () => {
   const { data: transactions } = useTransactions();
   const { data: reviews, isLoading: isLoadingReviews } = useUserReviews(targetUserId);
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
-  const { mutate: updateAvatar, isPending: isUpdatingAvatar } = useUpdateAvatar();
-  const { mutate: submitKYC, isPending: isSubmittingKYC } = useSubmitKYC();
+    const { mutate: submitKYC, isPending: isSubmittingKYC } = useSubmitKYC();
 
   const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
   const [kycDocs, setKycDocs] = useState<{ front: File | null, back: File | null }>({ front: null, back: null });
+  const [selectedDocType, setSelectedDocType] = useState('bi');
+  const [docError, setDocError] = useState('');
 
   const { data: currencies } = useCurrencies();
   const { data: publicProfile, isLoading: isLoadingPublic } = useUserProfile(targetUserId, !isOwnProfile);
@@ -69,8 +72,7 @@ const PerfilPage: React.FC = () => {
     }
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const selectedProvince = watch('province');
   const municipalities = useMemo(() => {
     return ANGOLAN_PROVINCES.find(p => p.name === selectedProvince)?.municipalities || [];
@@ -96,13 +98,7 @@ const PerfilPage: React.FC = () => {
     );
   }
 
-  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      updateAvatar(file);
-    }
-  };
-
+  
   const onSubmit = (data: any) => {
     updateProfile(data);
   };
@@ -115,9 +111,18 @@ const PerfilPage: React.FC = () => {
     const docNumber = formData.get('doc_number') as string;
 
     if (!docNumber?.trim()) {
-      toast.error('Por favor, insira o número do documento.');
+      setDocError('Por favor, insira o número do documento.');
       return;
     }
+    if (docType === 'bi') {
+      const provinceCodes = "BE|BG|BI|CB|CC|CN|CS|CU|CE|HA|HL|IB|LA|LN|LS|ML|MO|ME|NB|UG|ZR";
+      const biPattern = new RegExp(`^\\d{9}(${provinceCodes})\\d{3}$`, 'i');
+      if (!biPattern.test(docNumber)) {
+        setDocError('Número de BI inválido. O formato deve ser: 9 dígitos, 2 letras e 3 dígitos (ex: 002367037LA033).');
+        return;
+      }
+    }
+    setDocError('');
     if (!kycDocs.front) {
       toast.error('Por favor, carregue a imagem da frente do documento.');
       return;
@@ -172,24 +177,51 @@ const PerfilPage: React.FC = () => {
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none" />
               
               <div className="relative group">
-                <Avatar className={`size-32 border-4 border-white dark:border-[#111922] shadow-xl ${isUpdatingAvatar ? 'opacity-50' : ''}`}>
+                <Avatar className={`size-32 border-4 border-white dark:border-[#111922] shadow-xl`}>
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="text-3xl bg-slate-100 dark:bg-slate-800">
                     <User className="size-16 text-slate-400" />
                   </AvatarFallback>
                 </Avatar>
-                {isUpdatingAvatar && (
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 className="size-6 text-primary animate-spin" />
-                   </div>
-                )}
                 {/* Avatar upload removed per request */}
               </div>
 
               <div className="flex flex-col justify-center items-center gap-1 mt-2">
                 <p className="text-gray-900 dark:text-white text-xl font-bold tracking-tight">{user?.full_name}</p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{user?.email}</p>
-                {/* "Alterar Foto" button removed per request */}
+              </div>
+
+              {/* Informações Extras */}
+              <div className="w-full flex flex-col gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-white/5 text-left">
+                {user?.phone && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Phone className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">{user.phone}</span>
+                  </div>
+                )}
+                {user?.province && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <MapPin className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">
+                      {user.province}{user.municipality ? `, ${user.municipality}` : ''}
+                      {user.neighborhood ? ` - ${user.neighborhood}` : ''}
+                    </span>
+                  </div>
+                )}
+                {user?.occupation && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Briefcase className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">{user.occupation}</span>
+                  </div>
+                )}
+                {(user?.preferred_give_currency || user?.preferred_want_currency) && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <ArrowRightLeft className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">
+                      Tem: <strong className="text-slate-800 dark:text-slate-200">{user.preferred_give_currency || '-'}</strong> | Quer: <strong className="text-slate-800 dark:text-slate-200">{user.preferred_want_currency || '-'}</strong>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -324,6 +356,7 @@ const PerfilPage: React.FC = () => {
                     <div className="relative group">
                       <input 
                         {...register('phone', {
+                          required: 'O número de telemóvel é obrigatório',
                           pattern: {
                             value: /^\+244\s*9\d{2}\s*\d{3}\s*\d{3}$|^\+2449\d{8}$/,
                             message: 'O número deve ser angolano (ex: +244 9XX XXX XXX)'
@@ -345,8 +378,8 @@ const PerfilPage: React.FC = () => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Província</label>
                     <div className="relative group">
                       <select 
-                        {...register('province')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none" 
+                        {...register('province', { required: 'A província é obrigatória' })}
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.province ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none`} 
                       >
                         <option value="">Selecione...</option>
                         {ANGOLAN_PROVINCES.map(p => (
@@ -357,15 +390,18 @@ const PerfilPage: React.FC = () => {
                         <Map className="size-4" />
                       </div>
                     </div>
+                    {errors.province && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.province.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Município</label>
                     <div className="relative group">
                       <select 
-                        {...register('municipality')}
+                        {...register('municipality', { required: 'O município é obrigatório' })}
                         disabled={!selectedProvince}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none disabled:opacity-50" 
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.municipality ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none disabled:opacity-50`} 
                       >
                         <option value="">Selecione...</option>
                         {municipalities.map(m => (
@@ -376,57 +412,72 @@ const PerfilPage: React.FC = () => {
                         <MapPin className="size-4" />
                       </div>
                     </div>
+                    {errors.municipality && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.municipality.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Bairro / Rua</label>
                     <div className="relative group">
                       <input 
-                        {...register('neighborhood')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                        {...register('neighborhood', { required: 'O bairro/rua é obrigatório' })}
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.neighborhood ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
                         placeholder="ex: Bairro Alvalade, Rua X"
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <Home className="size-4" />
                       </div>
                     </div>
+                    {errors.neighborhood && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.neighborhood.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Ocupação / Profissão</label>
                     <div className="relative group">
                       <input 
-                        {...register('occupation')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
+                        {...register('occupation', { required: 'A ocupação/profissão é obrigatória' })}
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.occupation ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
                       />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                         <Briefcase className="size-4" />
                       </div>
                     </div>
+                    {errors.occupation && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.occupation.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Ter</label>
                     <select 
-                      {...register('preferred_give_currency')}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none"
+                      {...register('preferred_give_currency', { required: 'Selecione uma moeda' })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.preferred_give_currency ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none`}
                     >
                       {Array.isArray(currencies) && currencies.map((c: any) => (
                         <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
                       ))}
                     </select>
+                    {errors.preferred_give_currency && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.preferred_give_currency.message as string}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Precisar</label>
                     <select 
-                      {...register('preferred_want_currency')}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none"
+                      {...register('preferred_want_currency', { required: 'Selecione uma moeda' })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.preferred_want_currency ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none`}
                     >
                       {Array.isArray(currencies) && currencies.map((c: any) => (
                         <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
                       ))}
                     </select>
+                    {errors.preferred_want_currency && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.preferred_want_currency.message as string}</p>
+                    )}
                   </div>
 
                   {user?.is_staff !== true && (
@@ -434,11 +485,14 @@ const PerfilPage: React.FC = () => {
                       <div className="sm:col-span-2 flex flex-col">
                         <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Sobre Mim (Biografia)</label>
                     <textarea 
-                      {...register('bio')}
+                      {...register('bio', { required: 'A biografia é obrigatória' })}
                       rows={4}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none resize-none"
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.bio ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none resize-none`}
                       placeholder="Conte um pouco sobre suas experiências em trocas P2P..."
                     />
+                    {errors.bio && (
+                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.bio.message as string}</p>
+                    )}
                   </div>
 
                   <div className="sm:col-span-2 flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-xl">
@@ -477,7 +531,7 @@ const PerfilPage: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-center sm:text-right">
-                         <p className="text-2xl font-black text-primary uppercase tracking-tighter">{stats.rating >= 4.5 ? 'Elite' : user?.is_verified ? 'Verificado' : 'Novato'}</p>
+                         <p className="text-2xl font-black text-primary uppercase tracking-tighter">{stats.rating >= 4.5 ? 'Elite' : user?.verification_status === 'approved' ? 'Verificado' : 'Novato'}</p>
                          <p className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Status da Rede</p>
                       </div>
                     </div>
@@ -589,7 +643,11 @@ const PerfilPage: React.FC = () => {
                       <select 
                         name="doc_type" 
                         required 
-                        defaultValue="bi"
+                        value={selectedDocType}
+                        onChange={(e) => {
+                          setSelectedDocType(e.target.value);
+                          setDocError('');
+                        }}
                         className="w-full h-12 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary/50 transition-all appearance-none"
                       >
                         <option value="bi">Bilhete de Identidade (BI)</option>
@@ -604,8 +662,25 @@ const PerfilPage: React.FC = () => {
                         name="doc_number"
                         required
                         placeholder="ex: 000000000LA000"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (selectedDocType === 'bi' && val.length > 0) {
+                            const provinceCodes = "BE|BG|BI|CB|CC|CN|CS|CU|CE|HA|HL|IB|LA|LN|LS|ML|MO|ME|NB|UG|ZR";
+                            const biPattern = new RegExp(`^\\d{9}(${provinceCodes})\\d{3}$`, 'i');
+                            if (!biPattern.test(val)) {
+                              setDocError('Número de BI inválido ou província incorreta.');
+                            } else {
+                              setDocError('');
+                            }
+                          } else {
+                            setDocError('');
+                          }
+                        }}
                         className="w-full h-12 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary/50 transition-all"
                       />
+                      {docError && (
+                        <p className="text-[10px] font-bold text-rose-500 ml-1 uppercase tracking-tight">{docError}</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

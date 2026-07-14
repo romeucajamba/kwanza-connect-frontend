@@ -13,7 +13,7 @@ const AdminDashboardPage: React.FC = () => {
 
   const chartData = useMemo(() => {
     const topCurrencies = marketStats?.top_currencies || [];
-    return topCurrencies.map(c => ({
+    return topCurrencies.map((c: any) => ({
       name: c.code,
       Ofertas: c.count,
     }));
@@ -160,7 +160,7 @@ const AdminDashboardPage: React.FC = () => {
                       itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                     />
                     <Bar dataKey="Ofertas" radius={[6, 6, 0, 0]} maxBarSize={60}>
-                      {chartData.map((entry, index) => (
+                      {chartData.map((_entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Bar>

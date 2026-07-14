@@ -1,7 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Activity, ShieldAlert, Clock, User, FileText, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
+import { Activity, ShieldAlert, Clock, User, FileText, RefreshCw } from 'lucide-react';
 import { adminService } from '@/services/admin.service';
 import { adminKeys } from '@/services/admin.hooks';
 import { Pagination } from '@components/ui/Pagination';
@@ -9,7 +8,7 @@ import { Pagination } from '@components/ui/Pagination';
 const AdminLogsPage: React.FC = () => {
   const [page, setPage] = React.useState(1);
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: adminKeys.logs(page),
     queryFn: () => adminService.getAuditLogs(page),
   });

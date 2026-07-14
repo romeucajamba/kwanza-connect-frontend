@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams, useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +10,6 @@ import {
   ArrowLeft, 
   ChevronRight, 
   RefreshCcw, 
-  CheckCircle2, 
   ShieldCheck,
   Eye,
   EyeOff
@@ -35,11 +34,9 @@ type ForgotFormData = z.infer<typeof forgotSchema>;
 type ResetFormData = z.infer<typeof resetSchema>;
 
 const ForgotPasswordPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const { token: pathToken } = useParams<{ token: string }>();
+
   const navigate = useNavigate();
-  const token = searchParams.get('token') || pathToken;
-  
+    
   const [step, setStep] = useState<'request' | 'reset'>('request');
   const [userEmail, setUserEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);

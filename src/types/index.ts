@@ -156,6 +156,10 @@ export interface DashboardStats {
   transaction_count: number;
   active_offers: number;
   rates: ExchangeRate[];
+  top_currencies?: any[];
+  available_currencies?: any[];
+  daily_active_traders?: number;
+  successful_deals?: number;
 }
 
 export type LogSeverity = 'critical' | 'warning' | 'system' | 'info';

@@ -7,9 +7,9 @@ export interface AdminUser {
   email: string;
   full_name: string;
   phone: string;
-  is_active: bool;
-  is_staff: bool;
-  is_verified: bool;
+  is_active: boolean;
+  is_staff: boolean;
+  is_verified: boolean;
   verification_status: string;
   date_joined: string;
   identity_document?: {
