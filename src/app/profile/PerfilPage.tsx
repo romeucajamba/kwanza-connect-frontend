@@ -32,6 +32,7 @@ import { useForm } from 'react-hook-form';
 import { getAvatarUrl } from '@lib/media';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SmartCameraModal } from './components/SmartCameraModal';
 
 const PerfilPage: React.FC = () => {
   const { id: profileId } = useParams<{ id: string }>();
@@ -48,6 +49,7 @@ const PerfilPage: React.FC = () => {
     const { mutate: submitKYC, isPending: isSubmittingKYC } = useSubmitKYC();
 
   const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [kycDocs, setKycDocs] = useState<{ front: File | null, back: File | null }>({ front: null, back: null });
   const [selectedDocType, setSelectedDocType] = useState('bi');
   const [docError, setDocError] = useState('');
@@ -158,6 +160,22 @@ const PerfilPage: React.FC = () => {
 
   const avatarUrl = getAvatarUrl(user?.avatar, user?.full_name);
 
+  const handleCaptureAvatar = (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    // Convert to any to bypass TS type error since updateProfile accepts FormData directly in the hook implementation
+    updateProfile(formData as any, {
+      onSuccess: () => {
+        setIsCameraOpen(false);
+        toast.success('Selfie guardada com sucesso!');
+      },
+      onError: () => {
+        toast.error('Erro ao guardar selfie. Tente novamente.');
+      }
+    });
+  };
+
   return (
     <div className="w-full mx-auto max-w-7xl pb-12">
       <div className="flex flex-col gap-8">
@@ -183,7 +201,18 @@ const PerfilPage: React.FC = () => {
                     <User className="size-16 text-slate-400" />
                   </AvatarFallback>
                 </Avatar>
-                {/* Avatar upload removed per request */}
+                
+                {/* Botão da Selfie */}
+                {isOwnProfile && (
+                  <button 
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="absolute bottom-0 right-0 size-10 bg-primary text-white rounded-full flex items-center justify-center border-4 border-white dark:border-[#111922] shadow-lg hover:scale-110 active:scale-95 transition-transform"
+                    title="Tirar Selfie de Perfil"
+                  >
+                    <Camera className="size-4" />
+                  </button>
+                )}
               </div>
 
               <div className="flex flex-col justify-center items-center gap-1 mt-2">
