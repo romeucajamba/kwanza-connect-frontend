@@ -206,7 +206,10 @@ const PerfilPage: React.FC = () => {
                 {isOwnProfile && (
                   <button 
                     type="button"
-                    onClick={() => setIsCameraOpen(true)}
+                    onClick={() => {
+                      console.log('Botão da câmara clicado. isCameraOpen:', isCameraOpen);
+                      setIsCameraOpen(true);
+                    }}
                     className="absolute bottom-0 right-0 size-10 bg-primary text-white rounded-full flex items-center justify-center border-4 border-white dark:border-[#111922] shadow-lg hover:scale-110 active:scale-95 transition-transform"
                     title="Tirar Selfie de Perfil"
                   >

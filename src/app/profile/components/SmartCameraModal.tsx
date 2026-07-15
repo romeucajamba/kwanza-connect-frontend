@@ -59,13 +59,20 @@ export const SmartCameraModal: React.FC<SmartCameraModalProps> = ({ isOpen, onCl
           <div className="relative w-full aspect-[3/4] bg-black overflow-hidden flex items-center justify-center">
             {!imgSrc ? (
               <>
-                <Webcam
-                  audio={false}
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={{ facingMode: "user" }}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
+                  {navigator.mediaDevices ? (
+                    <Webcam
+                      audio={false}
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      videoConstraints={{ facingMode: "user" }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                      <p className="text-white text-sm font-bold">Câmara não suportada.</p>
+                      <p className="text-white/70 text-xs mt-2">Para usar a câmara, tem de aceder por HTTPS ou estar no localhost.</p>
+                    </div>
+                  )}
                 {/* Oval Overlay (Smart Mask) */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
                   <defs>
