@@ -13,7 +13,15 @@ export const adminKeys = {
   offers: (params?: Record<string, any>) => ['admin', 'offers', params] as const,
   logs: (page: number) => ['admin', 'logs', page] as const,
   currencies: () => ['admin', 'currencies'] as const,
+  health: () => ['admin', 'health'] as const,
 };
+
+export const useSystemHealth = () =>
+  useQuery({
+    queryKey: adminKeys.health(),
+    queryFn: () => adminService.getSystemHealth(),
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
 
 export const useAdminStats = () => 
   useQuery({

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminUserDetails, useVerifyKYC, useUpdateUserStatus } from '@/services/admin.hooks';
 import { ShieldCheck, ShieldAlert, Ban, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarUrl } from '@/lib/media';
 
 const AdminUserDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,9 +39,12 @@ const AdminUserDetailsPage: React.FC = () => {
         {/* Info Card */}
         <div className="bg-white dark:bg-[#111922] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-6">
           <div className="flex items-center gap-4">
-            <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-black text-2xl">
-              {user.full_name.charAt(0)}
-            </div>
+            <Avatar className="size-16 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm bg-primary/10">
+              <AvatarImage src={getAvatarUrl(user.avatar, user.full_name)} className="rounded-2xl" />
+              <AvatarFallback className="rounded-2xl bg-transparent">
+                <span className="text-primary font-black text-2xl">{user.full_name.charAt(0)}</span>
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{user.full_name}</h2>
               <p className="text-xs text-slate-500">{user.email}</p>

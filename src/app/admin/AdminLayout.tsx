@@ -16,7 +16,8 @@ import {
   ChevronLeft,
   Bell,
   X,
-  RefreshCcw
+  RefreshCcw,
+  Activity
 } from 'lucide-react';
 import { APP_ROUTES } from '@/constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -115,6 +116,7 @@ const AdminLayout: React.FC = () => {
     { to: '/admin/offers', icon: ArrowRightLeft, label: 'Ofertas' },
     { to: '/admin/currencies', icon: Coins, label: 'Moedas' },
     { to: '/admin/logs', icon: FileText, label: 'Logs de Auditoria' },
+    { to: '/admin/health', icon: Activity, label: 'Saúde do Sistema' },
     { to: '/admin/profile', icon: Settings, label: 'O Meu Perfil' },
   ];
 

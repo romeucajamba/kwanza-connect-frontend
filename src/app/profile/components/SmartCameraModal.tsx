@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, X, Loader2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 interface SmartCameraModalProps {
   isOpen: boolean;
@@ -28,12 +29,20 @@ export const SmartCameraModal: React.FC<SmartCameraModalProps> = ({ isOpen, onCl
   const confirm = async () => {
     if (!imgSrc) return;
     try {
-      const res = await fetch(imgSrc);
-      const blob = await res.blob();
+      // Safe base64 to blob conversion
+      const base64Data = imgSrc.split(',')[1];
+      const byteString = atob(base64Data);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: 'image/jpeg' });
       const file = new File([blob], 'avatar_selfie.jpg', { type: 'image/jpeg' });
       onCapture(file);
     } catch (e) {
       console.error('Error converting image:', e);
+      toast.error('Erro ao processar imagem da câmara.');
     }
   };
 
@@ -45,7 +54,7 @@ export const SmartCameraModal: React.FC<SmartCameraModalProps> = ({ isOpen, onCl
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-md bg-[#111922] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10"
+            className="relative w-full max-w-md max-h-[90vh] bg-[#111922] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10"
           >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -56,7 +65,7 @@ export const SmartCameraModal: React.FC<SmartCameraModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Camera Area */}
-          <div className="relative w-full aspect-[3/4] bg-black overflow-hidden flex items-center justify-center">
+          <div className="relative w-full flex-1 min-h-[300px] bg-black overflow-hidden flex items-center justify-center">
             {!imgSrc ? (
               <>
                   {navigator.mediaDevices ? (

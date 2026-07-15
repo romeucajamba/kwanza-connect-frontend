@@ -94,5 +94,11 @@ export const adminService = {
   seedCurrencies: async () => {
     const res = await api.post('/admin/currencies/seed/');
     return res.data;
+  },
+
+  // Health
+  getSystemHealth: async () => {
+    const res = await api.get('/admin/health/');
+    return res.data;
   }
 };

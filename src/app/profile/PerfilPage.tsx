@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactions, useUserReviews } from '@services/transactions.hooks';
-import { useUpdateProfile , useSubmitKYC, useUserProfile } from '@services/auth.hooks';
+import { useUpdateProfile , useSubmitKYC, useUserProfile, useUpdateAvatar } from '@services/auth.hooks';
 import { useCurrencies } from '@services/rates.hooks';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { useForm } from 'react-hook-form';
@@ -46,6 +46,7 @@ const PerfilPage: React.FC = () => {
   const { data: transactions } = useTransactions();
   const { data: reviews, isLoading: isLoadingReviews } = useUserReviews(targetUserId);
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutate: updateAvatar, isPending: isUpdatingAvatar } = useUpdateAvatar();
     const { mutate: submitKYC, isPending: isSubmittingKYC } = useSubmitKYC();
 
   const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
@@ -161,16 +162,13 @@ const PerfilPage: React.FC = () => {
   const avatarUrl = getAvatarUrl(user?.avatar, user?.full_name);
 
   const handleCaptureAvatar = (file: File) => {
-    const formData = new FormData();
-    formData.append('avatar', file);
-    
-    // Convert to any to bypass TS type error since updateProfile accepts FormData directly in the hook implementation
-    updateProfile(formData as any, {
+    updateAvatar(file, {
       onSuccess: () => {
         setIsCameraOpen(false);
         toast.success('Selfie guardada com sucesso!');
       },
-      onError: () => {
+      onError: (error: any) => {
+        console.error(error);
         toast.error('Erro ao guardar selfie. Tente novamente.');
       }
     });
@@ -805,6 +803,14 @@ const PerfilPage: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Camera Modal for Selfie */}
+      <SmartCameraModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCaptureAvatar}
+        isLoading={isUpdatingAvatar}
+      />
     </div>
   );
 };
