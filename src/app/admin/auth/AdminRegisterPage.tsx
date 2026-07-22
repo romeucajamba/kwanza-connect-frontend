@@ -12,7 +12,6 @@ const registerSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'Mínimo 8 caracteres'),
   password_confirm: z.string(),
-  admin_secret_key: z.string().min(1, 'Chave secreta é obrigatória'),
 }).refine(data => data.password === data.password_confirm, {
   message: "As senhas não coincidem",
   path: ["password_confirm"],
@@ -24,14 +23,16 @@ const AdminRegisterPage: React.FC = () => {
   const { mutate: registerUser, isPending } = useAdminRegister();
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [showSecret, setShowSecret] = React.useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema)
   });
 
   const onSubmit = (data: RegisterFormData) => {
-    registerUser(data);
+    registerUser({
+      ...data,
+      admin_secret_key: import.meta.env.VITE_ADMIN_SECRET_KEY,
+    });
   };
 
   return (
@@ -131,28 +132,7 @@ const AdminRegisterPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-4 mt-2 border-t border-white/5">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-amber-500 mb-2 ml-1">
-                Chave Secreta de Administração
-              </label>
-              <div className="relative">
-                <Key className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-amber-500/50" />
-                <input
-                  type={showSecret ? "text" : "password"}
-                  {...register('admin_secret_key')}
-                  className={`w-full pl-12 pr-12 py-3.5 bg-black/20 border ${errors.admin_secret_key ? 'border-red-500/50' : 'border-amber-500/30 focus:border-amber-500'} rounded-xl text-white placeholder:text-slate-600 focus:ring-1 focus:ring-amber-500 outline-none transition-all`}
-                  placeholder="Insira o código de segurança do sistema"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSecret(!showSecret)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500/50 hover:text-amber-500 transition-colors"
-                >
-                  {showSecret ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
-                </button>
-              </div>
-              {errors.admin_secret_key && <p className="mt-1.5 ml-1 text-xs font-bold text-red-500">{errors.admin_secret_key.message}</p>}
-            </div>
+
 
             <button
               type="submit"
