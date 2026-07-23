@@ -9,7 +9,6 @@ import {
   DollarSign,
   Banknote,
   ChevronDown,
-  MapPin,
   AlignLeft,
 } from 'lucide-react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
@@ -121,7 +120,6 @@ const FazerOfertaPage: React.FC = () => {
       want_amount: '',
       offer_type: 'sell',
       notes: '',
-      city: '',
     },
   });
 
@@ -147,57 +145,39 @@ const FazerOfertaPage: React.FC = () => {
     (r: any) => r.from_currency.code === give_currency_code && r.to_currency.code === want_currency_code
   )?.rate ?? 0;
 
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error('O seu navegador não suporta geolocalização.');
-      return;
-    }
-
-    setIsDetectingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-          if (!res.ok) throw new Error('Erro ao obter localização');
-          
-          const data = await res.json();
-          // Extract city, town, village, or state
-          const address = data?.address || {};
-          const cityName = address.city || address.town || address.village || address.county || address.state || address.country || (data?.display_name ? data.display_name.split(',')[0] : 'Localização Desconhecida');
-          
-          if (cityName === 'Localização Desconhecida') {
-             throw new Error('Localização não encontrada nas coordenadas.');
-          }
-          
-          setValue('city', cityName, { shouldValidate: true });
-          toast.success(`Localização detectada: ${cityName}`);
-        } catch (error) {
-          toast.error('Não foi possível determinar a cidade a partir das coordenadas.');
-        } finally {
-          setIsDetectingLocation(false);
-        }
-      },
-      (error) => {
-        setIsDetectingLocation(false);
-        toast.error('Permissão de localização negada ou indisponível.');
-      }
-    );
-  };
-
   useEffect(() => {
-    if (give_amount && marketRate > 0) {
-      const calculated = parseFloat(give_amount) * marketRate;
-      setValue('want_amount', String(Number(calculated.toFixed(4))), { shouldValidate: true });
+    if (give_amount && !isNaN(Number(give_amount))) {
+      setValue('want_amount', (Number(give_amount) * marketRate).toFixed(2), { shouldValidate: true });
     } else {
-      setValue('want_amount', '', { shouldValidate: true });
+      setValue('want_amount', '');
     }
   }, [give_amount, marketRate, setValue]);
 
-  const onSubmit: SubmitHandler<CreateOfferFormValues> = (data) => {
+  const onSubmit: SubmitHandler<CreateOfferFormValues> = async (data) => {
     // Formatar como decimal com 2 casas para garantir compatibilidade com o backend Django
     const formatDecimal = (val: string) => parseFloat(val).toFixed(2);
+
+    const getLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+          (err) => {
+            console.warn("Geolocation permission denied or timeout.", err);
+            toast.error("Localização indisponível. A oferta prosseguirá sem GPS.");
+            resolve(null);
+          },
+          { timeout: 30000, enableHighAccuracy: false }
+        );
+      });
+    };
+
+    setIsDetectingLocation(true);
+    const coords = await getLocation();
+    setIsDetectingLocation(false);
 
     createOffer(
       {
@@ -207,7 +187,8 @@ const FazerOfertaPage: React.FC = () => {
         want_amount: formatDecimal(data.want_amount),
         offer_type: data.offer_type,
         notes: data.notes,
-        city: data.city,
+        latitude: coords?.latitude || null,
+        longitude: coords?.longitude || null,
       },
       {
         onSuccess: () => {
@@ -218,7 +199,6 @@ const FazerOfertaPage: React.FC = () => {
             want_amount: '',
             offer_type: data.offer_type,
             notes: '',
-            city: '',
           });
         },
       }
@@ -332,36 +312,7 @@ const FazerOfertaPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Localização (Cidade) */}
-                <div className="md:col-span-2 space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
-                    Localização (Opcional)
-                  </label>
-                  <div className="relative group flex items-center bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-xl transition-all focus-within:border-primary pr-2">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                      <MapPin className="size-4" />
-                    </div>
-                    <input
-                      {...register('city')}
-                      type="text"
-                      placeholder="Ex: Luanda, Talatona..."
-                      className="w-full bg-transparent border-none py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-0 transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleDetectLocation}
-                      disabled={isDetectingLocation}
-                      className="shrink-0 flex items-center justify-center gap-1.5 bg-primary/10 text-primary hover:bg-primary/20 transition-colors h-8 px-3 rounded-lg text-[9px] font-bold uppercase tracking-widest disabled:opacity-50"
-                    >
-                      {isDetectingLocation ? (
-                        <RefreshCcw className="size-3 animate-spin" />
-                      ) : (
-                        <MapPin className="size-3" />
-                      )}
-                      Detectar
-                    </button>
-                  </div>
-                </div>
+                {/* Removido o campo manual de cidade. O GPS capturará durante o submit para KYC/Anti-Fraude */}
 
                 {/* Notas/Instruções */}
                 <div className="md:col-span-2 space-y-1.5">
@@ -417,9 +368,9 @@ const FazerOfertaPage: React.FC = () => {
                 disabled={isPending}
                 className="w-full h-14 bg-primary text-white rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-primary/95 disabled:opacity-50 outline-none"
               >
-                <RefreshCcw className={`size-4 ${isPending ? 'animate-spin' : 'hidden'}`} />
-                <Zap className={`size-4 ${isPending ? 'hidden' : ''}`} />
-                Finalizar &amp; Publicar no Mercado
+                <RefreshCcw className={`size-4 ${isPending || isDetectingLocation ? 'animate-spin' : 'hidden'}`} />
+                <Zap className={`size-4 ${isPending || isDetectingLocation ? 'hidden' : ''}`} />
+                {isDetectingLocation ? 'A aguardar GPS (Segurança)...' : 'Finalizar & Publicar no Mercado'}
               </button>
             </form>
           </div>

@@ -16,7 +16,7 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
 import { getAvatarUrl } from '@/lib/media';
 import { useAuthStore } from '@/store/authStore';

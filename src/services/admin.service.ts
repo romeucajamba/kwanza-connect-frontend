@@ -12,14 +12,24 @@ export interface AdminUser {
   is_verified: boolean;
   verification_status: string;
   date_joined: string;
+  avatar?: string;
+  bio?: string;
+  province?: string;
+  municipality?: string;
+  neighborhood?: string;
+  occupation?: string;
+  preferred_give_currency?: string;
+  preferred_want_currency?: string;
+  suspended_until?: string | null;
+  restricted_pages?: string[] | null;
   identity_document?: {
     id: string;
     doc_type: string;
     doc_number: string;
     status: string;
-    front_image: string;
-    back_image: string;
-    pdf_file: string;
+    front_image_url: string;
+    back_image_url: string;
+    pdf_file_url: string;
     rejection_reason: string;
     submitted_at: string;
   };
@@ -47,7 +57,7 @@ export const adminService = {
     const res = await api.get('/admin/dashboard-stats/');
     return res.data.data;
   },
-  
+
   getAuditLogs: async (page = 1) => {
     const res = await api.get('/admin/audit-logs/', { params: { page } });
     return res.data;
@@ -71,6 +81,27 @@ export const adminService = {
 
   updateUserStatus: async (userId: string, action: 'block' | 'unblock') => {
     const res = await api.post(`/admin/users/${userId}/status/`, { action });
+    return res.data;
+  },
+
+  applySanction: async (userId: string, data: { suspended_until?: string | null; restricted_pages?: string[] }) => {
+    const res = await api.post(`/admin/users/${userId}/sanction/`, data);
+    return res.data;
+  },
+
+  deleteUser: async (userId: string) => {
+    const res = await api.delete(`/admin/users/${userId}/delete/`);
+    return res.data;
+  },
+
+  // Reports
+  getReports: async (params?: Record<string, any>) => {
+    const res = await api.get('/admin/reports/', { params });
+    return res.data;
+  },
+
+  updateReportAction: async (reportId: string, action: 'review' | 'dismiss', admin_notes?: string) => {
+    const res = await api.post(`/admin/reports/${reportId}/action/`, { action, admin_notes });
     return res.data;
   },
 

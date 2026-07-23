@@ -3,6 +3,20 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Loader2 } from 'lucide-react';
 import { useSettingsStore } from '@store/authStore';
 
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white dark:bg-[#192633] p-3 rounded-lg shadow-xl border border-slate-100 dark:border-white/10">
+        <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase mb-1">{payload[0].payload.fullName}</p>
+        <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
+          {payload[0].value} {payload[0].value === 1 ? 'Troca' : 'Trocas'}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const TopLocationsChart = () => {
   const { data: locations, isLoading } = useTopLocations();
   const theme = useSettingsStore((s) => s.theme);
@@ -45,20 +59,6 @@ export const TopLocationsChart = () => {
     exchanges: loc.exchanges
   }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white dark:bg-[#192633] p-3 rounded-lg shadow-xl border border-slate-100 dark:border-white/10">
-          <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase mb-1">{payload[0].payload.fullName}</p>
-          <p className="text-[10px] font-bold text-primary uppercase tracking-widest">
-            {payload[0].value} {payload[0].value === 1 ? 'Troca' : 'Trocas'}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="w-full bg-white dark:bg-[#111922]/50 rounded-2xl border border-slate-100 dark:border-white/5 p-4 md:p-6 flex flex-col mb-6">
       <div className="mb-4 flex flex-col items-start gap-1">
@@ -69,7 +69,7 @@ export const TopLocationsChart = () => {
           Áreas com maior volume de trocas concluídas na plataforma
         </p>
       </div>
-      
+
       <div className="w-full h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -77,23 +77,23 @@ export const TopLocationsChart = () => {
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
-            <XAxis 
-              dataKey="name" 
+            <XAxis
+              dataKey="name"
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fontWeight: 700, fill: textColor }}
               dy={10}
             />
-            <YAxis 
+            <YAxis
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fontWeight: 700, fill: textColor }}
               allowDecimals={false}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }} />
-            <Bar 
-              dataKey="exchanges" 
-              radius={[4, 4, 0, 0]} 
+            <Bar
+              dataKey="exchanges"
+              radius={[4, 4, 0, 0]}
               barSize={32}
             >
               {

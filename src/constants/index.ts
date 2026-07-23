@@ -36,6 +36,8 @@ export const API_ROUTES = {
     KYC_SUBMIT: '/auth/kyc/submit/',
     KYC_STATUS: '/auth/kyc/status/',
     TOKEN_REFRESH: '/auth/token/refresh/',
+    LOCATIONS: '/auth/locations/',
+    REPORT_USER: '/auth/report/',
   },
   OFFERS: {
     BASE: '/offers/',

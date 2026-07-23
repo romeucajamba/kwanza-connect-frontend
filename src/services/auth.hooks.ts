@@ -19,7 +19,7 @@ const getErrorMessage = (error: any, defaultMsg: string): string => {
   if (typeof data.message === 'string' && data.message !== 'Erro na operação.') return data.message;
   if (typeof data.error === 'string') return data.error;
   if (typeof data.detail === 'string') return data.detail;
-  
+
   if (typeof data === 'object') {
     const firstError = Object.values(data)[0];
     if (Array.isArray(firstError) && typeof firstError[0] === 'string') return firstError[0];
@@ -202,11 +202,32 @@ export const useKYCStatus = () => {
   });
 };
 
+export const useAvailableLocations = () => {
+  return useQuery({
+    queryKey: ['available-locations'],
+    queryFn: () => authService.getAvailableLocations(),
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+};
+
 export const useUserProfile = (userId: string, enabled = true) => {
   return useQuery({
     queryKey: ['user-profile', userId],
     queryFn: () => authService.getUserProfile(userId),
     enabled: enabled && !!userId,
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+};
+
+export const useSubmitReport = () => {
+  return useMutation({
+    mutationFn: (data: { reported_to_id: string; reason: string; room_id?: string }) =>
+      authService.submitReport(data),
+    onSuccess: () => {
+      toast.success('Queixa submetida com sucesso! A equipa de moderação irá analisar o caso.');
+    },
+    onError: (error: any) => {
+      toast.error(getErrorMessage(error, 'Erro ao submeter queixa.'));
+    },
   });
 };

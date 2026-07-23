@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSystemHealth } from '@/services/admin.hooks';
 import { motion } from 'framer-motion';
-import { Database, Activity, Cpu, HardDrive, MemoryStick, Server, AlertTriangle } from 'lucide-react';
+import { Database, Activity, Server, AlertTriangle } from 'lucide-react';
 
 const ProgressRing = ({ percent, color, label, valueLabel }: { percent: number, color: string, label: string, valueLabel: string }) => {
   const radius = 40;

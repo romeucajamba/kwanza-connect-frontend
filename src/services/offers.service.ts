@@ -9,7 +9,9 @@ export interface CreateOfferPayload {
   give_amount: string;
   want_amount: string;
   notes?: string;
-  city?: string;
+  offer_type: 'buy' | 'sell';
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface ExpressInterestPayload {

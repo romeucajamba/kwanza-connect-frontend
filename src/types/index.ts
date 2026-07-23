@@ -23,6 +23,10 @@ export interface User {
   is_available?: boolean;
   preferred_give_currency?: string;
   preferred_want_currency?: string;
+  suspended_until?: string | null;
+  restricted_pages?: string[] | null;
+  average_rating?: number;
+  total_reviews?: number;
 }
 
 export interface AuthResponse {

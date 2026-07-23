@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTopPaymentMethods } from '@/services/transactions.hooks';
 import { CreditCard, Inbox } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';

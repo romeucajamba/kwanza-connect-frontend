@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { useAdminStats } from '@/services/admin.hooks';
+import { useAdminStats, useAdminSeedCurrencies } from '@/services/admin.hooks';
 import { useDashboardStats } from '@/services/rates.hooks';
-import { Users, Activity, ShieldAlert, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Users, Activity, ShieldAlert, CheckCircle2, TrendingUp, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { TopPaymentMethodsChart } from '@/components/charts/TopPaymentMethodsCha
 const AdminDashboardPage: React.FC = () => {
   const { data: adminStats, isLoading: loadingAdmin } = useAdminStats();
   const { data: marketStats, isLoading: loadingMarket } = useDashboardStats();
+  const { mutate: seedCurrencies, isPending: isSeeding } = useAdminSeedCurrencies();
   const navigate = useNavigate();
 
   const chartData = useMemo(() => {
@@ -69,6 +70,23 @@ const AdminDashboardPage: React.FC = () => {
           <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Dashboard Geral</h1>
           <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">Resumo das atividades da plataforma</p>
         </div>
+        <button
+          onClick={() => seedCurrencies()}
+          disabled={isSeeding}
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-70"
+        >
+          {isSeeding ? (
+            <>
+              <Activity className="size-4 animate-spin" />
+              <span className="hidden sm:inline">A atualizar BD...</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="size-4" />
+              <span className="hidden sm:inline">Fix Base de Dados (Moedas)</span>
+            </>
+          )}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,12 +115,12 @@ const AdminDashboardPage: React.FC = () => {
       {/* Market Stats Section */}
       <div className="pt-6 border-t border-slate-200 dark:border-white/10">
         <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-6">Visão Global do Mercado</h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <TopLocationsChart />
           <TopPaymentMethodsChart />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="flex flex-col gap-2 p-6 rounded-2xl bg-white dark:bg-[#111922] border border-slate-100 dark:border-white/5 shadow-sm">
             <div className="flex items-center gap-3">
@@ -149,19 +167,19 @@ const AdminDashboardPage: React.FC = () => {
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
                       tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }}
                       dy={10}
                     />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#94a3b8', fontSize: 12 }} 
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#94a3b8', fontSize: 12 }}
                     />
-                    <Tooltip 
+                    <Tooltip
                       cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                       contentStyle={{ backgroundColor: '#111922', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
                       itemStyle={{ color: '#fff', fontWeight: 'bold' }}

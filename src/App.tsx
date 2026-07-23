@@ -36,6 +36,7 @@ import AdminRegisterPage from '@/app/admin/auth/AdminRegisterPage';
 import AdminLogsPage from '@/app/admin/AdminLogsPage';
 import AdminCurrenciesPage from '@/app/admin/AdminCurrenciesPage';
 import AdminHealthPage from '@/app/admin/AdminHealthPage';
+import AdminReportsPage from '@/app/admin/AdminReportsPage';
 
 const App: React.FC = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -98,7 +99,7 @@ const AppRoutes: React.FC<{ theme: string }> = ({ theme }) => {
         <Route path="/reset-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-        
+
         {/* Admin Auth Routes */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/cadastro" element={<AdminRegisterPage />} />
@@ -120,7 +121,7 @@ const AppRoutes: React.FC<{ theme: string }> = ({ theme }) => {
             </AnimatePresence>
           }
         />
-        
+
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -138,13 +139,14 @@ const AppRoutes: React.FC<{ theme: string }> = ({ theme }) => {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
-          
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:id" element={<AdminUserDetailsPage />} />
             <Route path="offers" element={<AdminOffersPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
             <Route path="currencies" element={<AdminCurrenciesPage />} />
             <Route path="logs" element={<AdminLogsPage />} />
             <Route path="health" element={<AdminHealthPage />} />

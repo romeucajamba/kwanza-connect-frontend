@@ -23,7 +23,7 @@ export const useConfirmTransaction = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return useMutation({
-    mutationFn: (data: { offer: string; room: string }) => 
+    mutationFn: (data: { offer: string; room: string }) =>
       transactionsService.confirmTransaction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -40,14 +40,22 @@ export const useConfirmTransaction = () => {
 export const useReviewTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment?: string }) => 
+    mutationFn: ({ id, rating, comment }: { id: string; rating: number; comment?: string }) =>
       transactionsService.reviewTransaction(id, { rating, comment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success('Avaliação submetida com sucesso!');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao submeter avaliação');
+      const respData = error.response?.data;
+      let msg = respData?.message || 'Erro ao submeter avaliação';
+      if (respData?.errors && Array.isArray(respData.errors) && respData.errors.length > 0) {
+        msg = respData.errors[0];
+      } else if (respData?.errors && typeof respData.errors === 'object') {
+        const firstKey = Object.keys(respData.errors)[0];
+        msg = `${firstKey}: ${respData.errors[firstKey]}`;
+      }
+      toast.error(msg);
     },
   });
 };

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, Mail, Lock, User, Key, ArrowRight, Activity, Eye, EyeOff } from 'lucide-react';
+import { ShieldAlert, Mail, Lock, User, ArrowRight, Activity, Eye, EyeOff } from 'lucide-react';
 import { useAdminRegister } from '@/services/admin.hooks';
 import { APP_ROUTES } from '@/constants';
 

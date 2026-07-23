@@ -18,6 +18,9 @@ export const authService = {
     formData.append('password_confirm', data.confirmPassword);
     formData.append('phone', data.phone || '');
     formData.append('country_code', 'AO');
+    if (data.province) formData.append('province', data.province);
+    if (data.municipality) formData.append('municipality', data.municipality);
+    if (data.neighborhood) formData.append('neighborhood', data.neighborhood);
 
     if (data.docType) formData.append('doc_type', data.docType);
     if (data.docNumber) formData.append('doc_number', data.docNumber);
@@ -95,11 +98,21 @@ export const authService = {
 
   getKYCStatus: async (): Promise<any> => {
     const response = await api.get(API_ROUTES.AUTH.KYC_STATUS);
-    return response.data;
+    return response.data.data;
+  },
+
+  getAvailableLocations: async (): Promise<any[]> => {
+    const response = await api.get(API_ROUTES.AUTH.LOCATIONS);
+    return response.data.data;
   },
 
   getUserProfile: async (userId: string): Promise<User> => {
     const response = await api.get(API_ROUTES.AUTH.USER_PROFILE(userId));
     return response.data.data;
+  },
+
+  submitReport: async (data: { reported_to_id: string; reason: string; room_id?: string }): Promise<any> => {
+    const response = await api.post(API_ROUTES.AUTH.REPORT_USER, data);
+    return response.data;
   },
 };
