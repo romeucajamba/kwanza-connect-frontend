@@ -251,9 +251,14 @@ const ReceberOfertaPage: React.FC = () => {
                       </Avatar>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1">
-                          <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate max-w-[80px] leading-none group-hover/profile:text-primary transition-colors">
-                            {offer.owner?.full_name || offer.owner?.email?.split('@')[0] || 'Utilizador'}
-                          </p>
+                          <div className="flex flex-col">
+                            <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase truncate max-w-[80px] leading-none group-hover/profile:text-primary transition-colors">
+                              {offer.owner?.full_name || offer.owner?.email?.split('@')[0] || 'Utilizador'}
+                            </p>
+                            {offer.owner?.username && (
+                              <p className="text-[9px] text-primary lowercase mt-0.5 max-w-[80px] truncate">@{offer.owner.username}</p>
+                            )}
+                          </div>
                           {(offer.owner?.verification_status === 'approved' || offer.owner?.is_verified) && (
                             <CheckCircle2 className="size-2.5 text-emerald-500" />
                           )}

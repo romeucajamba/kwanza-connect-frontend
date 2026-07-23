@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  username?: string;
   email: string;
   full_name: string; // API: full_name instead of firstName/lastName
   avatar?: string;   // API: avatar instead of profilePicture

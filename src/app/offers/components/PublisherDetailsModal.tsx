@@ -107,6 +107,9 @@ const PublisherDetailsModal: React.FC<PublisherDetailsModalProps> = ({ isOpen, o
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
                       {publisher.full_name || 'Utilizador KwanzaConnect'}
                     </h3>
+                    {publisher.username && (
+                      <p className="text-sm font-medium text-primary mt-1">@{publisher.username}</p>
+                    )}
 
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       {publisher.verification_status === 'approved' || publisher.is_verified ? (

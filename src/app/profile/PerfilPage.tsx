@@ -63,7 +63,7 @@ const PerfilPage: React.FC = () => {
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
     values: {
       full_name: user?.full_name || '',
-      phone: user?.phone || '',
+      phone: user?.phone ? user.phone.replace(/^\+?244\s*/, '').replace(/\s/g, '') : '',
       province: user?.province || '',
       municipality: user?.municipality || '',
       neighborhood: user?.neighborhood || '',
@@ -103,7 +103,11 @@ const PerfilPage: React.FC = () => {
 
 
   const onSubmit = (data: any) => {
-    updateProfile(data);
+    const submitData = {
+      ...data,
+      phone: `+244${data.phone.replace(/\s/g, '')}`
+    };
+    updateProfile(submitData);
   };
 
   const handleKYCSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -218,6 +222,9 @@ const PerfilPage: React.FC = () => {
 
               <div className="flex flex-col justify-center items-center gap-1 mt-2">
                 <p className="text-gray-900 dark:text-white text-xl font-bold tracking-tight">{user?.full_name}</p>
+                {user?.username && (
+                  <p className="text-primary text-xs font-black lowercase tracking-widest bg-primary/10 px-3 py-1 rounded-full mt-0.5">@{user.username}</p>
+                )}
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{user?.email}</p>
               </div>
 
@@ -258,10 +265,10 @@ const PerfilPage: React.FC = () => {
             {/* KYC Status Card */}
             {user?.is_staff !== true && (
               <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${user?.verification_status === 'approved'
-                  ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20'
-                  : user?.verification_status === 'submitted'
-                    ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
-                    : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
+                ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20'
+                : user?.verification_status === 'submitted'
+                  ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
+                  : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
                 }`}>
                 <div className={`absolute top-0 left-0 w-1.5 h-full ${user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
                   }`} />
@@ -291,10 +298,10 @@ const PerfilPage: React.FC = () => {
                   </div>
 
                   <div className={`p-4 rounded-lg border ${user?.verification_status === 'approved'
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-                      : user?.verification_status === 'submitted'
-                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
-                        : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                    : user?.verification_status === 'submitted'
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
+                      : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
                     }`}>
                     <p className="text-sm font-medium leading-relaxed">
                       {user?.verification_status === 'approved'
@@ -379,18 +386,22 @@ const PerfilPage: React.FC = () => {
                 <div className="flex flex-col">
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Número de Telefone</label>
                   <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-slate-500 font-bold text-sm select-none">
+                      +244
+                    </span>
                     <input
                       {...register('phone', {
                         required: 'O número de telemóvel é obrigatório',
                         pattern: {
-                          value: /^\+244\s*9\d{2}\s*\d{3}\s*\d{3}$|^\+2449\d{8}$/,
-                          message: 'O número deve ser angolano (ex: +244 9XX XXX XXX)'
+                          value: /^9\d{8}$/,
+                          message: 'O número de telemóvel deve ter exatamente 9 dígitos e começar por 9 (ex: 943558106)'
                         }
                       })}
-                      placeholder="+244 9XX XXX XXX"
-                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
+                      placeholder="9XX XXX XXX"
+                      maxLength={9}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl py-4 pr-4 pl-14 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                       <Edit3 className="size-4" />
                     </div>
                   </div>
@@ -715,8 +726,8 @@ const PerfilPage: React.FC = () => {
                           {kycDocs.front && <span className="text-emerald-500 text-[8px]">✓</span>}
                         </label>
                         <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${kycDocs.front
-                            ? 'border-emerald-500/50 bg-emerald-500/5'
-                            : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
+                          ? 'border-emerald-500/50 bg-emerald-500/5'
+                          : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
                           }`}>
                           {kycDocs.front ? (
                             <>
@@ -746,8 +757,8 @@ const PerfilPage: React.FC = () => {
                           {kycDocs.back && <span className="text-emerald-500 text-[8px]">✓</span>}
                         </label>
                         <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${kycDocs.back
-                            ? 'border-emerald-500/50 bg-emerald-500/5'
-                            : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
+                          ? 'border-emerald-500/50 bg-emerald-500/5'
+                          : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
                           }`}>
                           {kycDocs.back ? (
                             <>
