@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { useAdminReports, useAdminReportAction, useUpdateUserStatus, useAdminSuspendUser, useAdminDeleteUser } from '@/services/admin.hooks';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@lib/axios';
+import { useAdminReports, useAdminReportAction, useUpdateUserStatus, useAdminSuspendUser, useAdminDeleteUser, useAdminReportDetail, useAdminLiftSuspension } from '@/services/admin.hooks';
 import {
     CheckCircle2, XCircle, AlertTriangle, Eye, X, MessageSquare,
-    User as UserIcon, Ban, Clock, Trash2, ShieldCheck
+    User as UserIcon, Ban, Clock, Trash2, ShieldCheck, ArrowRightLeft
 } from 'lucide-react';
 import { Pagination } from '@components/ui/Pagination';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
@@ -30,25 +28,21 @@ type ReportRecord = {
 
 type ConfirmAction =
     | { type: 'block'; userId: string; userName: string }
-    | { type: 'suspend'; userId: string; userName: string }
+    | { type: 'suspend'; userId: string; userName: string; days: 1 | 2 | 3 | 4 | 7 }
     | { type: 'delete'; userId: string; userName: string }
     | null;
 
-// P2P pages restricted during a 1-week suspension
-const SUSPENDED_PAGES = ['/trocas', '/mensagens', '/historico', '/minhas-ofertas', '/meus-interesses'];
+// Duration options for suspension
+const SUSPENSION_OPTIONS: { label: string; days: 1 | 2 | 3 | 4 | 7 }[] = [
+    { label: '1 dia', days: 1 },
+    { label: '2 dias', days: 2 },
+    { label: '3 dias', days: 3 },
+    { label: '4 dias', days: 4 },
+    { label: '1 semana', days: 7 },
+];
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-const useRoomMessages = (roomId: string | null) =>
-    useQuery({
-        queryKey: ['admin-room-messages', roomId],
-        queryFn: async () => {
-            const res = await api.get(`/chat/rooms/${roomId}/messages/`);
-            return (res.data.data || res.data.results || []) as any[];
-        },
-        enabled: !!roomId,
-        staleTime: 1000 * 60,
-    });
 
 // ─── Confirmation Modal ───────────────────────────────────────────────────────
 
@@ -75,8 +69,8 @@ const ConfirmActionModal = ({
         },
         suspend: {
             icon: <Clock className="size-6 text-amber-500" />,
-            title: 'Suspender por 1 Semana',
-            desc: `"${action.userName}" perderá acesso a: Trocas P2P, Chat, Histórico, Minhas Ofertas e Meus Interesses durante 7 dias.`,
+            title: `Suspender por ${action.type === 'suspend' ? SUSPENSION_OPTIONS.find(o => o.days === action.days)?.label : ''} `,
+            desc: `"${action.userName}" poderá fazer login mas perderá acesso a: Trocas P2P, Chat, Conversão, Câmbio, Histórico, Ofertas e Interesses durante esse período.`,
             confirmLabel: 'Confirmar Suspensão',
             color: 'bg-amber-500 hover:bg-amber-600',
         },
@@ -132,14 +126,19 @@ const ReportDetailModal = ({
     onReportAction: (action: 'review' | 'dismiss') => void;
     isActing: boolean;
 }) => {
-    const { data: messages, isLoading: loadingMsgs } = useRoomMessages(report.room_id);
+    const { data: detail, isLoading: loadingDetail } = useAdminReportDetail(report.id);
+    const messages: any[] = detail?.messages ?? [];
+    const transaction: any = detail?.transaction ?? null;
+    const loadingMsgs = loadingDetail;
     const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
+    const [suspendDays, setSuspendDays] = useState<1 | 2 | 3 | 4 | 7>(1);
 
     const { mutate: blockUser, isPending: isBlocking } = useUpdateUserStatus();
     const { mutate: suspendUser, isPending: isSuspending } = useAdminSuspendUser();
     const { mutate: deleteUser, isPending: isDeleting } = useAdminDeleteUser();
+    const { mutate: liftSuspension, isPending: isLifting } = useAdminLiftSuspension();
 
-    const isMutating = isBlocking || isSuspending || isDeleting;
+    const isMutating = isBlocking || isSuspending || isDeleting || isLifting;
 
     const handleConfirm = () => {
         if (!confirmAction) return;
@@ -147,13 +146,15 @@ const ReportDetailModal = ({
         if (confirmAction.type === 'block') {
             blockUser({ userId: confirmAction.userId, action: 'block' }, cb);
         } else if (confirmAction.type === 'suspend') {
-            suspendUser({ userId: confirmAction.userId, days: 7, pages: SUSPENDED_PAGES }, cb);
+            suspendUser({ userId: confirmAction.userId, days: confirmAction.days }, cb);
         } else if (confirmAction.type === 'delete') {
             deleteUser(confirmAction.userId, cb);
         }
     };
 
     const reportedUser = report.reported_to;
+    const reportedIsBlocked = reportedUser && detail?.reported_is_active === false;
+    const reportedIsSuspended = reportedUser && detail?.reported_suspended_until && !isPast(new Date(detail.reported_suspended_until));
 
     return (
         <>
@@ -240,31 +241,77 @@ const ReportDetailModal = ({
 
                         {/* Moderation Actions on the reported user */}
                         {reportedUser && (
-                            <div className="rounded-xl border border-slate-100 dark:border-white/5 p-4">
-                                <div className="flex items-center gap-2 mb-3">
+                            <div className="rounded-xl border border-slate-100 dark:border-white/5 p-4 space-y-3">
+                                <div className="flex items-center gap-2 mb-1">
                                     <ShieldCheck className="size-4 text-slate-400" />
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                                         Sanções sobre o Arguido
                                     </span>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <button
-                                        onClick={() => setConfirmAction({ type: 'block', userId: reportedUser.id, userName: reportedUser.full_name })}
-                                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase hover:bg-rose-500/20 transition-colors"
-                                    >
-                                        <Ban className="size-3" /> Bloquear Conta
-                                    </button>
-                                    <button
-                                        onClick={() => setConfirmAction({ type: 'suspend', userId: reportedUser.id, userName: reportedUser.full_name })}
-                                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase hover:bg-amber-500/20 transition-colors"
-                                    >
-                                        <Clock className="size-3" /> Suspender 1 Semana
-                                    </button>
+
+                                {/* Suspensão — dropdown + botão */}
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500">Suspensão de acesso</p>
+                                    {reportedIsSuspended ? (
+                                        <button
+                                            onClick={() => liftSuspension(reportedUser.id)}
+                                            disabled={isLifting}
+                                            className="w-full inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                        >
+                                            <CheckCircle2 className="size-3" /> Terminar Suspensão
+                                        </button>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={suspendDays}
+                                                onChange={(e) => setSuspendDays(Number(e.target.value) as 1 | 2 | 3 | 4 | 7)}
+                                                className="flex-1 bg-white dark:bg-[#0d1520] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-amber-500/50"
+                                            >
+                                                {SUSPENSION_OPTIONS.map(opt => (
+                                                    <option key={opt.days} value={opt.days}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                onClick={() => setConfirmAction({ type: 'suspend', userId: reportedUser.id, userName: reportedUser.full_name, days: suspendDays })}
+                                                disabled={isMutating || reportedIsBlocked === true}
+                                                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase hover:bg-amber-500/20 transition-colors disabled:opacity-40"
+                                            >
+                                                <Clock className="size-3" /> Suspender
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Bloqueio */}
+                                <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-rose-500">Bloqueio de conta</p>
+                                    {reportedIsBlocked ? (
+                                        <button
+                                            onClick={() => blockUser({ userId: reportedUser.id, action: 'unblock' })}
+                                            disabled={isBlocking}
+                                            className="w-full inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                        >
+                                            <CheckCircle2 className="size-3" /> Desbloquear Conta
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => setConfirmAction({ type: 'block', userId: reportedUser.id, userName: reportedUser.full_name })}
+                                            disabled={isMutating}
+                                            className="w-full inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                                        >
+                                            <Ban className="size-3" /> Bloquear Conta
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Eliminação */}
+                                <div className="pt-2 border-t border-slate-100 dark:border-white/5">
                                     <button
                                         onClick={() => setConfirmAction({ type: 'delete', userId: reportedUser.id, userName: reportedUser.full_name })}
-                                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-red-600/10 text-red-600 text-[10px] font-black uppercase hover:bg-red-600/20 transition-colors"
+                                        disabled={isMutating}
+                                        className="w-full inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg bg-red-600/10 text-red-600 text-[10px] font-black uppercase hover:bg-red-600/20 transition-colors disabled:opacity-50"
                                     >
-                                        <Trash2 className="size-3" /> Eliminar Conta
+                                        <Trash2 className="size-3" /> Eliminar Conta Permanentemente
                                     </button>
                                 </div>
                             </div>
@@ -298,10 +345,10 @@ const ReportDetailModal = ({
                                                             <span className="text-[10px] font-black text-slate-500">{msg.sender?.full_name}</span>
                                                         </div>
                                                         <div className={`max-w-[75%] px-3 py-2 rounded-xl text-xs ${isReporter
-                                                                ? 'bg-white dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-tl-sm border border-slate-100 dark:border-white/5'
-                                                                : 'bg-primary text-white rounded-tr-sm'
+                                                            ? 'bg-white dark:bg-white/10 text-slate-700 dark:text-slate-300 rounded-tl-sm border border-slate-100 dark:border-white/5'
+                                                            : 'bg-primary text-white rounded-tr-sm'
                                                             }`}>
-                                                            {msg.content}
+                                                            {msg.content || <span className="italic opacity-50">[ficheiro]</span>}
                                                         </div>
                                                         <span className="text-[9px] text-slate-400 px-1">
                                                             {format(new Date(msg.created_at), 'dd/MM HH:mm')}
@@ -315,6 +362,62 @@ const ReportDetailModal = ({
                                             Sem mensagens nesta conversa.
                                         </div>
                                     )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Transaction */}
+                        {transaction && (
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <ArrowRightLeft className="size-4 text-slate-400" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Transação Associada</span>
+                                </div>
+                                <div className="rounded-xl border border-slate-100 dark:border-white/5 p-4 space-y-3">
+                                    {/* Amounts */}
+                                    <div className="flex items-center justify-center gap-3">
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Deu</p>
+                                            <p className="text-base font-black text-slate-800 dark:text-white">
+                                                {parseFloat(transaction.give_amount).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                                                <span className="ml-1.5 text-xs font-bold text-slate-500">{transaction.give_currency?.code}</span>
+                                            </p>
+                                        </div>
+                                        <ArrowRightLeft className="size-4 text-slate-300 shrink-0" />
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Recebeu</p>
+                                            <p className="text-base font-black text-slate-800 dark:text-white">
+                                                {parseFloat(transaction.want_amount).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}
+                                                <span className="ml-1.5 text-xs font-bold text-slate-500">{transaction.want_currency?.code}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {/* Participants + Status */}
+                                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500 mb-1">Vendedor</p>
+                                            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{transaction.seller?.full_name ?? '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Comprador</p>
+                                            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{transaction.buyer?.full_name ?? '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Estado</p>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${transaction.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                transaction.status === 'disputed' ? 'bg-rose-500/10 text-rose-500' :
+                                                    transaction.status === 'cancelled' ? 'bg-slate-500/10 text-slate-500' :
+                                                        'bg-amber-500/10 text-amber-500'
+                                                }`}>
+                                                {transaction.status === 'completed' ? 'Concluída' :
+                                                    transaction.status === 'disputed' ? 'Em Disputa' :
+                                                        transaction.status === 'cancelled' ? 'Cancelada' : 'Pendente'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] font-bold text-slate-400">
+                                        {format(new Date(transaction.created_at), "dd MMM yyyy, HH:mm", { locale: ptBR })}
+                                    </p>
                                 </div>
                             </div>
                         )}

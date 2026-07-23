@@ -157,6 +157,13 @@ const FazerOfertaPage: React.FC = () => {
     // Formatar como decimal com 2 casas para garantir compatibilidade com o backend Django
     const formatDecimal = (val: string) => parseFloat(val).toFixed(2);
 
+    // Guarda: bloqueia submit se want_amount for zero (sem taxa de câmbio disponível)
+    const wantAmountNum = parseFloat(data.want_amount);
+    if (!wantAmountNum || wantAmountNum <= 0) {
+      toast.error('Não há taxa de câmbio disponível para este par de moedas. Tente outro par ou volte mais tarde.');
+      return;
+    }
+
     const getLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
       return new Promise((resolve) => {
         if (!navigator.geolocation) {
@@ -336,36 +343,48 @@ const FazerOfertaPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Rate Summary */}
-              <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 flex flex-col sm:flex-row items-center gap-6 group">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="size-10 rounded-xl bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                    <Calculator className="size-5" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 opacity-70">
-                      Taxa Câmbio Oferecida
-                    </p>
-                    <p className="text-lg font-black text-primary uppercase tracking-tight">
-                      1 {give_currency_code} = {exchangeRate} {want_currency_code}
-                    </p>
-                  </div>
-                </div>
-                <div className="h-10 w-px bg-slate-200 dark:bg-white/5 hidden sm:block" />
-                <div className="flex flex-col items-center sm:items-end">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-60">
-                    Referência Mercado
-                  </span>
-                  <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    ~ {marketRateDisplay.toFixed(4)}
+              {/* Aviso: sem taxa de câmbio disponível */}
+              {marketRate === 0 && give_currency_code && want_currency_code && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
+                  <span className="text-amber-500 text-base leading-none mt-0.5">⚠️</span>
+                  <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest leading-relaxed">
+                    Sem taxa de câmbio disponível para o par {give_currency_code}/{want_currency_code}. Escolha outro par de moedas ou aguarde a actualização das taxas.
                   </p>
                 </div>
-              </div>
+              )}
+
+              {/* Rate Summary */}
+              {marketRate > 0 && (
+                <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 flex flex-col sm:flex-row items-center gap-6 group">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="size-10 rounded-xl bg-white dark:bg-[#111922] shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                      <Calculator className="size-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 opacity-70">
+                        Taxa Câmbio Oferecida
+                      </p>
+                      <p className="text-lg font-black text-primary uppercase tracking-tight">
+                        1 {give_currency_code} = {exchangeRate} {want_currency_code}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-10 w-px bg-slate-200 dark:bg-white/5 hidden sm:block" />
+                  <div className="flex flex-col items-center sm:items-end">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-60">
+                      Referência Mercado
+                    </span>
+                    <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                      ~ {marketRateDisplay.toFixed(4)}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Submit — ícones com CSS show/hide para evitar crash React insertBefore */}
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || isDetectingLocation || marketRate === 0}
                 className="w-full h-14 bg-primary text-white rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-primary/95 disabled:opacity-50 outline-none"
               >
                 <RefreshCcw className={`size-4 ${isPending || isDetectingLocation ? 'animate-spin' : 'hidden'}`} />
