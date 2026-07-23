@@ -10,6 +10,7 @@ export interface CreateOfferPayload {
   want_amount: string;
   notes?: string;
   offer_type: 'buy' | 'sell';
+  payment_methods?: string[];
   latitude?: number | null;
   longitude?: number | null;
 }

@@ -226,6 +226,17 @@ const OfferCard = ({ offer }: { offer: Offer }) => {
         <span className="ml-auto opacity-60">Taxa: 1 {offer.give_currency.code} = {rate}</span>
       </div>
 
+      {/* Payment methods tags */}
+      {offer.payment_methods && offer.payment_methods.length > 0 && (
+        <div className="px-4 pb-4 flex flex-wrap gap-1.5">
+          {offer.payment_methods.map((method, idx) => (
+            <span key={idx} className="px-2 py-0.5 bg-primary/5 border border-primary/10 rounded text-[7px] font-bold text-primary uppercase tracking-widest leading-relaxed">
+              {method}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Expandir Interesses */}
       <button
         onClick={() => setExpanded((e) => !e)}

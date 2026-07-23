@@ -10,7 +10,13 @@ export const createOfferSchema = z.object({
     .min(1, 'Valor a receber é obrigatório')
     .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Valor deve ser superior a 0'),
   offer_type: z.enum(['buy', 'sell']),
-  notes: z.string().min(5, 'As instruções de pagamento são obrigatórias (mín. 5 letras)'),
+  notes: z.string().optional(),
+  payment_methods: z.array(z.enum([
+    "Multicaixa Express", "Aplicações Bancárias", "PayPay África",
+    "Unitel Money", "Afrimoney", "e-Kwanza", "AkiPaga", "Agiliza",
+    "eKumbu", "BNIX", "Wise", "Payoneer", "PayPal", "Remitly",
+    "Binance", "Bybit", "outra"
+  ])).min(1, 'Selecione pelo menos uma plataforma de pagamento.'),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
 });

@@ -59,16 +59,18 @@ export const useCreateOffer = () => {
       // Django field validation errors: { field: ["msg"] } or { detail: "msg" } or { message: "msg" }
       if (typeof data === 'string') {
         toast.error(data);
+      } else if (data.errors && typeof data.errors === 'object') {
+        // Extrair primeiros erros de campo
+        const fieldErrors = Object.entries(data.errors as Record<string, string[]>)
+          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`)
+          .join(' | ');
+        toast.error(fieldErrors || 'Erro de validação.');
       } else if (data.detail) {
         toast.error(data.detail);
       } else if (data.message) {
         toast.error(data.message);
       } else {
-        // Extrair primeiros erros de campo
-        const fieldErrors = Object.entries(data as Record<string, string[]>)
-          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`)
-          .join(' | ');
-        toast.error(fieldErrors || 'Erro ao criar oferta');
+        toast.error('Erro ao criar oferta');
       }
     },
   });

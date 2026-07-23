@@ -86,6 +86,7 @@ export interface Offer {
   spread_percentage: number;
   offer_type: 'buy' | 'sell';
   status: 'active' | 'paused' | 'closed' | 'expired';
+  payment_methods?: string[];
   is_active: boolean;
   notes?: string;
   city?: string;
