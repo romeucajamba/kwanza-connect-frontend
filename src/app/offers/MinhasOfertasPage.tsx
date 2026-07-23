@@ -16,9 +16,11 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants';
 import { getAvatarUrl } from '@/lib/media';
+import { useAuthStore } from '@/store/authStore';
+import toast from 'react-hot-toast';
 import {
   useMyOffers,
   usePauseOffer,
@@ -253,6 +255,8 @@ const OfferCard = ({ offer }: { offer: Offer }) => {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const MinhasOfertasPage: React.FC = () => {
   const { data: offers, isLoading } = useMyOffers();
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col gap-6 w-full pb-10">
@@ -266,13 +270,19 @@ const MinhasOfertasPage: React.FC = () => {
             Gira as tuas ofertas P2P publicadas.
           </p>
         </div>
-        <Link
-          to={APP_ROUTES.P2P_POST}
+        <button
+          onClick={() => {
+            if (user?.verification_status !== 'approved') {
+              toast.error('A sua conta precisa ser aprovada pelo administrador para publicar ofertas.');
+              return;
+            }
+            navigate(APP_ROUTES.P2P_POST);
+          }}
           className="flex items-center justify-center gap-2 bg-primary text-white font-bold uppercase text-[10px] tracking-widest px-6 h-10 rounded-lg hover:bg-primary/95 transition-all shadow-md shadow-primary/20"
         >
           <PlusCircle className="size-3.5" />
           Nova Oferta
-        </Link>
+        </button>
       </div>
 
       {/* Content */}
@@ -287,12 +297,18 @@ const MinhasOfertasPage: React.FC = () => {
           <p className="text-[9px] text-slate-400 font-medium mt-1 opacity-60">
             Ainda não publicaste nenhuma oferta.
           </p>
-          <Link
-            to={APP_ROUTES.P2P_POST}
+          <button
+            onClick={() => {
+              if (user?.verification_status !== 'approved') {
+                toast.error('A sua conta precisa ser aprovada pelo administrador para publicar ofertas.');
+                return;
+              }
+              navigate(APP_ROUTES.P2P_POST);
+            }}
             className="mt-5 flex items-center gap-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest px-4 h-9 rounded-lg hover:bg-primary/95 transition-all shadow-md shadow-primary/20"
           >
             <PlusCircle className="size-3" /> Criar Primeira Oferta
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

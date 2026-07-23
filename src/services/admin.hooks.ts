@@ -11,11 +11,20 @@ export const adminKeys = {
   users: (params?: Record<string, any>) => ['admin', 'users', params] as const,
   userDetails: (id: string) => ['admin', 'users', id] as const,
   offers: (params?: Record<string, any>) => ['admin', 'offers', params] as const,
+  reports: (params?: Record<string, any>) => ['admin', 'reports', params] as const,
   logs: (page: number) => ['admin', 'logs', page] as const,
   currencies: () => ['admin', 'currencies'] as const,
+  health: () => ['admin', 'health'] as const,
 };
 
-export const useAdminStats = () => 
+export const useSystemHealth = () =>
+  useQuery({
+    queryKey: adminKeys.health(),
+    queryFn: () => adminService.getSystemHealth(),
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
+
+export const useAdminStats = () =>
   useQuery({
     queryKey: adminKeys.stats(),
     queryFn: () => adminService.getStats(),
@@ -43,7 +52,7 @@ export const useAdminOffers = (params?: Record<string, any>) =>
 export const useVerifyKYC = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, action, reason }: { userId: string, action: 'approve' | 'reject', reason?: string }) => 
+    mutationFn: ({ userId, action, reason }: { userId: string, action: 'approve' | 'reject', reason?: string }) =>
       adminService.updateKYC(userId, action, reason),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
@@ -57,7 +66,7 @@ export const useVerifyKYC = () => {
 export const useUpdateUserStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, action }: { userId: string, action: 'block' | 'unblock' }) => 
+    mutationFn: ({ userId, action }: { userId: string, action: 'block' | 'unblock' }) =>
       adminService.updateUserStatus(userId, action),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
@@ -68,10 +77,77 @@ export const useUpdateUserStatus = () => {
   });
 };
 
+export const useAdminApplySanction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string, data: { suspended_until?: string | null; restricted_pages?: string[] } }) =>
+      adminService.applySanction(userId, data),
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      toast.success('Sanções aplicadas com sucesso.');
+    },
+    onError: () => toast.error('Erro ao aplicar sanções.')
+  });
+};
+
+export const useAdminSuspendUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, days, pages }: { userId: string; days: number; pages: string[] }) => {
+      const until = new Date();
+      until.setDate(until.getDate() + days);
+      return adminService.applySanction(userId, {
+        suspended_until: until.toISOString(),
+        restricted_pages: pages,
+      });
+    },
+    onSuccess: (_, { userId }) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
+      toast.success('Utilizador suspenso por 1 semana.');
+    },
+    onError: () => toast.error('Erro ao suspender o utilizador.')
+  });
+};
+
+export const useAdminDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => adminService.deleteUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
+      toast.success('Conta eliminada com sucesso.');
+    },
+    onError: () => toast.error('Erro ao eliminar conta.')
+  });
+};
+
+export const useAdminReports = (params?: Record<string, any>) =>
+  useQuery({
+    queryKey: adminKeys.reports(params),
+    queryFn: () => adminService.getReports(params),
+  });
+
+export const useAdminReportAction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ reportId, action, admin_notes }: { reportId: string, action: 'review' | 'dismiss', admin_notes?: string }) =>
+      adminService.updateReportAction(reportId, action, admin_notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
+      toast.success('Queixa atualizada com sucesso.');
+    },
+    onError: () => toast.error('Erro ao atualizar queixa.')
+  });
+};
+
 export const useAdminUpdateOfferStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ offerId, action }: { offerId: string, action: 'close' | 'pause' }) => 
+    mutationFn: ({ offerId, action }: { offerId: string, action: 'close' | 'pause' }) =>
       adminService.updateOfferStatus(offerId, action),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.offers() });
@@ -135,14 +211,14 @@ export const useAdminRegister = () => {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
         if (Array.isArray(errors)) {
-           msg = errors[0];
+          msg = errors[0];
         } else {
-           const firstKey = Object.keys(errors)[0];
-           if (firstKey) {
-              const fieldError = Array.isArray(errors[firstKey]) ? errors[firstKey][0] : errors[firstKey];
-              const fieldName = firstKey === 'full_name' ? 'Nome' : firstKey === 'password' ? 'Senha' : firstKey;
-              msg = `${fieldName}: ${fieldError}`;
-           }
+          const firstKey = Object.keys(errors)[0];
+          if (firstKey) {
+            const fieldError = Array.isArray(errors[firstKey]) ? errors[firstKey][0] : errors[firstKey];
+            const fieldName = firstKey === 'full_name' ? 'Nome' : firstKey === 'password' ? 'Senha' : firstKey;
+            msg = `${fieldName}: ${fieldError}`;
+          }
         }
       }
       toast.error(msg);

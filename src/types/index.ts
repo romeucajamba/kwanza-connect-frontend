@@ -23,6 +23,10 @@ export interface User {
   is_available?: boolean;
   preferred_give_currency?: string;
   preferred_want_currency?: string;
+  suspended_until?: string | null;
+  restricted_pages?: string[] | null;
+  average_rating?: number;
+  total_reviews?: number;
 }
 
 export interface AuthResponse {
@@ -156,6 +160,10 @@ export interface DashboardStats {
   transaction_count: number;
   active_offers: number;
   rates: ExchangeRate[];
+  top_currencies?: any[];
+  available_currencies?: any[];
+  daily_active_traders?: number;
+  successful_deals?: number;
 }
 
 export type LogSeverity = 'critical' | 'warning' | 'system' | 'info';

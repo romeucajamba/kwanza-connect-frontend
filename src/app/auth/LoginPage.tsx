@@ -359,7 +359,6 @@ const LoginPage: React.FC = () => {
                              className="w-full h-11 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                           >
                              <option value="bi">Bilhete de Identidade</option>
-                             <option value="passport">Passaporte</option>
                           </select>
                         </div>
 
@@ -375,6 +374,11 @@ const LoginPage: React.FC = () => {
                               placeholder="000123LA045"
                             />
                           </div>
+                          {registerForm.formState.errors.docNumber && (
+                            <p className="text-[9px] font-bold text-rose-500 ml-1 mt-1 uppercase tracking-widest leading-relaxed">
+                              {registerForm.formState.errors.docNumber.message}
+                            </p>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">

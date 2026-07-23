@@ -9,13 +9,13 @@ import {
   DollarSign,
   Banknote,
   ChevronDown,
-  MapPin,
   AlignLeft,
 } from 'lucide-react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createOfferSchema, type CreateOfferFormValues } from '@/schemas';
 import { useCreateOffer } from '@/services/offers.hooks';
+import toast from 'react-hot-toast';
 import { useCurrencies, useExchangeRates } from '@/services/rates.hooks';
 
 // ─── CurrencySelect ───────────────────────────────────────────────────────────
@@ -102,6 +102,7 @@ const FazerOfertaPage: React.FC = () => {
   const { data: currencies } = useCurrencies();
   const { data: rates } = useExchangeRates();
   const { mutate: createOffer, isPending } = useCreateOffer();
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   const {
     register,
@@ -119,7 +120,6 @@ const FazerOfertaPage: React.FC = () => {
       want_amount: '',
       offer_type: 'sell',
       notes: '',
-      city: '',
     },
   });
 
@@ -145,9 +145,39 @@ const FazerOfertaPage: React.FC = () => {
     (r: any) => r.from_currency.code === give_currency_code && r.to_currency.code === want_currency_code
   )?.rate ?? 0;
 
-  const onSubmit: SubmitHandler<CreateOfferFormValues> = (data) => {
+  useEffect(() => {
+    if (give_amount && !isNaN(Number(give_amount))) {
+      setValue('want_amount', (Number(give_amount) * marketRate).toFixed(2), { shouldValidate: true });
+    } else {
+      setValue('want_amount', '');
+    }
+  }, [give_amount, marketRate, setValue]);
+
+  const onSubmit: SubmitHandler<CreateOfferFormValues> = async (data) => {
     // Formatar como decimal com 2 casas para garantir compatibilidade com o backend Django
     const formatDecimal = (val: string) => parseFloat(val).toFixed(2);
+
+    const getLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+          (err) => {
+            console.warn("Geolocation permission denied or timeout.", err);
+            toast.error("Localização indisponível. A oferta prosseguirá sem GPS.");
+            resolve(null);
+          },
+          { timeout: 30000, enableHighAccuracy: false }
+        );
+      });
+    };
+
+    setIsDetectingLocation(true);
+    const coords = await getLocation();
+    setIsDetectingLocation(false);
 
     createOffer(
       {
@@ -155,8 +185,10 @@ const FazerOfertaPage: React.FC = () => {
         want_currency_code: data.want_currency_code,
         give_amount: formatDecimal(data.give_amount),
         want_amount: formatDecimal(data.want_amount),
+        offer_type: data.offer_type,
         notes: data.notes,
-        city: data.city,
+        latitude: coords?.latitude || null,
+        longitude: coords?.longitude || null,
       },
       {
         onSuccess: () => {
@@ -167,7 +199,6 @@ const FazerOfertaPage: React.FC = () => {
             want_amount: '',
             offer_type: data.offer_type,
             notes: '',
-            city: '',
           });
         },
       }
@@ -254,19 +285,21 @@ const FazerOfertaPage: React.FC = () => {
 
                 {/* Para Receber */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
-                    Para Receber
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1 flex justify-between">
+                    <span>Para Receber (Automático)</span>
+                    <span className="text-primary opacity-80">Mercado</span>
                   </label>
                   <div
-                    className={`flex items-center gap-2.5 p-4 bg-slate-50 dark:bg-[#111922] rounded-xl border transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary ${errors.want_amount ? 'border-red-400' : 'border-slate-100 dark:border-white/5'}`}
+                    className={`flex items-center gap-2.5 p-4 bg-slate-100/50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 opacity-90`}
                   >
                     <input
                       {...register('want_amount')}
                       type="number"
                       step="0.01"
                       min="0"
+                      readOnly
                       placeholder="0.00"
-                      className="flex-1 bg-transparent border-none p-0 text-xl font-black text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-200 outline-none w-full"
+                      className="flex-1 bg-transparent border-none p-0 text-xl font-black text-slate-500 dark:text-slate-400 focus:ring-0 placeholder:text-slate-300 outline-none w-full cursor-not-allowed"
                     />
                     <CurrencySelect
                       value={want_currency_code}
@@ -279,28 +312,12 @@ const FazerOfertaPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Localização da Oferta */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
-                    Localização (Cidade)
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                      <MapPin className="size-4" />
-                    </div>
-                    <input
-                      {...register('city')}
-                      type="text"
-                      placeholder="Ex: Luanda, Talatona..."
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                </div>
+                {/* Removido o campo manual de cidade. O GPS capturará durante o submit para KYC/Anti-Fraude */}
 
                 {/* Notas/Instruções */}
                 <div className="md:col-span-2 space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
-                    Notas ou Instruções de Pagamento
+                    Notas ou Instruções de Pagamento *
                   </label>
                   <div className="relative group">
                     <div className="absolute left-4 top-4 text-slate-400 group-focus-within:text-primary transition-colors">
@@ -309,10 +326,13 @@ const FazerOfertaPage: React.FC = () => {
                     <textarea
                       {...register('notes')}
                       rows={3}
-                      placeholder="Ex: Aceito transferência via Multicaixa Express ou depósito no BAI..."
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-100 dark:border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary transition-all resize-none"
+                      placeholder="Ex: Aceito transferência via Multicaixa Express, Binance ou depósito no BAI..."
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none ${errors.notes ? 'border-red-400 focus:ring-red-400' : 'border-slate-100 dark:border-white/5'}`}
                     />
                   </div>
+                  {errors.notes && (
+                    <p className="text-red-500 text-[10px] font-bold ml-1">{errors.notes.message as string}</p>
+                  )}
                 </div>
               </div>
 
@@ -348,9 +368,9 @@ const FazerOfertaPage: React.FC = () => {
                 disabled={isPending}
                 className="w-full h-14 bg-primary text-white rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:bg-primary/95 disabled:opacity-50 outline-none"
               >
-                <RefreshCcw className={`size-4 ${isPending ? 'animate-spin' : 'hidden'}`} />
-                <Zap className={`size-4 ${isPending ? 'hidden' : ''}`} />
-                Finalizar &amp; Publicar no Mercado
+                <RefreshCcw className={`size-4 ${isPending || isDetectingLocation ? 'animate-spin' : 'hidden'}`} />
+                <Zap className={`size-4 ${isPending || isDetectingLocation ? 'hidden' : ''}`} />
+                {isDetectingLocation ? 'A aguardar GPS (Segurança)...' : 'Finalizar & Publicar no Mercado'}
               </button>
             </form>
           </div>

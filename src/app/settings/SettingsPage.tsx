@@ -2,22 +2,15 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Settings, 
-  User, 
   Lock, 
   Bell, 
-  Globe, 
   ChevronRight, 
   LogOut, 
   Moon, 
   Sun, 
   Eye,
   EyeOff,
-  Smartphone, 
-  CreditCard, 
-  Activity,
   X,
-  Brain,
-  Trophy,
   ChevronLeft
 } from 'lucide-react';
 import { useSettingsStore } from '@store/authStore';

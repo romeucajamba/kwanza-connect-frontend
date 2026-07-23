@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
 import { useAdminOffers, useAdminUpdateOfferStatus } from '@/services/admin.hooks';
-import { Search, Ban, CheckCircle2, PauseCircle } from 'lucide-react';
+import { Search, Ban, CheckCircle2, PauseCircle, MapPin } from 'lucide-react';
 import { Pagination } from '@components/ui/Pagination';
 
 const AdminOffersPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  
+
   const { data: offersData, isLoading } = useAdminOffers({
     search,
     status: statusFilter,
+    page: currentPage,
   });
 
   React.useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  const totalPages = Math.ceil((offersData?.data?.length || 0) / itemsPerPage);
-  const paginatedOffers = offersData?.data?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = offersData?.pagination?.pages || 1;
+  const paginatedOffers = offersData?.data || [];
 
   const { mutate: updateOfferStatus, isPending } = useAdminUpdateOfferStatus();
 
@@ -33,20 +30,20 @@ const AdminOffersPage: React.FC = () => {
           <h1 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Ofertas no Mercado</h1>
           <p className="text-xs font-bold text-slate-500 mt-1 uppercase tracking-widest">Monitorização de ofertas P2P</p>
         </div>
-        
+
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Pesquisar por nome ou email..." 
+            <input
+              type="text"
+              placeholder="Pesquisar por nome ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none"
             />
           </div>
-          <select 
-            value={statusFilter} 
+          <select
+            value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 bg-white dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none"
           >
@@ -67,6 +64,7 @@ const AdminOffersPage: React.FC = () => {
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Criador</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Montante Oferecido</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Montante Solicitado</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Localização (GPS)</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Estado</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações de Risco</th>
               </tr>
@@ -74,11 +72,11 @@ const AdminOffersPage: React.FC = () => {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500"><span>Carregando ofertas...</span></td>
+                  <td colSpan={7} className="text-center py-8 text-sm text-slate-500"><span>Carregando ofertas...</span></td>
                 </tr>
               ) : offersData?.data?.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-sm text-slate-500"><span>Nenhuma oferta encontrada.</span></td>
+                  <td colSpan={7} className="text-center py-8 text-sm text-slate-500"><span>Nenhuma oferta encontrada.</span></td>
                 </tr>
               ) : (
                 paginatedOffers?.map((offer: any) => (
@@ -101,6 +99,21 @@ const AdminOffersPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
+                      {offer.latitude && offer.longitude ? (
+                        <a
+                          href={`https://maps.google.com/?q=${offer.latitude},${offer.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex flex-col gap-1 items-start text-emerald-600 hover:text-emerald-700 transition"
+                        >
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase"><MapPin className="size-3" /> Verificado</span>
+                          <span className="text-[9px] text-slate-400 font-mono">[{Number(offer.latitude).toFixed(6)}, {Number(offer.longitude).toFixed(6)}]</span>
+                        </a>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 italic">Desconhecida</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
                       {offer.status === 'active' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500"><CheckCircle2 className="size-3" /> Activa</span>}
                       {offer.status === 'paused' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-500"><PauseCircle className="size-3" /> Pausada</span>}
                       {offer.status === 'closed' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-slate-100 dark:bg-white/10 text-slate-500"><Ban className="size-3" /> Fechada</span>}
@@ -108,14 +121,14 @@ const AdminOffersPage: React.FC = () => {
                     <td className="px-6 py-4 text-right">
                       {offer.status === 'active' && (
                         <div className="flex justify-end gap-2">
-                          <button 
+                          <button
                             onClick={() => updateOfferStatus({ offerId: offer.id, action: 'pause' })}
                             disabled={isPending}
                             className="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
                           >
                             Pausar
                           </button>
-                          <button 
+                          <button
                             onClick={() => updateOfferStatus({ offerId: offer.id, action: 'close' })}
                             disabled={isPending}
                             className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest"
@@ -131,9 +144,9 @@ const AdminOffersPage: React.FC = () => {
             </tbody>
           </table>
           {totalPages > 1 && (
-             <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-white dark:bg-[#111922]">
-                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-             </div>
+            <div className="border-t border-slate-100 dark:border-white/5 px-4 bg-white dark:bg-[#111922]">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
           )}
         </div>
       </div>

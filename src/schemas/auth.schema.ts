@@ -28,6 +28,16 @@ export const registerSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
+}).refine((data) => {
+  if (data.docType === 'bi' && data.docNumber) {
+    const provinceCodes = "BE|BG|BI|CB|CC|CN|CS|CU|CE|HA|HL|IB|LA|LN|LS|ML|MO|ME|NB|UG|ZR";
+    const regex = new RegExp(`^\\d{9}(${provinceCodes})\\d{3}$`, 'i');
+    return regex.test(data.docNumber);
+  }
+  return true;
+}, {
+  message: "Número de BI inválido. Formato: 9 dígitos + 2 letras + 3 dígitos (ex: 002367037LA033)",
+  path: ["docNumber"],
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

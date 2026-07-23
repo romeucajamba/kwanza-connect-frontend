@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdminUserDetails, useVerifyKYC, useUpdateUserStatus } from '@/services/admin.hooks';
-import { ShieldCheck, ShieldAlert, Ban, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Ban, CheckCircle2, AlertTriangle, ArrowLeft, Anchor, FileWarning } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { getAvatarUrl } from '@/lib/media';
+import { useAdminApplySanction } from '@/services/admin.hooks';
 
 const AdminUserDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,8 +12,42 @@ const AdminUserDetailsPage: React.FC = () => {
   const { data: user, isLoading } = useAdminUserDetails(id!);
   const { mutate: updateKyc, isPending: isKycPending } = useVerifyKYC();
   const { mutate: updateStatus, isPending: isStatusPending } = useUpdateUserStatus();
+  const { mutate: applySanction, isPending: isSanctionPending } = useAdminApplySanction();
 
   const [rejectReason, setRejectReason] = useState('');
+
+  // Sanction State
+  const [suspendUntil, setSuspendUntil] = useState<string>('');
+  const [restrictedPages, setRestrictedPages] = useState<string>('');
+
+  // Sincronizar estado de sanções quando o utilizador é carregado
+  React.useEffect(() => {
+    if (user) {
+      if (user.suspended_until) {
+        // Formatar data para timezone local no formato YYYY-MM-DDTHH:mm se necessário, 
+        // ou apenas YYYY-MM-DD (dependendo do input type="date" vs type="datetime-local").
+        // Vamos usar date para simplificar.
+        const date = new Date(user.suspended_until);
+        setSuspendUntil(date.toISOString().slice(0, 16));
+      } else {
+        setSuspendUntil('');
+      }
+
+      if (user.restricted_pages && Array.isArray(user.restricted_pages)) {
+        setRestrictedPages(user.restricted_pages.join(', '));
+      } else {
+        setRestrictedPages('');
+      }
+    }
+  }, [user]);
+
+  const handleApplySanction = () => {
+    const payload: { suspended_until?: string | null; restricted_pages?: string[] } = {};
+    payload.suspended_until = suspendUntil ? new Date(suspendUntil).toISOString() : null;
+    payload.restricted_pages = restrictedPages ? restrictedPages.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+    applySanction({ userId: user!.id, data: payload });
+  };
 
   if (isLoading) return <div className="flex justify-center p-12"><span>Carregando detalhes...</span></div>;
   if (!user) return <div className="p-12 text-center"><span>Utilizador não encontrado.</span></div>;
@@ -20,7 +57,7 @@ const AdminUserDetailsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-8">
-        <button 
+        <button
           onClick={() => navigate('/admin/users')}
           className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
         >
@@ -33,13 +70,16 @@ const AdminUserDetailsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Info Card */}
         <div className="bg-white dark:bg-[#111922] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-6">
           <div className="flex items-center gap-4">
-            <div className="size-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-black text-2xl">
-              {user.full_name.charAt(0)}
-            </div>
+            <Avatar className="size-16 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm bg-primary/10">
+              <AvatarImage src={getAvatarUrl(user.avatar, user.full_name)} className="rounded-2xl" />
+              <AvatarFallback className="rounded-2xl bg-transparent">
+                <span className="text-primary font-black text-2xl">{user.full_name.charAt(0)}</span>
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{user.full_name}</h2>
               <p className="text-xs text-slate-500">{user.email}</p>
@@ -50,6 +90,30 @@ const AdminUserDetailsPage: React.FC = () => {
             <div className="flex justify-between text-sm">
               <span className="text-slate-500 font-bold">Telefone</span>
               <span className="text-slate-900 dark:text-white font-medium">{user.phone || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Província</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.province || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Município</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.municipality || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Bairro/Rua</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.neighborhood || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Ocupação</span>
+              <span className="text-slate-900 dark:text-white font-medium">{user.occupation || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Moeda (Oferece)</span>
+              <span className="text-slate-900 dark:text-white font-medium uppercase">{user.preferred_give_currency || '—'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500 font-bold">Moeda (Precisa)</span>
+              <span className="text-slate-900 dark:text-white font-medium uppercase">{user.preferred_want_currency || '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500 font-bold">Data de Registo</span>
@@ -65,10 +129,15 @@ const AdminUserDetailsPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="pt-6 border-t border-slate-100 dark:border-white/5">
+            <span className="text-slate-500 font-bold text-sm block mb-2">Biografia</span>
+            <p className="text-sm text-slate-900 dark:text-white font-medium">{user.bio || 'Sem biografia informada.'}</p>
+          </div>
+
           <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-3">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Ações de Conta</h3>
             {user.is_active ? (
-              <button 
+              <button
                 onClick={() => updateStatus({ userId: user.id, action: 'block' })}
                 disabled={isStatusPending}
                 className="w-full py-2.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors rounded-xl font-bold text-sm flex items-center justify-center gap-2"
@@ -76,7 +145,7 @@ const AdminUserDetailsPage: React.FC = () => {
                 <Ban className="size-4" /> Bloquear Utilizador
               </button>
             ) : (
-              <button 
+              <button
                 onClick={() => updateStatus({ userId: user.id, action: 'unblock' })}
                 disabled={isStatusPending}
                 className="w-full py-2.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors rounded-xl font-bold text-sm flex items-center justify-center gap-2"
@@ -84,6 +153,44 @@ const AdminUserDetailsPage: React.FC = () => {
                 <CheckCircle2 className="size-4" /> Desbloquear Utilizador
               </button>
             )}
+
+            <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-3 mt-6">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                <FileWarning className="size-3" />
+                Sanções Avançadas (Moderação)
+              </h3>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Banimento Temporário Até</label>
+                  <input
+                    type="datetime-local"
+                    value={suspendUntil}
+                    onChange={(e) => setSuspendUntil(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 px-3 py-2 rounded-xl text-xs outline-none focus:border-primary/50 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Páginas Restritas (separadas por vírgula)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /p2p/post, /mensagens"
+                    value={restrictedPages}
+                    onChange={(e) => setRestrictedPages(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 px-3 py-2 rounded-xl text-xs outline-none focus:border-primary/50 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <button
+                  onClick={handleApplySanction}
+                  disabled={isSanctionPending}
+                  className="w-full py-2.5 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Anchor className="size-4" /> Aplicar Sanções
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -121,8 +228,8 @@ const AdminUserDetailsPage: React.FC = () => {
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Parte Frontal</span>
                   <div className="aspect-[1.58] bg-slate-100 dark:bg-[#0b1117] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative group">
-                    {doc.front_image ? (
-                      <img src={`http://localhost:8000${doc.front_image}`} alt="Frente BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {doc.front_image_url ? (
+                      <img src={doc.front_image_url} alt="Frente BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-xs text-slate-400">Não disponível</div>
                     )}
@@ -131,8 +238,8 @@ const AdminUserDetailsPage: React.FC = () => {
                 <div>
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Parte Traseira</span>
                   <div className="aspect-[1.58] bg-slate-100 dark:bg-[#0b1117] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative group">
-                    {doc.back_image ? (
-                      <img src={`http://localhost:8000${doc.back_image}`} alt="Trás BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {doc.back_image_url ? (
+                      <img src={doc.back_image_url} alt="Trás BI" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="flex items-center justify-center h-full text-xs text-slate-400">Não disponível</div>
                     )}
@@ -144,23 +251,23 @@ const AdminUserDetailsPage: React.FC = () => {
                 <div className="pt-6 border-t border-slate-100 dark:border-white/5">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Ação de Avaliação</h4>
                   <div className="flex flex-col md:flex-row gap-4 items-start">
-                    <button 
+                    <button
                       onClick={() => updateKyc({ userId: user.id, action: 'approve' })}
                       disabled={isKycPending}
                       className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
                     >
                       Aprovar Documento
                     </button>
-                    
+
                     <div className="flex-1 flex gap-2 w-full">
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Motivo da rejeição (opcional)"
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
                         className="flex-1 bg-slate-50 dark:bg-[#0b1117] border border-slate-200 dark:border-white/10 px-4 rounded-xl text-sm outline-none focus:border-red-500/50"
                       />
-                      <button 
+                      <button
                         onClick={() => updateKyc({ userId: user.id, action: 'reject', reason: rejectReason })}
                         disabled={isKycPending}
                         className="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-red-500 hover:text-white transition-colors"

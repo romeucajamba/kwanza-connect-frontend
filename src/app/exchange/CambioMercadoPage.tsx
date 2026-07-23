@@ -85,12 +85,7 @@ const CambioMercadoPage: React.FC = () => {
             >
               Todos
             </button>
-            <button 
-              onClick={() => setFilter('favorites')}
-              className={`px-4 py-1.5 text-[9px] font-bold uppercase rounded-md transition-all ${filter === 'favorites' ? 'bg-white dark:bg-[#111922] text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Favoritos
-            </button>
+
           </div>
           <div className="relative w-full sm:w-64 group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-slate-300 group-focus-within:text-primary transition-colors" />

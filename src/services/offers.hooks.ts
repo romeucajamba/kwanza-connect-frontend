@@ -138,14 +138,19 @@ export const useExpressInterest = () => {
       queryClient.invalidateQueries({ queryKey: offersKeys.myInterests() });
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
       toast.success('Interesse enviado!');
-      
+
       // Se o backend já devolveu uma sala (deduplicação ou auto-aceitação), navegamos
       if (data.room) {
         navigate(`/mensagens/${data.room}`);
       }
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Erro ao enviar interesse');
+      const errs = error.response?.data?.errors;
+      if (errs && Array.isArray(errs) && errs.length > 0) {
+        toast.error(errs[0]);
+      } else {
+        toast.error(error.response?.data?.message || 'Erro ao enviar interesse');
+      }
     },
   });
 };

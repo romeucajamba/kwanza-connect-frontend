@@ -27,4 +27,14 @@ export const transactionsService = {
     const response = await api.get<ApiResponse<any[]>>(`${API_ROUTES.TRANSACTIONS.REVIEWS(userId)}`);
     return response.data.data;
   },
+
+  getTopLocations: async (): Promise<{ city: string; exchanges: number }[]> => {
+    const response = await api.get<ApiResponse<{ city: string; exchanges: number }[]>>(API_ROUTES.TRANSACTIONS.TOP_LOCATIONS);
+    return response.data.data;
+  },
+
+  getTopPaymentMethods: async (): Promise<{ method: string; count: number }[]> => {
+    const response = await api.get<ApiResponse<{ method: string; count: number }[]>>(API_ROUTES.TRANSACTIONS.TOP_PAYMENT_METHODS);
+    return response.data.data;
+  },
 };

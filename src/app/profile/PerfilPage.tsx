@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useRef } from 'react';
-import { 
+import React, { useMemo, useState } from 'react';
+import {
   ShieldCheck,
   Settings,
   Award,
@@ -16,6 +16,8 @@ import {
   MapPin,
   Map,
   Home,
+  Phone,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { ANGOLAN_PROVINCES } from '@/constants/geography';
 import toast from 'react-hot-toast';
@@ -23,19 +25,20 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTransactions, useUserReviews } from '@services/transactions.hooks';
-import { useUpdateProfile, useUpdateAvatar, useSubmitKYC, useUserProfile } from '@services/auth.hooks';
+import { useUpdateProfile, useSubmitKYC, useUserProfile, useUpdateAvatar } from '@services/auth.hooks';
 import { useCurrencies } from '@services/rates.hooks';
 import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar';
 import { useForm } from 'react-hook-form';
 import { getAvatarUrl } from '@lib/media';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SmartCameraModal } from './components/SmartCameraModal';
 
 const PerfilPage: React.FC = () => {
   const { id: profileId } = useParams<{ id: string }>();
   const currentUser = useAuthStore((s) => s.user);
   const navigate = useNavigate();
-  
+
   // Se houver um ID na URL, visualizamos o perfil de outro, caso contrário, o nosso
   const isOwnProfile = !profileId || profileId === currentUser?.id;
   const targetUserId = profileId || currentUser?.id || '';
@@ -47,11 +50,14 @@ const PerfilPage: React.FC = () => {
   const { mutate: submitKYC, isPending: isSubmittingKYC } = useSubmitKYC();
 
   const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [kycDocs, setKycDocs] = useState<{ front: File | null, back: File | null }>({ front: null, back: null });
+  const [selectedDocType, setSelectedDocType] = useState('bi');
+  const [docError, setDocError] = useState('');
 
   const { data: currencies } = useCurrencies();
   const { data: publicProfile, isLoading: isLoadingPublic } = useUserProfile(targetUserId, !isOwnProfile);
-  
+
   const user = isOwnProfile ? currentUser : publicProfile;
 
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm({
@@ -69,7 +75,6 @@ const PerfilPage: React.FC = () => {
     }
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedProvince = watch('province');
   const municipalities = useMemo(() => {
@@ -80,7 +85,7 @@ const PerfilPage: React.FC = () => {
     if (!transactions) return { count: 0, volume: 0, rating: 0 };
     const completed = transactions.filter((tx: any) => tx.status === 'completed');
     const volume = completed.reduce((acc: number, tx: any) => acc + Number(tx.give_amount || 0), 0);
-    
+
     const avgRating = reviews && reviews.length > 0
       ? reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviews.length
       : 0;
@@ -96,12 +101,6 @@ const PerfilPage: React.FC = () => {
     );
   }
 
-  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      updateAvatar(file);
-    }
-  };
 
   const onSubmit = (data: any) => {
     updateProfile(data);
@@ -110,14 +109,23 @@ const PerfilPage: React.FC = () => {
   const handleKYCSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const docType = formData.get('doc_type') as string;
     const docNumber = formData.get('doc_number') as string;
 
     if (!docNumber?.trim()) {
-      toast.error('Por favor, insira o número do documento.');
+      setDocError('Por favor, insira o número do documento.');
       return;
     }
+    if (docType === 'bi') {
+      const provinceCodes = "BE|BG|BI|CB|CC|CN|CS|CU|CE|HA|HL|IB|LA|LN|LS|ML|MO|ME|NB|UG|ZR";
+      const biPattern = new RegExp(`^\\d{9}(${provinceCodes})\\d{3}$`, 'i');
+      if (!biPattern.test(docNumber)) {
+        setDocError('Número de BI inválido. O formato deve ser: 9 dígitos, 2 letras e 3 dígitos (ex: 002367037LA033).');
+        return;
+      }
+    }
+    setDocError('');
     if (!kycDocs.front) {
       toast.error('Por favor, carregue a imagem da frente do documento.');
       return;
@@ -142,7 +150,7 @@ const PerfilPage: React.FC = () => {
       },
       onError: (error: any) => {
         const errData = error.response?.data;
-        const message = errData?.message || errData?.detail || 
+        const message = errData?.message || errData?.detail ||
           (typeof errData === 'object' ? Object.values(errData).flat().join(' | ') : null) ||
           'Erro ao enviar documentos. Verifique os ficheiros e tente novamente.';
         toast.error(message);
@@ -152,6 +160,19 @@ const PerfilPage: React.FC = () => {
 
 
   const avatarUrl = getAvatarUrl(user?.avatar, user?.full_name);
+
+  const handleCaptureAvatar = (file: File) => {
+    updateAvatar(file, {
+      onSuccess: () => {
+        setIsCameraOpen(false);
+        toast.success('Selfie guardada com sucesso!');
+      },
+      onError: (error: any) => {
+        console.error(error);
+        toast.error('Erro ao guardar selfie. Tente novamente.');
+      }
+    });
+  };
 
   return (
     <div className="w-full mx-auto max-w-7xl pb-12">
@@ -165,381 +186,439 @@ const PerfilPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-          
+
           {/* Left Column: Avatar & KYC */}
           <div className="lg:col-span-1 flex flex-col gap-8">
             <div className="flex flex-col gap-4 items-center text-center p-8 bg-white dark:bg-[#192633] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none" />
-              
+
               <div className="relative group">
-                <Avatar className={`size-32 border-4 border-white dark:border-[#111922] shadow-xl ${isUpdatingAvatar ? 'opacity-50' : ''}`}>
+                <Avatar className={`size-32 border-4 border-white dark:border-[#111922] shadow-xl`}>
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="text-3xl bg-slate-100 dark:bg-slate-800">
                     <User className="size-16 text-slate-400" />
                   </AvatarFallback>
                 </Avatar>
-                {isUpdatingAvatar && (
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 className="size-6 text-primary animate-spin" />
-                   </div>
+
+                {/* Botão da Selfie Mais Visível */}
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCameraOpen(true);
+                    }}
+                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-primary text-white rounded-full flex items-center justify-center gap-1.5 border-[3px] border-white dark:border-[#111922] shadow-xl hover:scale-105 active:scale-95 transition-transform whitespace-nowrap"
+                    title="Mudar Foto de Perfil"
+                  >
+                    <Camera className="size-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Alterar Foto</span>
+                  </button>
                 )}
-                {/* Avatar upload removed per request */}
               </div>
 
               <div className="flex flex-col justify-center items-center gap-1 mt-2">
                 <p className="text-gray-900 dark:text-white text-xl font-bold tracking-tight">{user?.full_name}</p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{user?.email}</p>
-                {/* "Alterar Foto" button removed per request */}
+              </div>
+
+              {/* Informações Extras */}
+              <div className="w-full flex flex-col gap-3 mt-4 pt-4 border-t border-slate-100 dark:border-white/5 text-left">
+                {user?.phone && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Phone className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">{user.phone}</span>
+                  </div>
+                )}
+                {user?.province && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <MapPin className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">
+                      {user.province}{user.municipality ? `, ${user.municipality}` : ''}
+                      {user.neighborhood ? ` - ${user.neighborhood}` : ''}
+                    </span>
+                  </div>
+                )}
+                {user?.occupation && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <Briefcase className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">{user.occupation}</span>
+                  </div>
+                )}
+                {(user?.preferred_give_currency || user?.preferred_want_currency) && (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <ArrowRightLeft className="size-4 text-primary opacity-70" />
+                    <span className="font-medium text-xs">
+                      Tem: <strong className="text-slate-800 dark:text-slate-200">{user.preferred_give_currency || '-'}</strong> | Quer: <strong className="text-slate-800 dark:text-slate-200">{user.preferred_want_currency || '-'}</strong>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* KYC Status Card */}
             {user?.is_staff !== true && (
-              <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${
-                user?.verification_status === 'approved' 
-                ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20' 
-                : user?.verification_status === 'submitted'
-                ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
-                : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
-              }`}>
-              <div className={`absolute top-0 left-0 w-1.5 h-full ${
-                user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
-              }`} />
-              
-              <div className="flex items-center justify-between mb-4 pl-2">
-                <h2 className="text-gray-900 dark:text-white text-lg font-bold tracking-tight">Verificação KYC</h2>
-                {user?.verification_status === 'approved' ? (
-                  <ShieldCheck className="size-5 text-emerald-500" />
-                ) : user?.verification_status === 'submitted' ? (
-                  <Clock className="size-5 text-amber-500" />
-                ) : (
-                  <AlertCircle className="size-5 text-rose-500" />
-                )}
-              </div>
-
-              <div className="flex flex-col gap-4 pl-2">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-gray-500 dark:text-gray-400">Status Atual</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center justify-center size-2.5 rounded-full animate-pulse ${
-                      user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
-                    }`} />
-                    <p className={`text-lg font-black uppercase tracking-tight ${
-                      user?.verification_status === 'approved' ? 'text-emerald-500' : user?.verification_status === 'submitted' ? 'text-amber-500' : 'text-rose-500'
-                    }`}>
-                      {user?.verification_status === 'approved' ? 'Aprovado' : user?.verification_status === 'submitted' ? 'Em Análise' : 'Pendente'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className={`p-4 rounded-lg border ${
-                  user?.verification_status === 'approved' 
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300' 
+              <div className={`flex flex-col p-6 rounded-xl border relative overflow-hidden shadow-sm ${user?.verification_status === 'approved'
+                  ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20'
                   : user?.verification_status === 'submitted'
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
-                  : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+                    ? 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/20'
+                    : 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20'
                 }`}>
-                  <p className="text-sm font-medium leading-relaxed">
-                    {user?.verification_status === 'approved' 
-                      ? 'Parabéns! Sua conta está totalmente verificada e você tem acesso a todos os limites.'
-                      : user?.verification_status === 'submitted'
-                      ? 'Seus documentos estão sendo revisados pela nossa equipe de compliance.'
-                      : 'Para realizar transações maiores e ter mais segurança, por favor complete sua verificação KYC.'}
-                  </p>
-                  {user?.verification_status === 'submitted' && (
-                    <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-80 uppercase tracking-widest">
-                      <Clock className="size-3.5" />
-                      <span>Estimativa: 24 a 48 horas úteis</span>
-                    </div>
+                <div className={`absolute top-0 left-0 w-1.5 h-full ${user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
+                  }`} />
+
+                <div className="flex items-center justify-between mb-4 pl-2">
+                  <h2 className="text-gray-900 dark:text-white text-lg font-bold tracking-tight">Verificação KYC</h2>
+                  {user?.verification_status === 'approved' ? (
+                    <ShieldCheck className="size-5 text-emerald-500" />
+                  ) : user?.verification_status === 'submitted' ? (
+                    <Clock className="size-5 text-amber-500" />
+                  ) : (
+                    <AlertCircle className="size-5 text-rose-500" />
                   )}
                 </div>
 
-                <div className="border-t border-gray-200 dark:border-white/10 pt-4 mt-2 flex flex-col gap-2">
-                   {user?.verification_status !== 'approved' && user?.verification_status !== 'submitted' && (
-                     <button 
-                       onClick={() => setIsKYCModalOpen(true)}
-                       className="w-full flex items-center justify-center gap-2 h-10 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                     >
-                       <ShieldCheck className="size-4" />
-                       Verificar Documentos
-                     </button>
-                   )}
-                   <button 
-                     onClick={() => navigate('/settings')}
-                     className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-primary transition-all uppercase tracking-widest px-2"
-                   >
-                     <Settings className="size-3.5" />
-                     Gerir Segurança
-                   </button>
-                 </div>
+                <div className="flex flex-col gap-4 pl-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-gray-500 dark:text-gray-400">Status Atual</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center justify-center size-2.5 rounded-full animate-pulse ${user?.verification_status === 'approved' ? 'bg-emerald-500' : user?.verification_status === 'submitted' ? 'bg-amber-500' : 'bg-rose-500'
+                        }`} />
+                      <p className={`text-lg font-black uppercase tracking-tight ${user?.verification_status === 'approved' ? 'text-emerald-500' : user?.verification_status === 'submitted' ? 'text-amber-500' : 'text-rose-500'
+                        }`}>
+                        {user?.verification_status === 'approved' ? 'Aprovado' : user?.verification_status === 'submitted' ? 'Em Análise' : 'Pendente'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-lg border ${user?.verification_status === 'approved'
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                      : user?.verification_status === 'submitted'
+                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300'
+                        : 'bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-300'
+                    }`}>
+                    <p className="text-sm font-medium leading-relaxed">
+                      {user?.verification_status === 'approved'
+                        ? 'Parabéns! Sua conta está totalmente verificada e você tem acesso a todos os limites.'
+                        : user?.verification_status === 'submitted'
+                          ? 'Seus documentos estão sendo revisados pela nossa equipe de compliance.'
+                          : 'Para realizar transações maiores e ter mais segurança, por favor complete sua verificação KYC.'}
+                    </p>
+                    {user?.verification_status === 'submitted' && (
+                      <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-80 uppercase tracking-widest">
+                        <Clock className="size-3.5" />
+                        <span>Estimativa: 24 a 48 horas úteis</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-gray-200 dark:border-white/10 pt-4 mt-2 flex flex-col gap-2">
+                    {user?.verification_status !== 'approved' && user?.verification_status !== 'submitted' && (
+                      <button
+                        onClick={() => setIsKYCModalOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 h-10 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                      >
+                        <ShieldCheck className="size-4" />
+                        Verificar Documentos
+                      </button>
+                    )}
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="flex items-center gap-2 text-[10px] font-black text-gray-400 hover:text-primary transition-all uppercase tracking-widest px-2"
+                    >
+                      <Settings className="size-3.5" />
+                      Gerir Segurança
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
             )}
           </div>
 
           {/* Right Column: Forms */}
           <div className="lg:col-span-2 flex flex-col gap-8">
             <div className="flex flex-col p-8 bg-white dark:bg-[#192633] rounded-xl border border-gray-200 dark:border-white/10 shadow-sm relative">
-               <h2 className="text-gray-900 dark:text-white text-xl font-bold tracking-tight mb-8">Informações Pessoais</h2>
-               
-                <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Nome Completo</label>
-                    <div className="relative group">
-                      <input 
-                        {...register('full_name', {
-                          pattern: {
-                            value: /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/,
-                            message: 'O nome deve conter apenas letras'
-                          }
-                        })}
-                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.full_name ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <Edit3 className="size-4" />
-                      </div>
-                    </div>
-                    {errors.full_name && (
-                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.full_name.message as string}</p>
-                    )}
-                  </div>
+              <h2 className="text-gray-900 dark:text-white text-xl font-bold tracking-tight mb-8">Informações Pessoais</h2>
 
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Endereço de E-mail</label>
-                    <div className="relative group">
-                      <input 
-                        readOnly disabled
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white opacity-40 cursor-not-allowed" 
-                        value={user?.email} 
-                      />
-                    </div>
-                    <p className="text-[9px] text-primary font-black uppercase tracking-widest mt-2 ml-1 flex items-center gap-1.5 opacity-80">
-                      <ShieldCheck className="size-3" />
-                      E-mail Verificado
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Número de Telefone</label>
-                    <div className="relative group">
-                      <input 
-                        {...register('phone', {
-                          pattern: {
-                            value: /^\+244\s*9\d{2}\s*\d{3}\s*\d{3}$|^\+2449\d{8}$/,
-                            message: 'O número deve ser angolano (ex: +244 9XX XXX XXX)'
-                          }
-                        })}
-                        placeholder="+244 9XX XXX XXX"
-                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`} 
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <Edit3 className="size-4" />
-                      </div>
-                    </div>
-                    {errors.phone && (
-                      <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.phone.message as string}</p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Província</label>
-                    <div className="relative group">
-                      <select 
-                        {...register('province')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none" 
-                      >
-                        <option value="">Selecione...</option>
-                        {ANGOLAN_PROVINCES.map(p => (
-                          <option key={p.name} value={p.name}>{p.name}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <Map className="size-4" />
-                      </div>
+              <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Nome Completo</label>
+                  <div className="relative group">
+                    <input
+                      {...register('full_name', {
+                        pattern: {
+                          value: /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/,
+                          message: 'O nome deve conter apenas letras'
+                        }
+                      })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.full_name ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Edit3 className="size-4" />
                     </div>
                   </div>
+                  {errors.full_name && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.full_name.message as string}</p>
+                  )}
+                </div>
 
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Município</label>
-                    <div className="relative group">
-                      <select 
-                        {...register('municipality')}
-                        disabled={!selectedProvince}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none disabled:opacity-50" 
-                      >
-                        <option value="">Selecione...</option>
-                        {municipalities.map(m => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <MapPin className="size-4" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Bairro / Rua</label>
-                    <div className="relative group">
-                      <input 
-                        {...register('neighborhood')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
-                        placeholder="ex: Bairro Alvalade, Rua X"
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <Home className="size-4" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Ocupação / Profissão</label>
-                    <div className="relative group">
-                      <input 
-                        {...register('occupation')}
-                        className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none" 
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                        <Briefcase className="size-4" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Ter</label>
-                    <select 
-                      {...register('preferred_give_currency')}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none"
-                    >
-                      {Array.isArray(currencies) && currencies.map((c: any) => (
-                        <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Precisar</label>
-                    <select 
-                      {...register('preferred_want_currency')}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none"
-                    >
-                      {Array.isArray(currencies) && currencies.map((c: any) => (
-                        <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {user?.is_staff !== true && (
-                    <>
-                      <div className="sm:col-span-2 flex flex-col">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Sobre Mim (Biografia)</label>
-                    <textarea 
-                      {...register('bio')}
-                      rows={4}
-                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none resize-none"
-                      placeholder="Conte um pouco sobre suas experiências em trocas P2P..."
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Endereço de E-mail</label>
+                  <div className="relative group">
+                    <input
+                      readOnly disabled
+                      className="w-full bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white opacity-40 cursor-not-allowed"
+                      value={user?.email}
                     />
                   </div>
+                  <p className="text-[9px] text-primary font-black uppercase tracking-widest mt-2 ml-1 flex items-center gap-1.5 opacity-80">
+                    <ShieldCheck className="size-3" />
+                    E-mail Verificado
+                  </p>
+                </div>
 
-                  <div className="sm:col-span-2 flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-xl">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Status de Disponibilidade</p>
-                      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Indique se está pronto para aceitar novas propostas agora.</p>
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Número de Telefone</label>
+                  <div className="relative group">
+                    <input
+                      {...register('phone', {
+                        required: 'O número de telemóvel é obrigatório',
+                        pattern: {
+                          value: /^\+244\s*9\d{2}\s*\d{3}\s*\d{3}$|^\+2449\d{8}$/,
+                          message: 'O número deve ser angolano (ex: +244 9XX XXX XXX)'
+                        }
+                      })}
+                      placeholder="+244 9XX XXX XXX"
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.phone ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Edit3 className="size-4" />
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        {...register('is_available')}
-                        className="sr-only peer" 
-                      />
-                      <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
-                    </label>
                   </div>
+                  {errors.phone && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.phone.message as string}</p>
+                  )}
+                </div>
 
-                  <div className="sm:col-span-2 pt-6 mt-2 border-t border-slate-100 dark:border-white/5">
-                    <div className="bg-slate-50 dark:bg-[#111922] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-                      <div className="flex items-center gap-4">
-                        <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                          <Award className="size-6" />
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Performance e Histórico</p>
-                          <div className="flex items-center gap-2 mt-1">
-                             <div className="flex items-center gap-0.5">
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Província</label>
+                  <div className="relative group">
+                    <select
+                      {...register('province', { required: 'A província é obrigatória' })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.province ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none`}
+                    >
+                      <option value="">Selecione...</option>
+                      {ANGOLAN_PROVINCES.map(p => (
+                        <option key={p.name} value={p.name}>{p.name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                      <Map className="size-4" />
+                    </div>
+                  </div>
+                  {errors.province && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.province.message as string}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Município</label>
+                  <div className="relative group">
+                    <select
+                      {...register('municipality', { required: 'O município é obrigatório' })}
+                      disabled={!selectedProvince}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.municipality ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none appearance-none disabled:opacity-50`}
+                    >
+                      <option value="">Selecione...</option>
+                      {municipalities.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                      <MapPin className="size-4" />
+                    </div>
+                  </div>
+                  {errors.municipality && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.municipality.message as string}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Bairro / Rua</label>
+                  <div className="relative group">
+                    <input
+                      {...register('neighborhood', { required: 'O bairro/rua é obrigatório' })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.neighborhood ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
+                      placeholder="ex: Bairro Alvalade, Rua X"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Home className="size-4" />
+                    </div>
+                  </div>
+                  {errors.neighborhood && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.neighborhood.message as string}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Ocupação / Profissão</label>
+                  <div className="relative group">
+                    <input
+                      {...register('occupation', { required: 'A ocupação/profissão é obrigatória' })}
+                      className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.occupation ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Briefcase className="size-4" />
+                    </div>
+                  </div>
+                  {errors.occupation && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.occupation.message as string}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Ter</label>
+                  <select
+                    {...register('preferred_give_currency', { required: 'Selecione uma moeda' })}
+                    className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.preferred_give_currency ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none`}
+                  >
+                    {Array.isArray(currencies) && currencies.map((c: any) => (
+                      <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
+                    ))}
+                  </select>
+                  {errors.preferred_give_currency && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.preferred_give_currency.message as string}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Moeda que Costumo Precisar</label>
+                  <select
+                    {...register('preferred_want_currency', { required: 'Selecione uma moeda' })}
+                    className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.preferred_want_currency ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-bold text-slate-900 dark:text-white outline-none appearance-none`}
+                  >
+                    {Array.isArray(currencies) && currencies.map((c: any) => (
+                      <option key={c.code} value={c.code}>{c.code} - {c.name}</option>
+                    ))}
+                  </select>
+                  {errors.preferred_want_currency && (
+                    <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.preferred_want_currency.message as string}</p>
+                  )}
+                </div>
+
+                {user?.is_staff !== true && (
+                  <>
+                    <div className="sm:col-span-2 flex flex-col">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2.5 ml-1">Sobre Mim (Biografia)</label>
+                      <textarea
+                        {...register('bio', { required: 'A biografia é obrigatória' })}
+                        rows={4}
+                        className={`w-full bg-slate-50 dark:bg-[#111922] border ${errors.bio ? 'border-red-500' : 'border-slate-200 dark:border-white/10'} rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white transition-all focus:border-primary/50 outline-none resize-none`}
+                        placeholder="Conte um pouco sobre suas experiências em trocas P2P..."
+                      />
+                      {errors.bio && (
+                        <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.bio.message as string}</p>
+                      )}
+                    </div>
+
+                    <div className="sm:col-span-2 flex items-center justify-between p-4 bg-primary/5 border border-primary/10 rounded-xl">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Status de Disponibilidade</p>
+                        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Indique se está pronto para aceitar novas propostas agora.</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          {...register('is_available')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary" />
+                      </label>
+                    </div>
+
+                    <div className="sm:col-span-2 pt-6 mt-2 border-t border-slate-100 dark:border-white/5">
+                      <div className="bg-slate-50 dark:bg-[#111922] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <Award className="size-6" />
+                          </div>
+                          <div className="flex flex-col">
+                            <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Performance e Histórico</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="flex items-center gap-0.5">
                                 {[1, 2, 3, 4, 5].map((s) => (
-                                   <Star key={s} className={`size-3 ${stats.rating >= s ? 'fill-amber-500 text-amber-500' : 'text-slate-200 dark:text-white/10'}`} />
+                                  <Star key={s} className={`size-3 ${stats.rating >= s ? 'fill-amber-500 text-amber-500' : 'text-slate-200 dark:text-white/10'}`} />
                                 ))}
-                             </div>
-                             <span className="text-xs font-bold text-slate-900 dark:text-white">{stats.rating.toFixed(1)}</span>
-                             <span className="text-slate-200 dark:text-white/10">•</span>
-                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Baseado em {stats.count} operações.</p>
+                              </div>
+                              <span className="text-xs font-bold text-slate-900 dark:text-white">{stats.rating.toFixed(1)}</span>
+                              <span className="text-slate-200 dark:text-white/10">•</span>
+                              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Baseado em {stats.count} operações.</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-center sm:text-right">
-                         <p className="text-2xl font-black text-primary uppercase tracking-tighter">{stats.rating >= 4.5 ? 'Elite' : user?.is_verified ? 'Verificado' : 'Novato'}</p>
-                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Status da Rede</p>
+                        <div className="text-center sm:text-right">
+                          <p className="text-2xl font-black text-primary uppercase tracking-tighter">{stats.rating >= 4.5 ? 'Elite' : user?.verification_status === 'approved' ? 'Verificado' : 'Novato'}</p>
+                          <p className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest mt-1">Status da Rede</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Reviews Section */}
-                  <div className="sm:col-span-2 mt-4">
-                     <h3 className="text-gray-900 dark:text-white text-lg font-bold tracking-tight mb-6 flex items-center gap-2">
+                    {/* Reviews Section */}
+                    <div className="sm:col-span-2 mt-4">
+                      <h3 className="text-gray-900 dark:text-white text-lg font-bold tracking-tight mb-6 flex items-center gap-2">
                         <MessageSquare className="size-5 text-primary" />
                         Avaliações dos Parceiros
-                     </h3>
-                     
-                     {isLoadingReviews ? (
-                        <div className="flex justify-center p-10">
-                           <Loader2 className="size-6 text-primary animate-spin" />
-                        </div>
-                     ) : reviews && reviews.length > 0 ? (
-                        <div className="grid grid-cols-1 gap-4">
-                           {reviews.map((review: any) => (
-                              <div key={review.id} className="p-5 bg-slate-50/50 dark:bg-[#111922]/50 border border-slate-100 dark:border-white/5 rounded-2xl">
-                                 <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-1">
-                                       {[1, 2, 3, 4, 5].map((s) => (
-                                          <Star key={s} className={`size-2.5 ${review.rating >= s ? 'fill-amber-500 text-amber-500' : 'text-slate-200 dark:text-white/10'}`} />
-                                       ))}
-                                    </div>
-                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                                       {format(new Date(review.created_at), "dd MMM, yyyy")}
-                                    </span>
-                                 </div>
-                                 <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                                    "{review.comment || 'Sem comentário.'}"
-                                 </p>
-                              </div>
-                           ))}
-                        </div>
-                     ) : (
-                        <div className="p-10 text-center bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
-                           <Award className="size-8 text-slate-200 dark:text-white/5 mx-auto mb-3" />
-                           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Ainda não recebeu avaliações.</p>
-                        </div>
-                     )}
-                  </div>
-                  </>
-                  )}
+                      </h3>
 
-                  <div className="sm:col-span-2 flex justify-end gap-4 mt-4">
-                    <button 
-                      type="button" onClick={() => reset()}
-                      className="px-8 h-12 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all outline-none"
-                    >
-                      Cancelar
-                    </button>
-                    <button 
-                      type="submit" disabled={isUpdatingProfile}
-                      className="px-10 h-12 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all active:scale-95 flex items-center justify-center gap-2 outline-none disabled:opacity-50"
-                    >
-                      {isUpdatingProfile && <Loader2 className="size-4 animate-spin" />}
-                      Salvar Alterações
-                    </button>
-                  </div>
-               </form>
+                      {isLoadingReviews ? (
+                        <div className="flex justify-center p-10">
+                          <Loader2 className="size-6 text-primary animate-spin" />
+                        </div>
+                      ) : reviews && reviews.length > 0 ? (
+                        <div className="grid grid-cols-1 gap-4">
+                          {reviews.map((review: any) => (
+                            <div key={review.id} className="p-5 bg-slate-50/50 dark:bg-[#111922]/50 border border-slate-100 dark:border-white/5 rounded-2xl">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((s) => (
+                                    <Star key={s} className={`size-2.5 ${review.rating >= s ? 'fill-amber-500 text-amber-500' : 'text-slate-200 dark:text-white/10'}`} />
+                                  ))}
+                                </div>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                                  {format(new Date(review.created_at), "dd MMM, yyyy")}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                                "{review.comment || 'Sem comentário.'}"
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-10 text-center bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                          <Award className="size-8 text-slate-200 dark:text-white/5 mx-auto mb-3" />
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Ainda não recebeu avaliações.</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <div className="sm:col-span-2 flex justify-end gap-4 mt-4">
+                  <button
+                    type="button" onClick={() => reset()}
+                    className="px-8 h-12 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-white/5 transition-all outline-none"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit" disabled={isUpdatingProfile}
+                    className="px-10 h-12 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all active:scale-95 flex items-center justify-center gap-2 outline-none disabled:opacity-50"
+                  >
+                    {isUpdatingProfile && <Loader2 className="size-4 animate-spin" />}
+                    Salvar Alterações
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -549,15 +628,15 @@ const PerfilPage: React.FC = () => {
       <AnimatePresence>
         {isKYCModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsKYCModalOpen(false)}
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -574,7 +653,7 @@ const PerfilPage: React.FC = () => {
                         Segurança e transparência P2P
                       </p>
                     </div>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsKYCModalOpen(false)}
                       className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
@@ -586,10 +665,14 @@ const PerfilPage: React.FC = () => {
                   <div className="space-y-6">
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Tipo de Documento</label>
-                      <select 
-                        name="doc_type" 
-                        required 
-                        defaultValue="bi"
+                      <select
+                        name="doc_type"
+                        required
+                        value={selectedDocType}
+                        onChange={(e) => {
+                          setSelectedDocType(e.target.value);
+                          setDocError('');
+                        }}
                         className="w-full h-12 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary/50 transition-all appearance-none"
                       >
                         <option value="bi">Bilhete de Identidade (BI)</option>
@@ -600,12 +683,29 @@ const PerfilPage: React.FC = () => {
 
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Número do Documento</label>
-                      <input 
+                      <input
                         name="doc_number"
                         required
                         placeholder="ex: 000000000LA000"
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (selectedDocType === 'bi' && val.length > 0) {
+                            const provinceCodes = "BE|BG|BI|CB|CC|CN|CS|CU|CE|HA|HL|IB|LA|LN|LS|ML|MO|ME|NB|UG|ZR";
+                            const biPattern = new RegExp(`^\\d{9}(${provinceCodes})\\d{3}$`, 'i');
+                            if (!biPattern.test(val)) {
+                              setDocError('Número de BI inválido ou província incorreta.');
+                            } else {
+                              setDocError('');
+                            }
+                          } else {
+                            setDocError('');
+                          }
+                        }}
                         className="w-full h-12 px-4 bg-slate-50 dark:bg-[#111922] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white outline-none focus:border-primary/50 transition-all"
                       />
+                      {docError && (
+                        <p className="text-[10px] font-bold text-rose-500 ml-1 uppercase tracking-tight">{docError}</p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -614,11 +714,10 @@ const PerfilPage: React.FC = () => {
                           Frente do Doc
                           {kycDocs.front && <span className="text-emerald-500 text-[8px]">✓</span>}
                         </label>
-                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${
-                          kycDocs.front 
-                            ? 'border-emerald-500/50 bg-emerald-500/5' 
+                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${kycDocs.front
+                            ? 'border-emerald-500/50 bg-emerald-500/5'
                             : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
-                        }`}>
+                          }`}>
                           {kycDocs.front ? (
                             <>
                               <img src={URL.createObjectURL(kycDocs.front)} className="w-full h-full object-cover" alt="Frente" />
@@ -629,10 +728,10 @@ const PerfilPage: React.FC = () => {
                           ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-300 pointer-events-none">
                               <Camera className="size-6" />
-                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br/>carregar frente</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br />carregar frente</span>
                             </div>
                           )}
-                          <input 
+                          <input
                             type="file"
                             accept="image/*,application/pdf"
                             onChange={(e) => setKycDocs(prev => ({ ...prev, front: e.target.files?.[0] || null }))}
@@ -646,11 +745,10 @@ const PerfilPage: React.FC = () => {
                           Verso do Doc
                           {kycDocs.back && <span className="text-emerald-500 text-[8px]">✓</span>}
                         </label>
-                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${
-                          kycDocs.back 
-                            ? 'border-emerald-500/50 bg-emerald-500/5' 
+                        <div className={`relative aspect-[4/3] bg-slate-50 dark:bg-[#111922] border-2 border-dashed rounded-xl overflow-hidden group transition-all cursor-pointer ${kycDocs.back
+                            ? 'border-emerald-500/50 bg-emerald-500/5'
                             : 'border-slate-200 dark:border-white/10 hover:border-primary/50'
-                        }`}>
+                          }`}>
                           {kycDocs.back ? (
                             <>
                               <img src={URL.createObjectURL(kycDocs.back)} className="w-full h-full object-cover" alt="Verso" />
@@ -661,10 +759,10 @@ const PerfilPage: React.FC = () => {
                           ) : (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-300 pointer-events-none">
                               <Camera className="size-6" />
-                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br/>carregar verso</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-center leading-relaxed">Clique para<br />carregar verso</span>
                             </div>
                           )}
-                          <input 
+                          <input
                             type="file"
                             accept="image/*,application/pdf"
                             onChange={(e) => setKycDocs(prev => ({ ...prev, back: e.target.files?.[0] || null }))}
@@ -676,7 +774,7 @@ const PerfilPage: React.FC = () => {
                   </div>
 
                   <div className="mt-10 space-y-3">
-                    <button 
+                    <button
                       type="submit"
                       disabled={isSubmittingKYC || !kycDocs.front || !kycDocs.back}
                       className="w-full h-12 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:bg-primary/95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
@@ -684,7 +782,7 @@ const PerfilPage: React.FC = () => {
                       {isSubmittingKYC ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
                       Enviar para Análise
                     </button>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsKYCModalOpen(false)}
                       className="w-full h-10 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors outline-none"
@@ -698,6 +796,14 @@ const PerfilPage: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Camera Modal for Selfie */}
+      <SmartCameraModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCaptureAvatar}
+        isLoading={isUpdatingAvatar}
+      />
     </div>
   );
 };

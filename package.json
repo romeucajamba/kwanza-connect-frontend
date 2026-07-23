@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@tanstack/query-sync-storage-persister": "^5.101.2",
     "@tanstack/react-query": "^5.96.1",
+    "@tanstack/react-query-persist-client": "^5.101.2",
     "@types/js-cookie": "^3.0.6",
     "axios": "^1.14.0",
     "date-fns": "^4.1.0",
@@ -23,6 +25,7 @@
     "react-hook-form": "^7.72.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.13.2",
+    "react-webcam": "^7.2.0",
     "recharts": "^3.8.1",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"

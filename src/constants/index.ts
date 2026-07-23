@@ -36,6 +36,8 @@ export const API_ROUTES = {
     KYC_SUBMIT: '/auth/kyc/submit/',
     KYC_STATUS: '/auth/kyc/status/',
     TOKEN_REFRESH: '/auth/token/refresh/',
+    LOCATIONS: '/auth/locations/',
+    REPORT_USER: '/auth/report/',
   },
   OFFERS: {
     BASE: '/offers/',
@@ -63,6 +65,8 @@ export const API_ROUTES = {
     CONFIRM: '/transactions/confirm/',
     REVIEW: (id: string) => `/transactions/${id}/review/`,
     REVIEWS: (userId: string) => `/transactions/reviews/${userId}/`,
+    TOP_LOCATIONS: '/transactions/metrics/top-locations/',
+    TOP_PAYMENT_METHODS: '/transactions/metrics/top-payment-methods/',
   },
   CHAT: {
     ROOMS: '/chat/rooms/',

@@ -8,7 +8,8 @@ import {
   Users,
   Repeat,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuthStore } from '@store/authStore';
 import { APP_ROUTES } from '@constants';
@@ -20,6 +21,8 @@ import { getAvatarUrl } from '@lib/media';
 import { Avatar, AvatarImage, AvatarFallback } from '@components/ui/avatar';
 import { User as UserIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import toast from 'react-hot-toast';
+import { TopPaymentMethodsChart } from '@components/charts/TopPaymentMethodsChart';
 
 const DashboardPage: React.FC = () => {
   const user = useAuthStore((s) => s.user);
@@ -36,7 +39,7 @@ const DashboardPage: React.FC = () => {
   const kwanzaToEur = rates?.find(r => r.to_currency.code === 'EUR')?.rate || 0;
 
   const chartData = useMemo(() => {
-    return topCurrencies.map(c => ({
+    return topCurrencies.map((c: any) => ({
       name: c.code,
       Ofertas: c.count,
     }));
@@ -80,6 +83,22 @@ const DashboardPage: React.FC = () => {
         </button>
       </div>
 
+      {/* KYC Alert Banner */}
+      {user?.verification_status !== 'approved' && (
+        <div className="flex items-start sm:items-center gap-4 p-4 sm:p-5 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-2xl shadow-sm">
+          <div className="flex-shrink-0 size-10 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center text-rose-500">
+            <AlertTriangle className="size-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-rose-800 dark:text-rose-300">Atenção: Ação Necessária</h3>
+            <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+              Para operar na plataforma (fazer ofertas, interagir no chat, demonstrar interesse), você precisa ter o seu perfil completamente preenchido e aprovado pelo administrador. 
+              Por favor, vá ao seu <button onClick={() => navigate(APP_ROUTES.PERFIL)} className="font-bold underline hover:text-rose-700 dark:hover:text-rose-300">Perfil</button> para atualizar os seus dados.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Main Column (2/3 width) */}
@@ -110,7 +129,7 @@ const DashboardPage: React.FC = () => {
                       itemStyle={{ color: '#fff', fontWeight: 'bold' }}
                     />
                     <Bar dataKey="Ofertas" radius={[6, 6, 0, 0]} maxBarSize={60}>
-                      {chartData.map((entry, index) => (
+                      {chartData.map((_entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Bar>
@@ -190,7 +209,13 @@ const DashboardPage: React.FC = () => {
                 <span className="text-black dark:text-white text-[10px] font-bold uppercase tracking-tight">Trocas P2P</span>
               </button>
               <button 
-                onClick={() => navigate(APP_ROUTES.P2P_BROWSE)}
+                onClick={() => {
+                  if (user?.verification_status !== 'approved') {
+                    toast.error('A sua conta precisa ser aprovada pelo administrador para publicar ofertas.');
+                    return;
+                  }
+                  navigate(APP_ROUTES.P2P_BROWSE);
+                }}
                 className="flex flex-col items-center justify-center gap-3 p-4 bg-slate-50 dark:bg-gray-800 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-700 transition-all active:scale-95 group col-span-2"
               >
                 <PlusCircle className="size-5 text-primary group-hover:scale-110 transition-transform" />
@@ -202,8 +227,10 @@ const DashboardPage: React.FC = () => {
 
       </div>
 
-      {/* Recent Activity Table */}
-      <div className="bg-white dark:bg-[#192633] rounded-2xl p-6 border border-slate-100 dark:border-white/5 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          {/* Recent Activity Table */}
+          <div className="bg-white dark:bg-[#192633] rounded-2xl p-6 border border-slate-100 dark:border-white/5 shadow-sm h-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-black dark:text-white text-xl font-bold leading-tight tracking-tight">A sua Atividade Recente</h2>
           <button 
@@ -276,6 +303,12 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+      
+      </div>
+      <div className="lg:col-span-1">
+        <TopPaymentMethodsChart />
+      </div>
       </div>
     </motion.div>
   );
