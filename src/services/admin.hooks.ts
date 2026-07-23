@@ -12,6 +12,7 @@ export const adminKeys = {
   userDetails: (id: string) => ['admin', 'users', id] as const,
   offers: (params?: Record<string, any>) => ['admin', 'offers', params] as const,
   reports: (params?: Record<string, any>) => ['admin', 'reports', params] as const,
+  reportDetail: (id: string) => ['admin', 'reports', id] as const,
   logs: (page: number) => ['admin', 'logs', page] as const,
   currencies: () => ['admin', 'currencies'] as const,
   health: () => ['admin', 'health'] as const,
@@ -80,37 +81,46 @@ export const useUpdateUserStatus = () => {
 export const useAdminApplySanction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, data }: { userId: string, data: { suspended_until?: string | null; restricted_pages?: string[] } }) =>
+    mutationFn: ({ userId, data }: { userId: string; data: { action: 'suspend'; days: 1 | 2 | 3 | 4 | 7 } | { action: 'lift_suspension' } }) =>
       adminService.applySanction(userId, data),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
-      toast.success('Sanções aplicadas com sucesso.');
+      toast.success('Sanção aplicada com sucesso.');
     },
-    onError: () => toast.error('Erro ao aplicar sanções.')
+    onError: () => toast.error('Erro ao aplicar sanção.')
   });
 };
 
 export const useAdminSuspendUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, days, pages }: { userId: string; days: number; pages: string[] }) => {
-      const until = new Date();
-      until.setDate(until.getDate() + days);
-      return adminService.applySanction(userId, {
-        suspended_until: until.toISOString(),
-        restricted_pages: pages,
-      });
-    },
+    mutationFn: ({ userId, days }: { userId: string; days: 1 | 2 | 3 | 4 | 7 }) =>
+      adminService.applySanction(userId, { action: 'suspend', days }),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
       queryClient.invalidateQueries({ queryKey: adminKeys.users() });
       queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
-      toast.success('Utilizador suspenso por 1 semana.');
+      toast.success('Utilizador suspenso com sucesso.');
     },
     onError: () => toast.error('Erro ao suspender o utilizador.')
   });
 };
+
+export const useAdminLiftSuspension = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => adminService.liftSuspension(userId),
+    onSuccess: (_, userId) => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.userDetails(userId) });
+      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      queryClient.invalidateQueries({ queryKey: adminKeys.reports() });
+      toast.success('Suspensão terminada com sucesso.');
+    },
+    onError: () => toast.error('Erro ao terminar suspensão.')
+  });
+};
+
 
 export const useAdminDeleteUser = () => {
   const queryClient = useQueryClient();
@@ -130,6 +140,15 @@ export const useAdminReports = (params?: Record<string, any>) =>
     queryKey: adminKeys.reports(params),
     queryFn: () => adminService.getReports(params),
   });
+
+export const useAdminReportDetail = (reportId: string | null) =>
+  useQuery({
+    queryKey: adminKeys.reportDetail(reportId ?? ''),
+    queryFn: () => adminService.getReportDetail(reportId!),
+    enabled: !!reportId,
+    staleTime: 1000 * 60,
+  });
+
 
 export const useAdminReportAction = () => {
   const queryClient = useQueryClient();

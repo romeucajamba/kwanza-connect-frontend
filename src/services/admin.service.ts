@@ -84,8 +84,13 @@ export const adminService = {
     return res.data;
   },
 
-  applySanction: async (userId: string, data: { suspended_until?: string | null; restricted_pages?: string[] }) => {
+  applySanction: async (userId: string, data: { action: 'suspend'; days: 1 | 2 | 3 | 4 | 7 } | { action: 'lift_suspension' }) => {
     const res = await api.post(`/admin/users/${userId}/sanction/`, data);
+    return res.data;
+  },
+
+  liftSuspension: async (userId: string) => {
+    const res = await api.post(`/admin/users/${userId}/sanction/`, { action: 'lift_suspension' });
     return res.data;
   },
 
@@ -98,6 +103,11 @@ export const adminService = {
   getReports: async (params?: Record<string, any>) => {
     const res = await api.get('/admin/reports/', { params });
     return res.data;
+  },
+
+  getReportDetail: async (reportId: string) => {
+    const res = await api.get(`/admin/reports/${reportId}/`);
+    return res.data.data;
   },
 
   updateReportAction: async (reportId: string, action: 'review' | 'dismiss', admin_notes?: string) => {
