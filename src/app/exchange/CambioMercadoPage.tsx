@@ -156,7 +156,7 @@ const CambioMercadoPage: React.FC = () => {
                         to={`${APP_ROUTES.P2P_BROWSE}?currency=${rate.to_currency.code}`}
                         className="inline-flex items-center justify-center h-8 px-4 rounded-lg bg-primary text-white text-[9px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all shadow-sm"
                       >
-                        Trocar
+                        Publicar oferta
                       </Link>
                     </td>
                   </motion.tr>

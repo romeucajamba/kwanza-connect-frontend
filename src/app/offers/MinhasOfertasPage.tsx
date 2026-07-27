@@ -170,7 +170,7 @@ const OfferCard = ({ offer }: { offer: Offer }) => {
               <StatusBadge status={offer.status} />
             </div>
             <p className="text-[8px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">
-              ID: #{offer.id.slice(0, 8)} · {new Date(offer.created_at).toLocaleDateString('pt-AO')}
+            Data: {new Date(offer.created_at).toLocaleDateString('pt-AO')}
             </p>
           </div>
         </div>
