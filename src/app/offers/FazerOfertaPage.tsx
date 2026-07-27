@@ -97,6 +97,15 @@ const CurrencySelect = ({
   );
 };
 
+const AVAILABLE_PLATFORMS = [
+  "Multicaixa Express", "Aplicações Bancárias", "PayPay África",
+  "Unitel Money", "Afrimoney", "e-Kwanza", "AkiPaga", "Agiliza",
+  "eKumbu", "BNIX", "Wise", "Payoneer", "PayPal", "Remitly",
+  "Binance", "Bybit", "outra"
+] as const;
+
+type PaymentMethodType = typeof AVAILABLE_PLATFORMS[number];
+
 // ─── FazerOfertaPage ──────────────────────────────────────────────────────────
 const FazerOfertaPage: React.FC = () => {
   const { data: currencies } = useCurrencies();
@@ -119,6 +128,7 @@ const FazerOfertaPage: React.FC = () => {
       give_amount: '',
       want_amount: '',
       offer_type: 'sell',
+      payment_methods: [],
       notes: '',
     },
   });
@@ -128,6 +138,16 @@ const FazerOfertaPage: React.FC = () => {
   const give_amount = watch('give_amount');
   const want_amount = watch('want_amount');
   const offer_type = watch('offer_type');
+  const selectedMethods = watch('payment_methods') || [];
+
+  const toggleMethod = (method: PaymentMethodType) => {
+    const current = selectedMethods;
+    if (current.includes(method)) {
+      setValue('payment_methods', current.filter(m => m !== method), { shouldValidate: true });
+    } else {
+      setValue('payment_methods', [...current, method], { shouldValidate: true });
+    }
+  };
 
   const marketRate = useMemo(() => {
     if (!rates) return 0;
@@ -171,13 +191,16 @@ const FazerOfertaPage: React.FC = () => {
           return;
         }
         navigator.geolocation.getCurrentPosition(
-          (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+          (pos) => resolve({
+            latitude: Number(pos.coords.latitude.toFixed(8)),
+            longitude: Number(pos.coords.longitude.toFixed(8))
+          }),
           (err) => {
             console.warn("Geolocation permission denied or timeout.", err);
-            toast.error("Localização indisponível. A oferta prosseguirá sem GPS.");
+            toast.error("Localização indisponível. A oferta prosseguirá usando o seu Perfil.");
             resolve(null);
           },
-          { timeout: 30000, enableHighAccuracy: false }
+          { timeout: 5000, enableHighAccuracy: false }
         );
       });
     };
@@ -193,6 +216,7 @@ const FazerOfertaPage: React.FC = () => {
         give_amount: formatDecimal(data.give_amount),
         want_amount: formatDecimal(data.want_amount),
         offer_type: data.offer_type,
+        payment_methods: data.payment_methods,
         notes: data.notes,
         latitude: coords?.latitude || null,
         longitude: coords?.longitude || null,
@@ -205,6 +229,7 @@ const FazerOfertaPage: React.FC = () => {
             give_amount: '',
             want_amount: '',
             offer_type: data.offer_type,
+            payment_methods: [],
             notes: '',
           });
         },
@@ -321,10 +346,35 @@ const FazerOfertaPage: React.FC = () => {
 
                 {/* Removido o campo manual de cidade. O GPS capturará durante o submit para KYC/Anti-Fraude */}
 
+                {/* Plataformas de Pagamento Suportadas */}
+                <div className="md:col-span-2 space-y-3">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                    Como deseja receber/enviar os fundos? *
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_PLATFORMS.map((method) => {
+                      const isSelected = selectedMethods.includes(method);
+                      return (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() => toggleMethod(method)}
+                          className={`px-3 py-2 rounded-lg text-[11px] font-bold tracking-widest uppercase transition-all border ${isSelected ? 'bg-primary border-primary text-white shadow-md' : 'bg-slate-50 dark:bg-[#111922] border-slate-200 dark:border-white/10 text-slate-500 hover:border-slate-300'}`}
+                        >
+                          {method}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.payment_methods && (
+                    <p className="text-red-500 text-[10px] font-bold ml-1">{errors.payment_methods.message as string}</p>
+                  )}
+                </div>
+
                 {/* Notas/Instruções */}
                 <div className="md:col-span-2 space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
-                    Notas ou Instruções de Pagamento *
+                    Notas ou Outras Instruções (Opcional)
                   </label>
                   <div className="relative group">
                     <div className="absolute left-4 top-4 text-slate-400 group-focus-within:text-primary transition-colors">
@@ -332,8 +382,8 @@ const FazerOfertaPage: React.FC = () => {
                     </div>
                     <textarea
                       {...register('notes')}
-                      rows={3}
-                      placeholder="Ex: Aceito transferência via Multicaixa Express, Binance ou depósito no BAI..."
+                      rows={2}
+                      placeholder="Ex: Respondo apenas pela manhã..."
                       className={`w-full bg-slate-50 dark:bg-[#111922] border rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none ${errors.notes ? 'border-red-400 focus:ring-red-400' : 'border-slate-100 dark:border-white/5'}`}
                     />
                   </div>

@@ -164,7 +164,10 @@ const AdminUserDetailsPage: React.FC = () => {
             </Avatar>
             <div className="min-w-0">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight truncate">{user.full_name}</h2>
-              <p className="text-xs text-slate-500 truncate">{user.email}</p>
+              {user.username && (
+                <p className="text-sm font-medium text-primary mt-0.5 truncate">@{user.username}</p>
+              )}
+              <p className="text-xs text-slate-500 truncate mt-0.5">{user.email}</p>
               <div className="mt-1.5">{accountStatusBadge()}</div>
             </div>
           </div>
