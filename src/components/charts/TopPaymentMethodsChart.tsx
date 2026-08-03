@@ -59,7 +59,7 @@ export function TopPaymentMethodsChart() {
               dataKey="count"
               nameKey="method"
             >
-              {metrics.map((entry, index) => (
+              {metrics.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -75,8 +75,8 @@ export function TopPaymentMethodsChart() {
               }}
               itemStyle={{ color: '#fff' }}
             />
-            <Legend 
-              verticalAlign="bottom" 
+            <Legend
+              verticalAlign="bottom"
               height={36}
               iconType="circle"
               wrapperStyle={{ fontSize: '11px', fontWeight: '500' }}

@@ -18,7 +18,8 @@ import {
   X,
   RefreshCcw,
   Activity,
-  Flag
+  Flag,
+  Megaphone
 } from 'lucide-react';
 import { APP_ROUTES } from '@/constants';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -116,6 +117,7 @@ const AdminLayout: React.FC = () => {
     { to: '/admin/users', icon: Users, label: 'Utilizadores' },
     { to: '/admin/offers', icon: ArrowRightLeft, label: 'Ofertas' },
     { to: '/admin/reports', icon: Flag, label: 'Moderação' },
+    { to: '/admin/marketing', icon: Megaphone, label: 'Anúncios' },
     { to: '/admin/currencies', icon: Coins, label: 'Moedas' },
     { to: '/admin/logs', icon: FileText, label: 'Logs de Auditoria' },
     { to: '/admin/health', icon: Activity, label: 'Saúde do Sistema' },

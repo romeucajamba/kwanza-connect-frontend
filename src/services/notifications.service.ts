@@ -45,4 +45,11 @@ export const notificationsService = {
     );
     return response.data.data;
   },
+
+  // POST /api/notifications/newsletter/subscribe/
+  subscribeNewsletter: async (email: string): Promise<void> => {
+    // A instância 'api' do Axios já inclui '/api' como BaseURL
+    await api.post('/notifications/newsletter/subscribe/', { email });
+  },
 };
+

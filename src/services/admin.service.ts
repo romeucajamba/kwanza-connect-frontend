@@ -48,6 +48,15 @@ export const adminService = {
     return response.data.data;
   },
 
+  sendMarketingBroadcast: async (data: { subject: string; content: string; target_audience: 'all' | 'specific'; specific_emails?: string[] }): Promise<void> => {
+    await api.post('/admin/marketing/broadcast/', data);
+  },
+
+  getMarketingSubscribers: async (): Promise<any[]> => {
+    const response = await api.get('/admin/marketing/subscribers/');
+    return response.data.data;
+  },
+
   register: async (data: any): Promise<AuthResponse> => {
     const response = await api.post(API_ROUTES.ADMIN.REGISTER, data);
     return response.data.data;
