@@ -244,3 +244,15 @@ export const useAdminRegister = () => {
     }
   });
 };
+
+export const useSendBroadcast = () => {
+  return useMutation({
+    mutationFn: (data: { subject: string; content: string; target_audience: 'all' | 'specific'; specific_emails?: string[] }) => adminService.sendMarketingBroadcast(data),
+  });
+};
+
+export const useAdminSubscribers = () =>
+  useQuery({
+    queryKey: ['admin', 'marketing', 'subscribers'],
+    queryFn: () => adminService.getMarketingSubscribers(),
+  });

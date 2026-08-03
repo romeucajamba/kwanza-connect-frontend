@@ -1,22 +1,29 @@
 import { useState } from 'react';
-import { Mail, CheckCircle2, Send } from 'lucide-react';
+import { Mail, CheckCircle2, Loader2 } from 'lucide-react';
+import { notificationsService } from '@/services/notifications.service';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const NewsletterSection = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus('sending');
-    setTimeout(() => {
+
+    try {
+      await notificationsService.subscribeNewsletter(email);
       setStatus('success');
       setTimeout(() => {
         setStatus('idle');
         setEmail('');
       }, 5000);
-    }, 1800);
+    } catch (error) {
+      // Falha ao inscrever (ex: API em baixo)
+      console.error(error);
+      setStatus('idle');
+    }
   };
 
   return (
@@ -61,7 +68,7 @@ export const NewsletterSection = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="O seu melhor e-mail"
                       disabled={status === 'sending'}
-                      className="w-full h-14 px-5 rounded-xl bg-input-bg border border-border-subtle text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-text-secondary/50 disabled:opacity-60"
+                      className="w-full h-14 px-5 rounded-xl bg-input-bg border border-border-subtle !text-black focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-text-secondary/50 disabled:opacity-60"
                       required
                     />
                     {/* Animated progress line when sending */}
@@ -83,12 +90,7 @@ export const NewsletterSection = () => {
                   >
                     {status === 'sending' ? (
                       <>
-                        <motion.div
-                          animate={{ x: [0, 6, 0], opacity: [1, 0.5, 1] }}
-                          transition={{ duration: 0.7, repeat: Infinity }}
-                        >
-                          <Send className="w-4 h-4" />
-                        </motion.div>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         <span>A enviar...</span>
                       </>
                     ) : (

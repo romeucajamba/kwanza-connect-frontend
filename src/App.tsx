@@ -37,6 +37,7 @@ import AdminLogsPage from '@/app/admin/AdminLogsPage';
 import AdminCurrenciesPage from '@/app/admin/AdminCurrenciesPage';
 import AdminHealthPage from '@/app/admin/AdminHealthPage';
 import AdminReportsPage from '@/app/admin/AdminReportsPage';
+import AdminMarketingPage from '@/app/admin/AdminMarketingPage';
 
 const App: React.FC = () => {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -150,6 +151,7 @@ const AppRoutes: React.FC<{ theme: string }> = ({ theme }) => {
             <Route path="currencies" element={<AdminCurrenciesPage />} />
             <Route path="logs" element={<AdminLogsPage />} />
             <Route path="health" element={<AdminHealthPage />} />
+            <Route path="marketing" element={<AdminMarketingPage />} />
             <Route path="profile" element={<PerfilPage />} />
           </Route>
         </Route>

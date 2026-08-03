@@ -97,7 +97,7 @@ export const TopLocationsChart = () => {
               barSize={32}
             >
               {
-                chartData.map((entry, index) => (
+                chartData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={index === 0 ? '#38bdf8' : (theme === 'dark' ? '#1e293b' : '#e2e8f0')} />
                 ))
               }
